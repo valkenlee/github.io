@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KBO 팀별 승차 차트</title>
+  <!-- Chart.js 및 PapaParse(CSV 파싱) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Chart.js Zoom Plugin 추가 -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 4px;
+      font-size: 20px;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+    .zoom-reset-btn {
+      background: #e9ecef;
+      border: 1px solid #ced4da;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .zoom-reset-btn:hover {
+      background: #dee2e6;
+    }
+    .chart-container {
+      position: relative;
+      height: 420px;
+      width: 100%;
+      touch-action: none; /* 모바일 터치 스크롤과 차트 Zoom 간 충돌 방지 */
+    }
+    .legend-custom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+    }
+    .legend-btn {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-btn:hover {
+      background: #f1f3f5;
+    }
+    .legend-btn.active {
+      border-color: #333;
+      background: #333;
+      color: #fff;
+    }
+    .legend-color-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .reset-btn {
+      display: block;
+      margin: 12px auto 0;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #888;
+      background: none;
+      border: none;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* 모바일 맞춤 레이아웃 */
+    @media (max-width: 600px) {
+      body { padding: 8px; }
+      .container { padding: 12px; }
+      .chart-container { height: 350px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚾ KBO 리그 팀별 승차 추이</h1>
+  <p class="subtitle">
+    • <b>확대/이동:</b> 모바일에서는 두 손가락 핀치/드래그, PC에서는 마우스 휠/드래그<br>
+    • <b>하이라이트:</b> 아래 팀 버튼 또는 그래프 선 클릭
+  </p>
+  
+  <div class="chart-header">
+    <button id="resetZoomBtn" class="zoom-reset-btn">🔍 줌 초기화 (원래대로)</button>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="kboChart"></canvas>
+  </div>
+
+  <div id="customLegend" class="legend-custom"></div>
+  <button id="resetBtn" class="reset-btn" style="display: none;">전체 선택 해제</button>
+</div>
+
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRazPhuL7YdPpRSDT0LS9vMDOahNJuQoU59q1pHY9fkMR6NbyB8RZ9IbjFyoubV4NWuLRIp9M93EaF3/pub?gid=1260501516&single=true&output=csv";
+
+  function hexToRgba(hex, alpha) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) {
+      c = c.split('').map(char => char + char).join('');
+    }
+    const num = parseInt(c, 16);
+    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+  }
+
+  const teamColors = {
+    'LG': '#C3002F',
+    'KT': '#000000',
+    'SSG': '#CE0E2D',
+    'NC': '#315288',
+    '두산': '#131230',
+    'KIA': '#EA0029',
+    '롯데': '#041E42',
+    '삼성': '#0066B3',
+    '한화': '#FF6600',
+    '키움': '#570514'
+  };
+
+  let chartInstance = null;
+  let selectedTeam = null;
+
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      processDataAndRenderChart(results.data);
+    },
+    error: function(err) {
+      console.error("CSV 로드 중 오류 발생:", err);
+    }
+  });
+
+  function processDataAndRenderChart(data) {
+    if (!data || data.length === 0) return;
+
+    const keys = Object.keys(data[0]);
+    const dateKey = keys[0]; 
+    const teamNames = keys.slice(1);
+
+    const labels = data.map(row => row[dateKey]).filter(val => val !== undefined && val !== "");
+    
+    const datasets = teamNames.map((team, idx) => {
+      const color = teamColors[team] || `hsl(${(idx * 36) % 360}, 70%, 50%)`;
+      const seriesData = data.map(row => parseFloat(row[team])).filter(val => !isNaN(val));
+
+      return {
+        label: team,
+        data: seriesData,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2,
+        pointRadius: 1.5,
+        pointHoverRadius: 4,
+        tension: 0.2,
+        originalColor: color
+      };
+    });
+
+    renderChart(labels, datasets);
+    renderCustomLegend(datasets);
+  }
+
+  function renderChart(labels, datasets) {
+    const ctx = document.getElementById('kboChart').getContext('2d');
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          },
+          // Zoom 및 Pan 플러그인 설정
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x', // 날짜(X축) 기준 이동
+            },
+            zoom: {
+              wheel: {
+                enabled: true, // PC 마우스 휠
+              },
+              pinch: {
+                enabled: true // 모바일 두 손가락 핀치 줌
+              },
+              mode: 'x', // X축 확대
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: '날짜 / 경기' },
+            grid: { color: '#f0f0f0' }
+          },
+          y: {
+            title: { display: true, text: '승차' },
+            grid: { color: '#f0f0f0' }
+          }
+        },
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const datasetIndex = elements[0].datasetIndex;
+            const teamName = chartInstance.data.datasets[datasetIndex].label;
+            toggleHighlight(teamName);
+          }
+        }
+      }
+    });
+
+    // 줌 초기화 버튼 이벤트 리스너
+    document.getElementById('resetZoomBtn').addEventListener('click', () => {
+      if (chartInstance) {
+        chartInstance.resetZoom();
+      }
+    });
+  }
+
+  function toggleHighlight(teamName) {
+    if (selectedTeam === teamName) {
+      selectedTeam = null;
+    } else {
+      selectedTeam = teamName;
+    }
+
+    updateChartStyles();
+    updateLegendStyles();
+  }
+
+  function updateChartStyles() {
+    chartInstance.data.datasets.forEach(ds => {
+      if (!selectedTeam) {
+        ds.borderColor = ds.originalColor;
+        ds.backgroundColor = ds.originalColor;
+        ds.borderWidth = 2;
+        ds.pointRadius = 1.5; 
+      } else if (ds.label === selectedTeam) {
+        ds.borderColor = ds.originalColor;
+        ds.backgroundColor = ds.originalColor;
+        ds.borderWidth = 4;
+        ds.pointRadius = 4;
+      } else {
+        const dimColor = hexToRgba(ds.originalColor, 0.25);
+        ds.borderColor = dimColor;
+        ds.backgroundColor = dimColor;
+        ds.borderWidth = 1.5;
+        ds.pointRadius = 0;
+      }
+    });
+
+    chartInstance.update();
+    document.getElementById('resetBtn').style.display = selectedTeam ? 'block' : 'none';
+  }
+
+  function renderCustomLegend(datasets) {
+    const legendContainer = document.getElementById('customLegend');
+    legendContainer.innerHTML = '';
+
+    datasets.forEach(ds => {
+      const btn = document.createElement('button');
+      btn.className = 'legend-btn';
+      btn.dataset.team = ds.label;
+
+      const dot = document.createElement('span');
+      dot.className = 'legend-color-dot';
+      dot.style.backgroundColor = ds.originalColor;
+
+      btn.appendChild(dot);
+      btn.appendChild(document.createTextNode(ds.label));
+
+      btn.addEventListener('click', () => {
+        toggleHighlight(ds.label);
+      });
+
+      legendContainer.appendChild(btn);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      selectedTeam = null;
+      updateChartStyles();
+      updateLegendStyles();
+    });
+  }
+
+  function updateLegendStyles() {
+    const buttons = document.querySelectorAll('.legend-btn');
+    buttons.forEach(btn => {
+      if (selectedTeam && btn.dataset.team === selectedTeam) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
