@@ -1,11 +1,165 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>KBO Win-Loss Graph</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 KBO 팀별 승패 동향</title>
+  <!-- Chart.js 및 PapaParse 라이브러리 로드 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
+    }
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h2 {
+      text-align: center;
+      color: #1a1a1a;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+  </style>
 </head>
 <body>
-    <h1>KBO Win-Loss Graph</h1>
 
+  <div class="chart-container">
+    <h2>2026 KBO 팀별 승패 동향 그래프</h2>
+    <canvas id="kboChart"></canvas>
+  </div>
+
+  <script>
+    // 게시아이템 구글 시트 CSV URL 적용 완료
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRazPhuL7YdPpRSDT0LS9vMDOahNJuQoU59q1pHY9fkMR6NbyB8RZ9IbjFyoubV4NWuLRIp9M93EaF3/pub?gid=0&single=true&output=csv";
+
+    // KBO 10개 구단 메인 컬러 매핑
+    const TEAM_COLORS = {
+      'LG': '#C30452',
+      '한화': '#FF6600',
+      'SSG': '#CE0E2D',
+      '삼성': '#074CA1',
+      'NC': '#315288',
+      'KT': '#000000',
+      '롯데': '#041E42',
+      'KIA': '#EA0029',
+      '두산': '#131230',
+      '키움': '#570514'
+    };
+
+    // CSV 데이터 불러오기 및 차트 생성
+    Papa.parse(SHEET_URL, {
+      download: true,
+      header: false,
+      skipEmptyLines: true,
+      complete: function(results) {
+        const rows = results.data;
+        if (!rows || rows.length < 2) return;
+
+        // 첫 번째 행: 팀 이름 추출 (첫 열 날짜 항목 제외)
+        const teamNames = rows[0].slice(1).map(name => name.trim());
+        
+        const labels = [];
+        const teamDataMap = {};
+        
+        teamNames.forEach(team => {
+          teamDataMap[team] = [];
+        });
+
+        // 2번째 행부터 날짜 및 팀별 데이터 수집
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          labels.push(row[0]); // 날짜 (예: 2026-03-01)
+
+          for (let j = 0; j < teamNames.length; j++) {
+            const val = parseFloat(row[j + 1]);
+            teamDataMap[teamNames[j]].push(isNaN(val) ? null : val);
+          }
+        }
+
+        // Chart.js에 전달할 dataset 배열 생성
+        const datasets = teamNames.map(team => {
+          const color = TEAM_COLORS[team] || '#888888';
+          return {
+            label: team,
+            data: teamDataMap[team],
+            borderColor: color,
+            backgroundColor: color,
+            borderWidth: 2,
+            tension: 0.1, // 선 연결 곡선 정도
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            fill: false
+          };
+        });
+
+        // 차트 그리기
+        const ctx = document.getElementById('kboChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            interaction: {
+              mode: 'index',
+              intersect: false,
+            },
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  usePointStyle: true,
+                  padding: 18,
+                  font: {
+                    size: 13
+                  }
+                }
+              },
+              tooltip: {
+                padding: 12
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: '날짜',
+                  font: { weight: 'bold' }
+                },
+                grid: {
+                  color: '#eeeeee'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: '승패 수치',
+                  font: { weight: 'bold' }
+                },
+                grid: {
+                  color: '#eeeeee'
+                }
+              }
+            }
+          }
+        });
+      },
+      error: function(err) {
+        console.error("데이터 파싱 실패:", err);
+      }
+    });
+  </script>
 </body>
 </html>
