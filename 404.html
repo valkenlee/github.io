@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>동적 처리</title>
+</head>
+<body>
+    <script>
+        // 접속한 경로 추출 (예: "/123" -> "123")
+        const path = window.location.pathname.replace(/^\//, '');
+        
+        console.log("현재 요청받은 ID:", path);
+        // 여기서 path(123) 값에 따라 동적으로 데이터를 불러오거나 화면을 구성
+        window.location.href = "https://blog.valken.net/" + path;
+    </script>
+</body>
+</html>
