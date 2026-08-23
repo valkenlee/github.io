@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KBO 팀별 승차 차트</title>
+  <!-- Chart.js 및 PapaParse(CSV 파싱) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .chart-container {
+      position: relative;
+      height: 500px;
+      width: 100%;
+    }
+    .legend-custom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .legend-btn {
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-btn:hover {
+      background: #f1f3f5;
+    }
+    .legend-btn.active {
+      border-color: #333;
+      background: #333;
+      color: #fff;
+    }
+    .legend-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .reset-btn {
+      display: block;
+      margin: 16px auto 0;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #888;
+      background: none;
+      border: none;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚾ KBO 리그 팀별 승차 추이</h1>
+  <p class="subtitle">하단 레전드나 차트 요소를 클릭하면 해당 팀이 하이라이트됩니다.</p>
+  
+  <div class="chart-container">
+    <canvas id="kboChart"></canvas>
+  </div>
+
+  <div id="customLegend" class="legend-custom"></div>
+  <button id="resetBtn" class="reset-btn" style="display: none;">전체 선택 해제 / 초기화</button>
+</div>
+
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRazPhuL7YdPpRSDT0LS9vMDOahNJuQoU59q1pHY9fkMR6NbyB8RZ9IbjFyoubV4NWuLRIp9M93EaF3/pub?gid=1260501516&single=true&output=csv";
+
+  // HEX 색상을 RGBA로 변환하는 헬퍼 함수
+  function hexToRgba(hex, alpha) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) {
+      c = c.split('').map(char => char + char).join('');
+    }
+    const num = parseInt(c, 16);
+    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+  }
+
+  // 팀별 고유 색상 설정
+  const teamColors = {
+    'LG': '#C3002F',
+    'KT': '#000000',
+    'SSG': '#CE0E2D',
+    'NC': '#315288',
+    '두산': '#131230',
+    'KIA': '#EA0029',
+    '롯데': '#041E42',
+    '삼성': '#0066B3',
+    '한화': '#FF6600',
+    '키움': '#570514'
+  };
+
+  let chartInstance = null;
+  let selectedTeam = null;
+
+  // 1. CSV 데이터 불러오기 및 파싱
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      processDataAndRenderChart(results.data);
+    },
+    error: function(err) {
+      console.error("CSV 로드 중 오류 발생:", err);
+    }
+  });
+
+  function processDataAndRenderChart(data) {
+    if (!data || data.length === 0) return;
+
+    const keys = Object.keys(data[0]);
+    const dateKey = keys[0]; 
+    const teamNames = keys.slice(1);
+
+    const labels = data.map(row => row[dateKey]).filter(val => val !== undefined && val !== "");
+    
+    // 각 팀별 데이터셋 생성
+    const datasets = teamNames.map((team, idx) => {
+      const color = teamColors[team] || `hsl(${(idx * 36) % 360}, 70%, 50%)`;
+      const seriesData = data.map(row => parseFloat(row[team])).filter(val => !isNaN(val));
+
+      return {
+        label: team,
+        data: seriesData,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2,
+        pointRadius: 1.5,        // 아무것도 선택하지 않았을 때 기본 점 크기 (기존 3에서 50% 축소)
+        pointHoverRadius: 4,
+        tension: 0.2,
+        originalColor: color
+      };
+    });
+
+    renderChart(labels, datasets);
+    renderCustomLegend(datasets);
+  }
+
+  // 2. Chart.js 시각화
+  function renderChart(labels, datasets) {
+    const ctx = document.getElementById('kboChart').getContext('2d');
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: '날짜 / 경기' },
+            grid: { color: '#f0f0f0' }
+          },
+          y: {
+            title: { display: true, text: '승차' },
+            grid: { color: '#f0f0f0' }
+          }
+        },
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const datasetIndex = elements[0].datasetIndex;
+            const teamName = chartInstance.data.datasets[datasetIndex].label;
+            toggleHighlight(teamName);
+          }
+        }
+      }
+    });
+  }
+
+  // 3. 팀 선택/하이라이트 처리 함수
+  function toggleHighlight(teamName) {
+    if (selectedTeam === teamName) {
+      selectedTeam = null; // 이미 선택된 팀을 다시 누르면 전체 해제
+    } else {
+      selectedTeam = teamName;
+    }
+
+    updateChartStyles();
+    updateLegendStyles();
+  }
+
+  function updateChartStyles() {
+    chartInstance.data.datasets.forEach(ds => {
+      if (!selectedTeam) {
+        // 아무것도 선택되지 않았을 때 (기존 50% 축소된 점 크기 적용)
+        ds.borderColor = ds.originalColor;
+        ds.backgroundColor = ds.originalColor;
+        ds.borderWidth = 2;
+        ds.pointRadius = 1.5; 
+      } else if (ds.label === selectedTeam) {
+        // 선택된 팀 하이라이트
+        ds.borderColor = ds.originalColor;
+        ds.backgroundColor = ds.originalColor;
+        ds.borderWidth = 4;
+        ds.pointRadius = 4;
+      } else {
+        // 선택되지 않은 팀 (투명도 60% 적용으로 다른 팀과의 비교가 쉽도록 수정)
+        const dimColor = hexToRgba(ds.originalColor, 0.25); // 선은 기존 고유 색의 25% 투명도로 유지하여 식별 가능
+        ds.borderColor = dimColor;
+        ds.backgroundColor = dimColor;
+        ds.borderWidth = 1.5;
+        ds.pointRadius = 0; // 다른 팀의 노드 점은 차트를 깔끔하게 보기 위해 숨김
+      }
+    });
+
+    chartInstance.update();
+
+    // Reset 버튼 표시 여부
+    document.getElementById('resetBtn').style.display = selectedTeam ? 'block' : 'none';
+  }
+
+  // 4. 하단 버튼형 레전드 생성
+  function renderCustomLegend(datasets) {
+    const legendContainer = document.getElementById('customLegend');
+    legendContainer.innerHTML = '';
+
+    datasets.forEach(ds => {
+      const btn = document.createElement('button');
+      btn.className = 'legend-btn';
+      btn.dataset.team = ds.label;
+
+      const dot = document.createElement('span');
+      dot.className = 'legend-color-dot';
+      dot.style.backgroundColor = ds.originalColor;
+
+      btn.appendChild(dot);
+      btn.appendChild(document.createTextNode(ds.label));
+
+      btn.addEventListener('click', () => {
+        toggleHighlight(ds.label);
+      });
+
+      legendContainer.appendChild(btn);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      selectedTeam = null;
+      updateChartStyles();
+      updateLegendStyles();
+    });
+  }
+
+  function updateLegendStyles() {
+    const buttons = document.querySelectorAll('.legend-btn');
+    buttons.forEach(btn => {
+      if (selectedTeam && btn.dataset.team === selectedTeam) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
