@@ -340,27 +340,30 @@
     });
   }
 
-  // 줌 함수
+// 확대/축소 함수 (오른쪽 끝 고정 방식)
   function zoom(factor) {
     const xScale = chartInstance.options.scales.x;
     const currentMin = xScale.min;
     const currentMax = xScale.max;
     const range = currentMax - currentMin;
-    const center = (currentMin + currentMax) / 2;
 
     let newRange = range * factor;
 
-    // 최소/최대 보기 개수 제어 (최소 5개 포인트 ~ 전체)
+    // 최소/최대 범위 제어 (최소 4개 데이터 포인트 ~ 전체)
     if (newRange < 4) newRange = 4;
     if (newRange > totalDataLength - 1) newRange = totalDataLength - 1;
 
-    let newMin = center - newRange / 2;
-    let newMax = center + newRange / 2;
+    // 오른쪽 끝(currentMax)을 고정한 채 왼쪽(newMin)만 조절
+    let newMax = currentMax;
+    let newMin = newMax - newRange;
 
+    // 범위가 0보다 작아질 경우 처리
     if (newMin < 0) {
       newMin = 0;
       newMax = newRange;
     }
+
+    // 오른쪽 끝이 전체 데이터 길이를 초과하는 경우
     if (newMax > totalDataLength - 1) {
       newMax = totalDataLength - 1;
       newMin = newMax - newRange;
