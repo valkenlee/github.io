@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>KBO 팀별 승패 변동 그래프</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .controls {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    select {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .reset-btn {
+      padding: 6px 12px;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .reset-btn:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>2026 KBO 팀별 승강 추이</h2>
+  
+  <div class="controls">
+    <label for="teamSelect"><strong>강조할 팀 선택:</strong></label>
+    <select id="teamSelect" onchange="highlightTeam(this.value)">
+      <option value="ALL">전체 보기 (초기화)</option>
+    </select>
+    <button class="reset-btn" onclick="resetHighlight()">전체 보기</button>
+  </div>
+
+  <canvas id="kboChart" width="800" height="400"></canvas>
+</div>
+
+<script>
+  // 팀별 고유 컬러 정의
+  const teamColors = {
+    "LG": "#C3002F",
+    "한화": "#FF6600",
+    "SSG": "#CE0E2D",
+    "삼성": "#074CA1",
+    "NC": "#11224A",
+    "KT": "#000000",
+    "롯데": "#041E42",
+    "KIA": "#EA0029",
+    "두산": "#131230",
+    "키움": "#570514"
+  };
+
+  let kboChart = null;
+  let selectedTeam = null; // 현재 선택된 팀 저장
+
+  // 시트 데이터를 받아와 차트를 그리는 함수 (시트 연동 로직 적용)
+  function renderChart(labelsData, datasetsData) {
+    const ctx = document.getElementById('kboChart').getContext('2d');
+
+    // 드롭다운 옵션 채우기
+    const selectEl = document.getElementById('teamSelect');
+    datasetsData.forEach(ds => {
+      const opt = document.createElement('option');
+      opt.value = ds.label;
+      opt.textContent = ds.label;
+      selectEl.appendChild(opt);
+    });
+
+    // 기본 데이터셋 스타일 설정
+    const formattedDatasets = datasetsData.map(ds => {
+      const baseColor = teamColors[ds.label] || '#888888';
+      return {
+        label: ds.label,
+        data: ds.data,
+        borderColor: baseColor,
+        backgroundColor: baseColor,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        tension: 0.1,
+        // 커스텀 프로퍼티 저장
+        originalColor: baseColor
+      };
+    });
+
+    kboChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labelsData,
+        datasets: formattedDatasets
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'nearest',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            // 범례 클릭 이벤트 커스텀 (클릭 시 해당 팀 강조)
+            onClick: (e, legendItem, legend) => {
+              const teamName = legendItem.text;
+              if (selectedTeam === teamName) {
+                resetHighlight();
+              } else {
+                highlightTeam(teamName);
+              }
+            }
+          },
+          tooltip: {
+            enabled: true
+          }
+        },
+        // 그래프 선 클릭 시 강조 이벤트
+        onClick: (e, activeElements) => {
+          if (activeElements.length > 0) {
+            const datasetIndex = activeElements[0].datasetIndex;
+            const teamName = kboChart.data.datasets[datasetIndex].label;
+            highlightTeam(teamName);
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: '날짜' } },
+          y: { title: { display: true, text: '승패 변동 수치 (+/-)' } }
+        }
+      }
+    });
+  }
+
+  // 특정 팀 강조 처리 함수
+  function highlightTeam(teamName) {
+    if (!kboChart) return;
+
+    if (teamName === 'ALL' || !teamName) {
+      resetHighlight();
+      return;
+    }
+
+    selectedTeam = teamName;
+    document.getElementById('teamSelect').value = teamName;
+
+    kboChart.data.datasets.forEach(dataset => {
+      if (dataset.label === teamName) {
+        // 선택한 팀: 두껍게 & 선명하게 (Opacity 1.0)
+        dataset.borderWidth = 5;
+        dataset.pointRadius = 5;
+        dataset.borderColor = dataset.originalColor;
+        dataset.backgroundColor = dataset.originalColor;
+      } else {
+        // 선택되지 않은 팀: 얇게 & 흐리게 (Opacity 0.15)
+        dataset.borderWidth = 1;
+        dataset.pointRadius = 1;
+        dataset.borderColor = hexToRgba(dataset.originalColor, 0.15);
+        dataset.backgroundColor = hexToRgba(dataset.originalColor, 0.15);
+      }
+    });
+
+    kboChart.update();
+  }
+
+  // 전체 보기 (초기화) 함수
+  function resetHighlight() {
+    if (!kboChart) return;
+
+    selectedTeam = null;
+    document.getElementById('teamSelect').value = 'ALL';
+
+    kboChart.data.datasets.forEach(dataset => {
+      dataset.borderWidth = 2;
+      dataset.pointRadius = 3;
+      dataset.borderColor = dataset.originalColor;
+      dataset.backgroundColor = dataset.originalColor;
+    });
+
+    kboChart.update();
+  }
+
+  // HEX 컬러 코드를 RGBA(투명도 포함)로 변환하는 헬퍼 함수
+  function hexToRgba(hex, alpha) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) {
+      c = c.split('').map(char => char + char).join('');
+    }
+    const num = parseInt(c, 16);
+    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+  }
+</script>
+
+</body>
+</html>
