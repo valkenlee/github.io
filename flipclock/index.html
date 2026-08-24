@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Flip Clock</title>
   <style>
-    /* Google Fonts Import */
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap');
 
     * {
@@ -15,7 +14,7 @@
     }
 
     body {
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      background: linear-gradient(135deg, #131518, #202428, #2b3036);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -32,19 +31,17 @@
       margin-bottom: 40px;
       text-transform: uppercase;
       color: rgba(255, 255, 255, 0.8);
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
 
     .clock-container {
       display: flex;
       align-items: center;
       gap: 20px;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.4);
       padding: 40px 50px;
       border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6),
                   inset 0 1px 1px rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
     }
 
     .unit-group {
@@ -57,8 +54,7 @@
     .unit-label {
       font-size: 0.9rem;
       letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
     }
 
     .digits-container {
@@ -66,7 +62,6 @@
       gap: 8px;
     }
 
-    /* 구분 Colon 점 애니메이션 */
     .colon-group {
       display: flex;
       flex-direction: column;
@@ -78,20 +73,20 @@
     }
 
     .colon-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       background-color: #ff5e62;
       border-radius: 50%;
-      box-shadow: 0 0 12px #ff5e62;
+      box-shadow: 0 0 10px #ff5e62;
       animation: pulse 1s infinite alternate;
     }
 
     @keyframes pulse {
-      0% { opacity: 0.4; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1.1); }
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
     }
 
-    /* 플립 카드 3D 구조 */
+    /* 플립 카드 공통 */
     .flip-card {
       position: relative;
       width: 80px;
@@ -99,19 +94,18 @@
       font-size: 5rem;
       line-height: 120px;
       font-weight: 600;
-      perspective: 400px;
+      perspective: 500px; /* 3D 원근감 */
       border-radius: 12px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+      background-color: #15181a;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
     }
 
-    /* 상단/하단 카드 플레이트 */
     .card-face {
       position: absolute;
       left: 0;
       right: 0;
       height: 50%;
       overflow: hidden;
-      background: #1e252b;
       color: #f1f5f9;
       text-align: center;
       user-select: none;
@@ -124,53 +118,45 @@
       width: 100%;
     }
 
+    /* 배경 카드 (고정된 뒷면) */
     .top-face {
       top: 0;
       border-top-left-radius: 12px;
       border-top-right-radius: 12px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-      background: linear-gradient(to bottom, #2c353d, #1e252b);
+      background: linear-gradient(to bottom, #2a3138, #1e2429);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.8);
     }
-
     .top-face span { top: 0; }
 
     .bottom-face {
       bottom: 0;
       border-bottom-left-radius: 12px;
       border-bottom-right-radius: 12px;
-      background: linear-gradient(to bottom, #191f24, #12161a);
+      background: linear-gradient(to bottom, #191e22, #111417);
     }
-
     .bottom-face span { bottom: 0; }
 
-    /* 회전하는 플립 Leaf 레이어 */
-    .flip-leaf {
+    /* 움직이는 카드 (플립 효과) */
+    .leaf-top, .leaf-bottom {
       position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      perspective: 400px;
-      z-index: 2;
-    }
-
-    .leaf-top {
-      position: absolute;
-      top: 0;
       left: 0;
       width: 100%;
       height: 50%;
       overflow: hidden;
-      background: linear-gradient(to bottom, #2c353d, #1e252b);
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-      transform-origin: bottom;
+      backface-visibility: hidden; /* 뒷면을 숨겨서 깜빡임 방지 */
       transform-style: preserve-3d;
-      backface-visibility: hidden;
-      z-index: 3;
     }
 
+    /* 위쪽 움직이는 카드 */
+    .leaf-top {
+      top: 0;
+      background: linear-gradient(to bottom, #2a3138, #1e2429);
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+      transform-origin: bottom; /* 아래쪽을 축으로 회전 */
+      z-index: 3;
+    }
     .leaf-top span {
       position: absolute;
       left: 50%;
@@ -180,23 +166,16 @@
       text-align: center;
     }
 
+    /* 아래쪽 움직이는 카드 */
     .leaf-bottom {
-      position: absolute;
       top: 50%;
-      left: 0;
-      width: 100%;
-      height: 50%;
-      overflow: hidden;
-      background: linear-gradient(to bottom, #191f24, #12161a);
+      background: linear-gradient(to bottom, #191e22, #111417);
       border-bottom-left-radius: 12px;
       border-bottom-right-radius: 12px;
-      transform-origin: top;
-      transform-style: preserve-3d;
-      backface-visibility: hidden;
-      transform: rotateX(180deg);
+      transform-origin: top; /* 위쪽을 축으로 회전 */
+      transform: rotateX(90deg); /* 초기 상태는 90도로 꺾여서 안 보이게 설정 */
       z-index: 2;
     }
-
     .leaf-bottom span {
       position: absolute;
       left: 50%;
@@ -206,55 +185,47 @@
       text-align: center;
     }
 
-    /* 플립 애니메이션 트리거 */
+    /* 🔥 핵심 애니메이션: 순차적으로 실행되며, 음영 효과(brightness) 추가 🔥 */
     .flip-card.flipping .leaf-top {
-      animation: flip-top-anim 0.6s cubic-bezier(0.37, 0.01, 0.63, 1) forwards;
+      /* 중력에 의해 점점 빨리 떨어지는 느낌 (ease-in) */
+      animation: flip-top-anim 0.3s ease-in forwards;
     }
 
     .flip-card.flipping .leaf-bottom {
-      animation: flip-bottom-anim 0.6s cubic-bezier(0.37, 0.01, 0.63, 1) forwards;
+      /* 위 카드가 끝난 후(0.3s 딜레이) 이어서 떨어짐 (ease-out) */
+      animation: flip-bottom-anim 0.3s ease-out 0.3s forwards;
     }
 
     @keyframes flip-top-anim {
-      0% { transform: rotateX(0deg); }
-      100% { transform: rotateX(-90deg); }
+      0% { transform: rotateX(0deg); filter: brightness(1); }
+      100% { transform: rotateX(-90deg); filter: brightness(0.3); } /* 떨어지면서 어두워짐 */
     }
 
     @keyframes flip-bottom-anim {
-      0% { transform: rotateX(90deg); }
-      100% { transform: rotateX(0deg); }
+      0% { transform: rotateX(90deg); filter: brightness(0.3); } /* 어두운 상태에서 시작 */
+      100% { transform: rotateX(0deg); filter: brightness(1); } /* 펴지면서 밝아짐 */
     }
 
-    /* 카드 절단선 음영 선 */
+    /* 카드 중간 절취선 그림자 */
     .flip-card::after {
       content: '';
       position: absolute;
       top: 50%;
-      left: 0;
-      right: 0;
+      left: -2%;
+      width: 104%;
       height: 2px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.7);
       z-index: 10;
-      box-shadow: 0 1px 2px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 1px 1px rgba(255, 255, 255, 0.15);
+      margin-top: -1px;
     }
 
-    /* 모바일 반응형 디자인 */
     @media (max-width: 650px) {
-      .clock-container {
-        padding: 25px 20px;
-        gap: 10px;
-      }
-      .flip-card {
-        width: 50px;
-        height: 75px;
-        font-size: 3.2rem;
-        line-height: 75px;
-        border-radius: 8px;
-      }
+      .clock-container { padding: 25px 20px; gap: 10px; }
+      .flip-card { width: 50px; height: 75px; font-size: 3.2rem; line-height: 75px; border-radius: 8px; }
       .top-face, .leaf-top { border-top-left-radius: 8px; border-top-right-radius: 8px; }
       .bottom-face, .leaf-bottom { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
       .colon-group { height: 75px; gap: 10px; padding-bottom: 15px; }
-      .colon-dot { width: 8px; height: 8px; }
       .title { font-size: 1.3rem; margin-bottom: 25px; }
     }
   </style>
@@ -264,82 +235,65 @@
   <h1 class="title">3D Flip Clock</h1>
 
   <div class="clock-container">
-    <!-- 시 (HOURS) -->
     <div class="unit-group">
       <div class="digits-container">
         <div class="flip-card" id="h1">
           <div class="card-face top-face"><span>0</span></div>
           <div class="card-face bottom-face"><span>0</span></div>
-          <div class="flip-leaf">
-            <div class="leaf-top"><span>0</span></div>
-            <div class="leaf-bottom"><span>0</span></div>
-          </div>
+          <div class="leaf-top"><span>0</span></div>
+          <div class="leaf-bottom"><span>0</span></div>
         </div>
         <div class="flip-card" id="h2">
           <div class="card-face top-face"><span>0</span></div>
           <div class="card-face bottom-face"><span>0</span></div>
-          <div class="flip-leaf">
-            <div class="leaf-top"><span>0</span></div>
-            <div class="leaf-bottom"><span>0</span></div>
-          </div>
+          <div class="leaf-top"><span>0</span></div>
+          <div class="leaf-bottom"><span>0</span></div>
         </div>
       </div>
       <span class="unit-label">HOURS</span>
     </div>
 
-    <!-- 콜론 ( : ) -->
     <div class="colon-group">
       <div class="colon-dot"></div>
       <div class="colon-dot"></div>
     </div>
 
-    <!-- 분 (MINUTES) -->
     <div class="unit-group">
       <div class="digits-container">
         <div class="flip-card" id="m1">
           <div class="card-face top-face"><span>0</span></div>
           <div class="card-face bottom-face"><span>0</span></div>
-          <div class="flip-leaf">
-            <div class="leaf-top"><span>0</span></div>
-            <div class="leaf-bottom"><span>0</span></div>
-          </div>
+          <div class="leaf-top"><span>0</span></div>
+          <div class="leaf-bottom"><span>0</span></div>
         </div>
         <div class="flip-card" id="m2">
           <div class="card-face top-face"><span>0</span></div>
           <div class="card-face bottom-face"><span>0</span></div>
-          <div class="flip-leaf">
-            <div class="leaf-top"><span>0</span></div>
-            <div class="leaf-bottom"><span>0</span></div>
-          </div>
+          <div class="leaf-top"><span>0</span></div>
+          <div class="leaf-bottom"><span>0</span></div>
         </div>
       </div>
       <span class="unit-label">MINUTES</span>
     </div>
 
-    <!-- 콜론 ( : ) -->
     <div class="colon-group">
       <div class="colon-dot"></div>
       <div class="colon-dot"></div>
     </div>
 
-    <!-- 초 (SECONDS) -->
     <div class="unit-group">
       <div class="digits-container">
         <div class="flip-card" id="s1">
           <div class="card-face top-face"><span>0</span></div>
           <div class="card-face bottom-face"><span>0</span></div>
-          <div class="flip-leaf">
-            <div class="leaf-top"><span>0</span></div>
-            <div class="leaf-bottom"><span>0</span></div>
-          </div>
+          <div class="leaf-top"><span>0</span></div>
+          <div class="leaf-bottom"><span>0</span></div>
         </div>
         <div class="flip-card" id="s2">
           <div class="card-face top-face"><span>0</span></div>
           <div class="card-face bottom-face"><span>0</span></div>
-          <div class="flip-leaf">
-            <div class="leaf-top"><span>0</span></div>
-            <div class="leaf-bottom"><span>0</span></div>
-          </div>
+          <div class="leaf-top"><span>0</span></div>
+          <div class="leaf-bottom"><span>0</span></div>
         </div>
       </div>
       <span class="unit-label">SECONDS</span>
@@ -363,7 +317,6 @@
 
         if (this.currentValue === newValue) return;
 
-        // 초기화 시 애니메이션 없이 값만 적용
         if (this.currentValue === null || !animate) {
           this.topFace.textContent = newValue;
           this.bottomFace.textContent = newValue;
@@ -376,19 +329,18 @@
         if (this.isFlipping) return;
         this.isFlipping = true;
 
-        // 1. 뒤쪽 상단에 새 숫자 배치
+        // 1. 뒤쪽 상단에 새 숫자
         this.topFace.textContent = newValue;
-        // 2. 앞쪽 위 회전 판에 이전 숫자 배치
+        // 2. 떨어지는 윗 카드에는 현재 숫자
         this.leafTop.textContent = this.currentValue;
-        // 3. 앞쪽 아래 회전 판에 새 숫자 미리 준비
+        // 3. 이어서 떨어질 아랫 카드에는 새 숫자
         this.leafBottom.textContent = newValue;
-        // 4. 뒤쪽 하단에는 이전 숫자 유지
+        // 4. 뒤쪽 하단에는 아직 현재 숫자 유지
         this.bottomFace.textContent = this.currentValue;
 
-        // 애니메이션 클래스 추가
         this.element.classList.add('flipping');
 
-        // 0.6초(애니메이션 종료) 후 상태 정돈
+        // 0.6초 (0.3초 위 + 0.3초 아래) 후 초기화
         setTimeout(() => {
           this.element.classList.remove('flipping');
           this.bottomFace.textContent = newValue;
@@ -423,10 +375,7 @@
         digits.s2.setValue(seconds[1]);
       }
 
-      // 첫 실행 시 애니메이션 없이 즉시 표시
       updateClock();
-
-      // 1초 간격 갱신
       setInterval(updateClock, 1000);
     });
   </script>
