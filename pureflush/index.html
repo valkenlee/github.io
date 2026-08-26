@@ -238,7 +238,8 @@
 <div class="card" id="quiz-area" style="display: none;">
     <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
     <div class="selection-grid" id="selection-buttons"></div>
-    <button class="btn-submit" onclick="submitAnswer()">제출 및 정답 확인</button>
+    <!-- id="btn-submit" 추가 -->
+    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
 </div>
 
@@ -256,6 +257,10 @@
     let currentHand = [];
     let winningTiles = [];
     let selectedTiles = new Set();
+    
+    // 현재 선택된 난이도 및 제출 상태 추적
+    let currentDifficulty = 'normal';
+    let isSubmitted = false;
 
     // 페이지 로드 시 동일 경로의 Regular.zip 파일 읽기
     window.addEventListener('DOMContentLoaded', async () => {
@@ -301,26 +306,24 @@
     }
 
     function generateQuiz(difficulty) {
+        currentDifficulty = difficulty; // 난이도 기억
+        isSubmitted = false; // 제출 상태 초기화
+
         currentSuitObj = SUITS[Math.floor(Math.random() * SUITS.length)];
         let hand = [];
         let waits = [];
 
-        // 난이도별 조건에 맞는 문제 루프 탐색
         while (true) {
             hand = generateRandom13Tiles();
             waits = getWinningTiles(hand);
             const count = waits.length;
 
             if (difficulty === 'easy') {
-                // 오름패 1개 ~ 2개
                 if (count >= 1 && count <= 2) break;
             } else if (difficulty === 'normal') {
-                // 오름패 2개 ~ 4개
                 if (count >= 2 && count <= 4) break;
             } else if (difficulty === 'hard') {
-                // 오름패 2개 ~ 9개 (3개 이상을 최우선 생성)
                 if (count >= 3 && count <= 9) break;
-                // 3개 이상 조건이 너무 안 뜰 경우 무한 루프 방지를 위해 2개도 간혹 허용
                 if (count === 2 && Math.random() < 0.05) break; 
             }
         }
@@ -328,13 +331,11 @@
         currentHand = hand;
         winningTiles = waits;
 
-        // UI 업데이트
         renderHand();
         renderButtons();
         
         document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
         
-        // 쉬움 난이도일 경우 힌트 표시
         const hintElem = document.getElementById('easy-hint');
         if (difficulty === 'easy') {
             hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
@@ -342,6 +343,11 @@
         } else {
             hintElem.style.display = 'none';
         }
+
+        // 제출 버튼 텍스트 및 UI 초기화
+        const submitBtn = document.getElementById('btn-submit');
+        submitBtn.innerText = '제출 및 정답 확인';
+        submitBtn.style.backgroundColor = '#2980b9';
 
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('result').style.display = 'none';
@@ -444,6 +450,9 @@
     }
 
     function toggleSelect(num, btn) {
+        // 정답을 이미 제출한 상태라면 번호 선택 불가
+        if (isSubmitted) return;
+
         if (selectedTiles.has(num)) {
             selectedTiles.delete(num);
             btn.classList.remove('selected');
@@ -453,7 +462,20 @@
         }
     }
 
-    function submitAnswer() {
+    // 제출 또는 새 문제 생성 처리 단일 함수
+    function handleSubmitOrNext() {
+        // 이미 제출된 상태라면 저장된 난이도로 새 문제 생성
+        if (isSubmitted) {
+            generateQuiz(currentDifficulty);
+            return;
+        }
+
+        // 1. 아무것도 선택하지 않았을 때는 동작 안 함
+        if (selectedTiles.size === 0) {
+            return;
+        }
+
+        // 채점 수행
         const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
         const isCorrect = userAnswers.length === winningTiles.length && 
                           userAnswers.every((val, idx) => val === winningTiles[idx]);
@@ -468,6 +490,12 @@
             resultDiv.className = 'result-message incorrect';
             resultDiv.innerText = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.`;
         }
+
+        // 2. 제출 완료 상태로 변경 및 버튼 텍스트 수정
+        isSubmitted = true;
+        const submitBtn = document.getElementById('btn-submit');
+        submitBtn.innerText = '같은 난이도로 새 문제 제출';
+        submitBtn.style.backgroundColor = '#27ae60';
     }
 </script>
 
