@@ -10,7 +10,7 @@
             max-width: 950px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #1e3f20; /* 깊은 작탁 그린 */
+            background-color: #1e3f20; /* 작탁 녹색 */
             color: #333;
         }
         h1 { 
@@ -57,18 +57,21 @@
             justify-content: center;
             align-items: center;
             gap: 4px;
-            flex-wrap: nowrap; /* 모든 패가 절대 줄바꿈되지 않고 한 줄로 배치 */
+            flex-wrap: nowrap; /* 줄바꿈 방지 */
             min-height: 70px;
             padding: 0 10px;
         }
 
-        /* 오픈소스 SVG 마작패 스타일ing */
+        /* 위키미디어 공용 마작패 SVG 스타일링 */
         .tile-img {
-            width: 46px;
-            height: auto;
+            width: 48px;
+            height: 64px;
+            object-fit: contain;
             filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.4));
-            flex-shrink: 0; /* 화면이 좁아져도 구겨지지 않음 */
+            flex-shrink: 0;
             user-select: none;
+            background: #fff;
+            border-radius: 4px;
         }
 
         /* 답안 선택 버튼 영역 */
@@ -130,23 +133,46 @@
 </div>
 
 <script>
-    // 오픈소스 마작패 SVG CDN 경로 (FluffyStuff/riichi-mahjong-tiles)
-    const TILE_BASE_URL = "https://raw.githubusercontent.com/FluffyStuff/riichi-mahjong-tiles/main/assets/tiles/svg/";
-
-    const SUITS = [
-        { code: 'm', name: '만자패(萬)' },
-        { code: 'p', name: '통자패(筒)' },
-        { code: 's', name: '삭자패(索)' }
-    ];
+    // 위키미디어 공용(Wikimedia Commons) 오픈소스 마작패 SVG URL 매핑
+    const WIKIMEDIA_BASE = "https://upload.wikimedia.org/wikipedia/commons/";
     
-    let currentSuitObj = null;
+    // 무늬별 위키미디어 파일 경로 매핑 테이블
+    const TILE_MAP = {
+        'm': {
+            name: '만자패(萬)',
+            urls: {
+                1: '1/18/MJm1-.svg', 2: 'a/a9/MJm2-.svg', 3: '1/1d/MJm3-.svg',
+                4: '0/08/MJm4-.svg', 5: '8/82/MJm5-.svg', 6: 'b/b3/MJm6-.svg',
+                7: '1/13/MJm7-.svg', 8: '2/2e/MJm8-.svg', 9: '2/23/MJm9-.svg'
+            }
+        },
+        'p': {
+            name: '통자패(筒)',
+            urls: {
+                1: '2/21/MJt1-.svg', 2: '0/0c/MJt2-.svg', 3: '8/8b/MJt3-.svg',
+                4: '6/66/MJt4-.svg', 5: '3/36/MJt5-.svg', 6: '8/86/MJt6-.svg',
+                7: '6/6c/MJt7-.svg', 8: '6/63/MJt8-.svg', 9: 'f/f5/MJt9-.svg'
+            }
+        },
+        's': {
+            name: '삭자패(索)',
+            urls: {
+                1: 'e/e8/MJs1-.svg', 2: '8/8a/MJs2-.svg', 3: '4/43/MJs3-.svg',
+                4: '2/27/MJs4-.svg', 5: '1/1f/MJs5-.svg', 6: '4/48/MJs6-.svg',
+                7: 'c/c4/MJs7-.svg', 8: 'd/d3/MJs8-.svg', 9: 'a/a3/MJs9-.svg'
+            }
+        }
+    };
+
+    const SUIT_KEYS = ['m', 'p', 's'];
+    let currentSuitKey = 'm';
     let currentHand = [];
     let winningTiles = [];
     let selectedTiles = new Set();
 
     // 1. 청일색 텐파이 문제 생성
     function generateQuiz() {
-        currentSuitObj = SUITS[Math.floor(Math.random() * SUITS.length)];
+        currentSuitKey = SUIT_KEYS[Math.floor(Math.random() * SUIT_KEYS.length)];
         let hand = [];
         
         while (true) {
@@ -162,7 +188,7 @@
         renderHand();
         renderButtons();
         
-        document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
+        document.getElementById('suit-name').innerText = `현재 무늬: [ ${TILE_MAP[currentSuitKey].name} ]`;
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('result').style.display = 'none';
         selectedTiles.clear();
@@ -244,16 +270,15 @@
         return false;
     }
 
-    // 오픈소스 SVG 마작패 UI 렌더링
+    // 위키미디어 마작패 UI 렌더링
     function renderHand() {
         const container = document.getElementById('hand-container');
         container.innerHTML = '';
         currentHand.forEach(num => {
             const img = document.createElement('img');
-            // 예: https://.../m1.svg, s5.svg 등
-            img.src = `${TILE_BASE_URL}${currentSuitObj.code}${num}.svg`;
+            img.src = `${WIKIMEDIA_BASE}${TILE_MAP[currentSuitKey].urls[num]}`;
             img.className = 'tile-img';
-            img.alt = `${currentSuitObj.code}${num}`;
+            img.alt = `${currentSuitKey}${num}`;
             container.appendChild(img);
         });
     }
