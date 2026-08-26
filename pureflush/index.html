@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 텐파이 퀴즈</title>
+    <title>마작 청일색 텐파이 퀴즈 (ZIP 연동)</title>
+    <!-- ZIP 파일을 브라우저에서 읽기 위한 JSZip 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -36,11 +38,11 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn-main:hover { background-color: #219150; }
-        .btn-main:active { transform: translateY(1px); }
+        .btn-main:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
         .hand-container-wrapper {
             width: 100%;
@@ -109,13 +111,14 @@
 <h1>🀄 청일색 텐파이 대기패 퀴즈</h1>
 
 <div class="card">
-    <button class="btn-main" onclick="generateQuiz()">새 문제 생성하기</button>
+    <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:10px; color:#e67e22;">
+        📦 Regular.zip 패키지를 읽어오는 중입니다...
+    </div>
+    <button class="btn-main" id="btn-generate" onclick="generateQuiz()" disabled>새 문제 생성하기</button>
     <div id="suit-name" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; color: #444;"></div>
     
     <div class="hand-container-wrapper">
-        <div class="hand-display" id="hand-container">
-            <!-- 13장 마작패가 가로 한 줄로 생성됨 -->
-        </div>
+        <div class="hand-display" id="hand-container"></div>
     </div>
 </div>
 
@@ -127,8 +130,8 @@
 </div>
 
 <script>
-    // FluffyStuff/riichi-mahjong-tiles 저장소의 jsDelivr CDN 경로
-    const TILE_BASE_URL = "https://cdn.jsdelivr.net/gh/FluffyStuff/riichi-mahjong-tiles@main/assets/tiles/svg/";
+    let zipInstance = null;
+    const tileSvgCache = {}; // ZIP 내 SVG 내용 임시 저장소
 
     const SUITS = [
         { code: 'Man', name: '만자패(萬)' },
@@ -140,6 +143,50 @@
     let currentHand = [];
     let winningTiles = [];
     let selectedTiles = new Set();
+
+    // 페이지 로드 시 동일 경로의 Regular.zip 파일 읽기
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch('Regular.zip');
+            if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
+            
+            const arrayBuffer = await response.arrayBuffer();
+            zipInstance = await JSZip.loadAsync(arrayBuffer);
+            
+            document.getElementById('status-msg').style.color = '#27ae60';
+            document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료!';
+            document.getElementById('btn-generate').disabled = false;
+        } catch (err) {
+            document.getElementById('status-msg').style.color = '#e74c3c';
+            document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
+            console.error(err);
+        }
+    });
+
+    // ZIP 내부 파일 탐색 및 SVG Data URL 변환
+    async function getTileImageSrc(suitCode, num) {
+        const targetName = `${suitCode}${num}.svg`;
+        const cacheKey = `${suitCode}${num}`;
+        
+        if (tileSvgCache[cacheKey]) return tileSvgCache[cacheKey];
+
+        // ZIP 내부 모든 경로 검색하여 파일 찾기
+        let targetFile = null;
+        zipInstance.forEach((relativePath, file) => {
+            if (relativePath.endsWith(targetName)) {
+                targetFile = file;
+            }
+        });
+
+        if (targetFile) {
+            const text = await targetFile.async('string');
+            const blob = new Blob([text], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            tileSvgCache[cacheKey] = url;
+            return url;
+        }
+        return '';
+    }
 
     function generateQuiz() {
         currentSuitObj = SUITS[Math.floor(Math.random() * SUITS.length)];
@@ -234,17 +281,17 @@
         return false;
     }
 
-    function renderHand() {
+    async function renderHand() {
         const container = document.getElementById('hand-container');
         container.innerHTML = '';
-        currentHand.forEach(num => {
+        
+        for (const num of currentHand) {
             const img = document.createElement('img');
-            // 예: https://cdn.jsdelivr.net/gh/FluffyStuff/riichi-mahjong-tiles@main/assets/tiles/svg/Man1.svg
-            img.src = `${TILE_BASE_URL}${currentSuitObj.code}${num}.svg`;
+            img.src = await getTileImageSrc(currentSuitObj.code, num);
             img.className = 'tile-img';
             img.alt = `${currentSuitObj.code}${num}`;
             container.appendChild(img);
-        });
+        }
     }
 
     function renderButtons() {
