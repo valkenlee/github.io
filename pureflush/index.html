@@ -2,53 +2,302 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>마작 청일색 퀴즈 (실제 패 이미지 적용)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마작 청일색 텐파이 퀴즈</title>
     <style>
-        body { font-family: sans-serif; background: #2e5a3c; color: white; padding: 20px; text-align: center; }
-        .hand-container {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e3f20; /* 깊은 작탁 그린 */
+            color: #333;
+        }
+        h1 { 
+            text-align: center; 
+            color: #ffffff; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            margin-bottom: 25px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+        }
+        .btn-main {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-main:hover { background-color: #219150; }
+        .btn-main:active { transform: translateY(1px); }
+
+        /* 패 표시 영역: 한 줄 보장 */
+        .hand-container-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding: 15px 0;
+            background: #2b542c;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .hand-display {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 4px;
-            flex-wrap: nowrap; /* 한 줄로 유지 */
-            overflow-x: auto;
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 10px;
+            flex-wrap: nowrap; /* 모든 패가 절대 줄바꿈되지 않고 한 줄로 배치 */
+            min-height: 70px;
+            padding: 0 10px;
         }
+
+        /* 오픈소스 SVG 마작패 스타일ing */
         .tile-img {
-            width: 44px; /* 패 크기 조절 */
+            width: 46px;
             height: auto;
             filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.4));
+            flex-shrink: 0; /* 화면이 좁아져도 구겨지지 않음 */
+            user-select: none;
         }
+
+        /* 답안 선택 버튼 영역 */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+        .btn-number {
+            padding: 12px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #bdc3c7;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-number.selected {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .result-message {
+            text-align: center;
+            font-size: 19px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
 
-<h1>🀄 마작패 이미지 연동 예시</h1>
+<h1>🀄 청일색 텐파이 대기패 퀴즈</h1>
 
-<div class="hand-container" id="hand"></div>
+<div class="card">
+    <button class="btn-main" onclick="generateQuiz()">새 문제 생성하기</button>
+    <div id="suit-name" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; color: #444;"></div>
+    
+    <div class="hand-container-wrapper">
+        <div class="hand-display" id="hand-container">
+            <!-- 13장 마작패가 가로 한 줄로 생성됨 -->
+        </div>
+    </div>
+</div>
+
+<div class="card" id="quiz-area" style="display: none;">
+    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
+    <div class="selection-grid" id="selection-buttons"></div>
+    <button class="btn-main" style="background-color: #2980b9;" onclick="submitAnswer()">제출 및 정답 확인</button>
+    <div id="result" class="result-message" style="display: none;"></div>
+</div>
 
 <script>
-    // GitHub 오픈소스 리치마작패 SVG 링크 매핑 (만자: m1~m9, 통자: p1~p9, 삭자: s1~s9)
-    const BASE_URL = "https://raw.githubusercontent.com/FluffyStuff/riichi-mahjong-tiles/main/assets/tiles/svg/";
+    // 오픈소스 마작패 SVG CDN 경로 (FluffyStuff/riichi-mahjong-tiles)
+    const TILE_BASE_URL = "https://raw.githubusercontent.com/FluffyStuff/riichi-mahjong-tiles/main/assets/tiles/svg/";
 
-    // 예시: 삭자 청일색 텐파이 패 (2223456777888삭)
-    const sampleHand = [
-        's2', 's2', 's2', 
-        's3', 's4', 's5', 
-        's6', 
-        's7', 's7', 's7', 
-        's8', 's8', 's8'
+    const SUITS = [
+        { code: 'm', name: '만자패(萬)' },
+        { code: 'p', name: '통자패(筒)' },
+        { code: 's', name: '삭자패(索)' }
     ];
+    
+    let currentSuitObj = null;
+    let currentHand = [];
+    let winningTiles = [];
+    let selectedTiles = new Set();
 
-    const container = document.getElementById('hand');
-    sampleHand.forEach(tileCode => {
-        const img = document.createElement('img');
-        img.src = `${BASE_URL}${tileCode}.svg`;
-        img.className = 'tile-img';
-        img.alt = tileCode;
-        container.appendChild(img);
-    });
+    // 1. 청일색 텐파이 문제 생성
+    function generateQuiz() {
+        currentSuitObj = SUITS[Math.floor(Math.random() * SUITS.length)];
+        let hand = [];
+        
+        while (true) {
+            hand = generateRandom13Tiles();
+            let waits = getWinningTiles(hand);
+            if (waits.length > 0) {
+                currentHand = hand;
+                winningTiles = waits;
+                break;
+            }
+        }
+
+        renderHand();
+        renderButtons();
+        
+        document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
+        document.getElementById('quiz-area').style.display = 'block';
+        document.getElementById('result').style.display = 'none';
+        selectedTiles.clear();
+    }
+
+    // 2. 패 13장 무작위 뽑기 (동일 패 4장 제한)
+    function generateRandom13Tiles() {
+        let counts = Array(10).fill(0);
+        let hand = [];
+        while (hand.length < 13) {
+            let num = Math.floor(Math.random() * 9) + 1;
+            if (counts[num] < 4) {
+                counts[num]++;
+                hand.push(num);
+            }
+        }
+        return hand.sort((a, b) => a - b);
+    }
+
+    // 3. 오름패(대기패) 계산 알고리즘
+    function getWinningTiles(hand) {
+        let waits = [];
+        let counts = Array(10).fill(0);
+        hand.forEach(num => counts[num]++);
+
+        for (let tile = 1; tile <= 9; tile++) {
+            if (counts[tile] < 4) {
+                counts[tile]++;
+                if (canFormHand(counts, 14)) {
+                    waits.push(tile);
+                }
+                counts[tile]--;
+            }
+        }
+        return waits;
+    }
+
+    // 4. 완성형(4몸통 1머리) 판정 알고리즘
+    function canFormHand(counts, remaining) {
+        if (remaining === 0) return true;
+
+        let tempCounts = [...counts];
+
+        // 머리(자작) 설정
+        if (remaining % 3 === 2) {
+            for (let i = 1; i <= 9; i++) {
+                if (tempCounts[i] >= 2) {
+                    tempCounts[i] -= 2;
+                    if (canFormHand(tempCounts, remaining - 2)) return true;
+                    tempCounts[i] += 2;
+                }
+            }
+            return false;
+        }
+
+        let first = 0;
+        for (let i = 1; i <= 9; i++) {
+            if (tempCounts[i] > 0) { first = i; break; }
+        }
+
+        // 커즈 (AAA)
+        if (tempCounts[first] >= 3) {
+            tempCounts[first] -= 3;
+            if (canFormHand(tempCounts, remaining - 3)) return true;
+            tempCounts[first] += 3;
+        }
+
+        // 슌즈 (ABC)
+        if (first <= 7 && tempCounts[first + 1] > 0 && tempCounts[first + 2] > 0) {
+            tempCounts[first]--;
+            tempCounts[first + 1]--;
+            tempCounts[first + 2]--;
+            if (canFormHand(tempCounts, remaining - 3)) return true;
+            tempCounts[first]++;
+            tempCounts[first + 1]++;
+            tempCounts[first + 2]++;
+        }
+
+        return false;
+    }
+
+    // 오픈소스 SVG 마작패 UI 렌더링
+    function renderHand() {
+        const container = document.getElementById('hand-container');
+        container.innerHTML = '';
+        currentHand.forEach(num => {
+            const img = document.createElement('img');
+            // 예: https://.../m1.svg, s5.svg 등
+            img.src = `${TILE_BASE_URL}${currentSuitObj.code}${num}.svg`;
+            img.className = 'tile-img';
+            img.alt = `${currentSuitObj.code}${num}`;
+            container.appendChild(img);
+        });
+    }
+
+    // 1~9번 선택 버튼 렌더링
+    function renderButtons() {
+        const grid = document.getElementById('selection-buttons');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 9; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-number';
+            btn.innerText = `${i}`;
+            btn.onclick = () => toggleSelect(i, btn);
+            grid.appendChild(btn);
+        }
+    }
+
+    function toggleSelect(num, btn) {
+        if (selectedTiles.has(num)) {
+            selectedTiles.delete(num);
+            btn.classList.remove('selected');
+        } else {
+            selectedTiles.add(num);
+            btn.classList.add('selected');
+        }
+    }
+
+    // 정답 제출 및 채점
+    function submitAnswer() {
+        const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
+        const isCorrect = userAnswers.length === winningTiles.length && 
+                          userAnswers.every((val, idx) => val === winningTiles[idx]);
+
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+
+        if (isCorrect) {
+            resultDiv.className = 'result-message correct';
+            resultDiv.innerText = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})`;
+        } else {
+            resultDiv.className = 'result-message incorrect';
+            resultDiv.innerText = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.`;
+        }
+    }
 </script>
 
 </body>
