@@ -10,7 +10,7 @@
             max-width: 950px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #1e3f20; /* 작탁 녹색 */
+            background-color: #1e3f20;
             color: #333;
         }
         h1 { 
@@ -42,7 +42,6 @@
         .btn-main:hover { background-color: #219150; }
         .btn-main:active { transform: translateY(1px); }
 
-        /* 패 표시 영역: 한 줄 보장 */
         .hand-container-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -57,24 +56,19 @@
             justify-content: center;
             align-items: center;
             gap: 4px;
-            flex-wrap: nowrap; /* 줄바꿈 방지 */
+            flex-wrap: nowrap;
             min-height: 70px;
             padding: 0 10px;
         }
 
-        /* 위키미디어 공용 마작패 SVG 스타일링 */
         .tile-img {
             width: 48px;
-            height: 64px;
-            object-fit: contain;
+            height: auto;
             filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.4));
             flex-shrink: 0;
             user-select: none;
-            background: #fff;
-            border-radius: 4px;
         }
 
-        /* 답안 선택 버튼 영역 */
         .selection-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
@@ -133,46 +127,22 @@
 </div>
 
 <script>
-    // 위키미디어 공용(Wikimedia Commons) 오픈소스 마작패 SVG URL 매핑
-    const WIKIMEDIA_BASE = "https://upload.wikimedia.org/wikipedia/commons/";
-    
-    // 무늬별 위키미디어 파일 경로 매핑 테이블
-    const TILE_MAP = {
-        'm': {
-            name: '만자패(萬)',
-            urls: {
-                1: '1/18/MJm1-.svg', 2: 'a/a9/MJm2-.svg', 3: '1/1d/MJm3-.svg',
-                4: '0/08/MJm4-.svg', 5: '8/82/MJm5-.svg', 6: 'b/b3/MJm6-.svg',
-                7: '1/13/MJm7-.svg', 8: '2/2e/MJm8-.svg', 9: '2/23/MJm9-.svg'
-            }
-        },
-        'p': {
-            name: '통자패(筒)',
-            urls: {
-                1: '2/21/MJt1-.svg', 2: '0/0c/MJt2-.svg', 3: '8/8b/MJt3-.svg',
-                4: '6/66/MJt4-.svg', 5: '3/36/MJt5-.svg', 6: '8/86/MJt6-.svg',
-                7: '6/6c/MJt7-.svg', 8: '6/63/MJt8-.svg', 9: 'f/f5/MJt9-.svg'
-            }
-        },
-        's': {
-            name: '삭자패(索)',
-            urls: {
-                1: 'e/e8/MJs1-.svg', 2: '8/8a/MJs2-.svg', 3: '4/43/MJs3-.svg',
-                4: '2/27/MJs4-.svg', 5: '1/1f/MJs5-.svg', 6: '4/48/MJs6-.svg',
-                7: 'c/c4/MJs7-.svg', 8: 'd/d3/MJs8-.svg', 9: 'a/a3/MJs9-.svg'
-            }
-        }
-    };
+    // FluffyStuff/riichi-mahjong-tiles 저장소의 jsDelivr CDN 경로
+    const TILE_BASE_URL = "https://cdn.jsdelivr.net/gh/FluffyStuff/riichi-mahjong-tiles@main/assets/tiles/svg/";
 
-    const SUIT_KEYS = ['m', 'p', 's'];
-    let currentSuitKey = 'm';
+    const SUITS = [
+        { code: 'Man', name: '만자패(萬)' },
+        { code: 'Pin', name: '통자패(筒)' },
+        { code: 'Sou', name: '삭자패(索)' }
+    ];
+    
+    let currentSuitObj = null;
     let currentHand = [];
     let winningTiles = [];
     let selectedTiles = new Set();
 
-    // 1. 청일색 텐파이 문제 생성
     function generateQuiz() {
-        currentSuitKey = SUIT_KEYS[Math.floor(Math.random() * SUIT_KEYS.length)];
+        currentSuitObj = SUITS[Math.floor(Math.random() * SUITS.length)];
         let hand = [];
         
         while (true) {
@@ -188,13 +158,12 @@
         renderHand();
         renderButtons();
         
-        document.getElementById('suit-name').innerText = `현재 무늬: [ ${TILE_MAP[currentSuitKey].name} ]`;
+        document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('result').style.display = 'none';
         selectedTiles.clear();
     }
 
-    // 2. 패 13장 무작위 뽑기 (동일 패 4장 제한)
     function generateRandom13Tiles() {
         let counts = Array(10).fill(0);
         let hand = [];
@@ -208,7 +177,6 @@
         return hand.sort((a, b) => a - b);
     }
 
-    // 3. 오름패(대기패) 계산 알고리즘
     function getWinningTiles(hand) {
         let waits = [];
         let counts = Array(10).fill(0);
@@ -226,13 +194,11 @@
         return waits;
     }
 
-    // 4. 완성형(4몸통 1머리) 판정 알고리즘
     function canFormHand(counts, remaining) {
         if (remaining === 0) return true;
 
         let tempCounts = [...counts];
 
-        // 머리(자작) 설정
         if (remaining % 3 === 2) {
             for (let i = 1; i <= 9; i++) {
                 if (tempCounts[i] >= 2) {
@@ -249,14 +215,12 @@
             if (tempCounts[i] > 0) { first = i; break; }
         }
 
-        // 커즈 (AAA)
         if (tempCounts[first] >= 3) {
             tempCounts[first] -= 3;
             if (canFormHand(tempCounts, remaining - 3)) return true;
             tempCounts[first] += 3;
         }
 
-        // 슌즈 (ABC)
         if (first <= 7 && tempCounts[first + 1] > 0 && tempCounts[first + 2] > 0) {
             tempCounts[first]--;
             tempCounts[first + 1]--;
@@ -270,20 +234,19 @@
         return false;
     }
 
-    // 위키미디어 마작패 UI 렌더링
     function renderHand() {
         const container = document.getElementById('hand-container');
         container.innerHTML = '';
         currentHand.forEach(num => {
             const img = document.createElement('img');
-            img.src = `${WIKIMEDIA_BASE}${TILE_MAP[currentSuitKey].urls[num]}`;
+            // 예: https://cdn.jsdelivr.net/gh/FluffyStuff/riichi-mahjong-tiles@main/assets/tiles/svg/Man1.svg
+            img.src = `${TILE_BASE_URL}${currentSuitObj.code}${num}.svg`;
             img.className = 'tile-img';
-            img.alt = `${currentSuitKey}${num}`;
+            img.alt = `${currentSuitObj.code}${num}`;
             container.appendChild(img);
         });
     }
 
-    // 1~9번 선택 버튼 렌더링
     function renderButtons() {
         const grid = document.getElementById('selection-buttons');
         grid.innerHTML = '';
@@ -306,7 +269,6 @@
         }
     }
 
-    // 정답 제출 및 채점
     function submitAnswer() {
         const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
         const isCorrect = userAnswers.length === winningTiles.length && 
