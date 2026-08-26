@@ -147,7 +147,7 @@
     // 페이지 로드 시 동일 경로의 Regular.zip 파일 읽기
     window.addEventListener('DOMContentLoaded', async () => {
         try {
-            const response = await fetch('Regular.zip');
+            const response = await fetch('FluffyStuff riichi-mahjong-tiles master Regular.zip');
             if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
             
             const arrayBuffer = await response.arrayBuffer();
