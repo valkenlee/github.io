@@ -308,16 +308,22 @@
     function generateQuiz(difficulty) {
         currentDifficulty = difficulty; // 난이도 기억
         isSubmitted = false; // 제출 상태 초기화
-
-        currentSuitObj = SUITS[Math.floor(Math.random() * SUITS.length)];
+    
+        // 이전 무늬와 다른 무늬만 필터링하여 선택
+        let availableSuits = SUITS;
+        if (currentSuitObj) {
+            availableSuits = SUITS.filter(suit => suit.code !== currentSuitObj.code);
+        }
+        currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
+    
         let hand = [];
         let waits = [];
-
+    
         while (true) {
             hand = generateRandom13Tiles();
             waits = getWinningTiles(hand);
             const count = waits.length;
-
+    
             if (difficulty === 'easy') {
                 if (count >= 1 && count <= 2) break;
             } else if (difficulty === 'normal') {
@@ -327,10 +333,10 @@
                 if (count === 2 && Math.random() < 0.05) break; 
             }
         }
-
+    
         currentHand = hand;
         winningTiles = waits;
-
+    
         renderHand();
         renderButtons();
         
@@ -343,12 +349,12 @@
         } else {
             hintElem.style.display = 'none';
         }
-
+    
         // 제출 버튼 텍스트 및 UI 초기화
         const submitBtn = document.getElementById('btn-submit');
         submitBtn.innerText = '제출 및 정답 확인';
         submitBtn.style.backgroundColor = '#2980b9';
-
+    
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('result').style.display = 'none';
         selectedTiles.clear();
