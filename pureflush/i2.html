@@ -758,9 +758,10 @@
                         }
                     });
     
-                    // 슌츠
+                    // 슌츠 (중복 강조 방지를 위한 플래그 적용)
+                    let targetMeldHandled = false;
                     d.sequences.forEach(s => {
-                        if (d.targetMeldStart === s && (d.waitType === '양면' || d.waitType === '간짱' || d.waitType === '변짱')) {
+                        if (!targetMeldHandled && d.targetMeldStart === s && (d.waitType === '양면' || d.waitType === '간짱' || d.waitType === '변짱')) {
                             let meldStr = [];
                             for (let i = 0; i < 3; i++) {
                                 let curr = s + i;
@@ -771,6 +772,7 @@
                                 }
                             }
                             parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldStr.join(',')}]</span>`);
+                            targetMeldHandled = true; // 완성 대기 슌츠 1개만 처리 후 플래그 설정
                         } else {
                             parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
                         }
