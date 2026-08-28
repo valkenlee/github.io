@@ -208,6 +208,18 @@
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
+        /* 치이토이츠 안내 태그 스타일 */
+        .chiitoi-tag {
+            display: inline-block;
+            background-color: #8e44ad;
+            color: #ffffff;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
         /* 명예의 전당 리더보드 스타일 */
         .hall-of-fame {
             margin-top: 15px;
@@ -436,6 +448,7 @@
     let currentHand = [];
     let winningTiles = [];
     let maxedOutWinningTiles = [];
+    let isChiitoiHand = false; // 치이토이츠 대기 포함 여부 플래그
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -566,7 +579,7 @@
         }
 
         let hand = [];
-        let resultData = { waits: [], maxedOut: [] };
+        let resultData = { waits: [], maxedOut: [], isChiitoi: false };
 
         while (true) {
             hand = generateRandom13Tiles();
@@ -586,6 +599,7 @@
         currentHand = hand;
         winningTiles = resultData.waits;
         maxedOutWinningTiles = resultData.maxedOut;
+        isChiitoiHand = resultData.isChiitoi;
 
         renderHand();
         renderButtons();
@@ -645,12 +659,15 @@
 
     /* 정답 포맷팅 헬퍼 함수 */
     function getAnswerString() {
+        let chiitoiNotice = isChiitoiHand ? 
+            `<div class="chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 특수 형태 문제입니다.</div><br>` : '';
+
         const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
         if (maxedOutWinningTiles.length > 0) {
             const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-            return `실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+            return `${chiitoiNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
         } else {
-            return `오름패: [ ${actualStr} ]`;
+            return `${chiitoiNotice}오름패: [ ${actualStr} ]`;
         }
     }
 
@@ -660,7 +677,7 @@
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
 
-        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>정답 👉 ${getAnswerString()}`;
+        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>👉 ${getAnswerString()}`;
 
         checkStreakRecordAndReset();
 
@@ -685,25 +702,30 @@
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
+        let isChiitoi = false;
         let counts = Array(10).fill(0);
         hand.forEach(num => counts[num]++);
 
         for (let tile = 1; tile <= 9; tile++) {
             if (counts[tile] < 4) {
                 counts[tile]++;
-                if (checkCompleteHand(counts)) {
+                const checkRes = checkCompleteHand(counts);
+                if (checkRes.complete) {
                     waits.push(tile);
+                    if (checkRes.isChiitoi) isChiitoi = true;
                 }
                 counts[tile]--;
             } else {
                 counts[tile]++;
-                if (checkCompleteHand(counts)) {
+                const checkRes = checkCompleteHand(counts);
+                if (checkRes.complete) {
                     maxedOut.push(tile);
+                    if (checkRes.isChiitoi) isChiitoi = true;
                 }
                 counts[tile]--;
             }
         }
-        return { waits, maxedOut };
+        return { waits, maxedOut, isChiitoi };
     }
 
     /* 치이토이츠(七対子) 및 일반 4멘츠 1작두 통합 검증 로직 */
@@ -713,10 +735,11 @@
         for (let i = 1; i <= 9; i++) {
             if (counts[i] === 2) pairCount++;
         }
-        if (pairCount === 7) return true;
+        if (pairCount === 7) return { complete: true, isChiitoi: true };
 
         // 2. 일반 4멘츠 1작두 검사
-        return canFormStandardHand(counts, 14);
+        const isStandard = canFormStandardHand(counts, 14);
+        return { complete: isStandard, isChiitoi: false };
     }
 
     function canFormStandardHand(counts, remaining) {
@@ -724,7 +747,6 @@
 
         let tempCounts = [...counts];
 
-        // 머리(작두)가 아직 결정되지 않은 상태 (남은 수가 14, 11, 8, 5, 2 등 3n+2 일 때)
         if (remaining % 3 === 2) {
             for (let i = 1; i <= 9; i++) {
                 if (tempCounts[i] >= 2) {
@@ -736,20 +758,17 @@
             return false;
         }
 
-        // 몸통(멘츠) 구성
         let first = 0;
         for (let i = 1; i <= 9; i++) {
             if (tempCounts[i] > 0) { first = i; break; }
         }
 
-        // 안코 (동일한 패 3장)
         if (tempCounts[first] >= 3) {
             tempCounts[first] -= 3;
             if (canFormStandardHand(tempCounts, remaining - 3)) return true;
             tempCounts[first] += 3;
         }
 
-        // 슈츠 (연속된 패 3장)
         if (first <= 7 && tempCounts[first + 1] > 0 && tempCounts[first + 2] > 0) {
             tempCounts[first]--;
             tempCounts[first + 1]--;
@@ -822,7 +841,7 @@
         const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
                                     userAnswers.every((val, idx) => val === theoreticalList[idx]);
 
-        // 두 가지 경우 중 하나만 만족해도 정답으로 인정
+        // 두 가지 경우 중 하나만 만족해도 정답 인정
         const isCorrect = isCorrectActual || isCorrectTheoretical;
 
         const resultDiv = document.getElementById('result');
