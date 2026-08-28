@@ -203,10 +203,23 @@
             margin-top: 15px;
             padding: 12px;
             border-radius: 8px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 치이토이츠 및 량페코 안내 태그 스타일 */
+        .special-tag {
+            display: inline-block;
+            color: #ffffff;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .chiitoi-tag { background-color: #8e44ad; }
+        .ryanpeikou-tag { background-color: #d35400; }
 
         /* 명예의 전당 리더보드 스타일 */
         .hall-of-fame {
@@ -381,7 +394,7 @@
 </div>
 
 <div class="card" id="quiz-area" style="display: none;">
-    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
+    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요: <small style="font-size:12px; font-weight:normal; color:#666;">(단축키: 1~9, Enter)</small></h3>
     <div class="selection-grid" id="selection-buttons"></div>
     <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
@@ -391,7 +404,7 @@
         <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
         <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당에 등록할 이름을 입력해 주세요 (최대 20자).</p>
         <div class="name-input-box">
-            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)">
+            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)" onkeydown="if(event.key==='Enter') saveRecord()">
             <button onclick="saveRecord()">기록 등록</button>
         </div>
     </div>
@@ -436,6 +449,8 @@
     let currentHand = [];
     let winningTiles = [];
     let maxedOutWinningTiles = [];
+    let isChiitoiHand = false;     // 순수 치이토이츠 대기 플래그
+    let isRyanpeikouHand = false; // 량페코 대기 플래그
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -447,14 +462,26 @@
     let pendingRecordStreak = 0;
 
     const MODE_DESCRIPTIONS = {
-        easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제입니다.<br>• 오름패가 몇 개인지 힌트로 알려줍니다.`,
+        easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제입니다.<br>• 상단에 오름패가 몇 개인지 힌트로 알려줍니다.`,
         normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 때때로 3~4개의 오름패가 존재할 수 있습니다.`,
-        hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 복잡한 모양이 출제되므로 주의 깊게 살펴봐야 합니다.`,
+        hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기(3~9면 대기) 문제입니다.<br>• 복잡한 모양이 출제되므로 주의 깊게 살펴봐야 합니다.`,
         streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>• 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.`
     };
 
     window.addEventListener('DOMContentLoaded', async () => {
         loadLeaderboard();
+        
+        window.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT') return;
+            if (e.key >= '1' && e.key <= '9') {
+                const num = parseInt(e.key);
+                const btn = document.getElementById(`btn-num-${num}`);
+                if (btn) toggleSelect(num, btn);
+            } else if (e.key === 'Enter') {
+                handleSubmitOrNext();
+            }
+        });
+
         try {
             const response = await fetch('Regular.zip');
             if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
@@ -516,17 +543,14 @@
     }
 
     function updateModeUI() {
-        // 모든 버튼 활성화 강조 상태 초기화
         document.querySelectorAll('.btn-diff').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
         if (activeBtn) activeBtn.classList.add('active');
 
-        // 하단 안내 상자 출력
         const infoBox = document.getElementById('mode-info-box');
         infoBox.innerHTML = MODE_DESCRIPTIONS[currentMode] || '';
         infoBox.style.display = 'block';
 
-        // 연승 모드 테마 적용
         if (currentMode === 'streak') {
             infoBox.style.backgroundColor = '#f5ee2e15';
             infoBox.style.borderColor = '#8e44ad';
@@ -556,7 +580,7 @@
         }
 
         let hand = [];
-        let resultData = { waits: [], maxedOut: [] };
+        let resultData = { waits: [], maxedOut: [], isChiitoi: false, isRyanpeikou: false };
 
         while (true) {
             hand = generateRandom13Tiles();
@@ -576,6 +600,8 @@
         currentHand = hand;
         winningTiles = resultData.waits;
         maxedOutWinningTiles = resultData.maxedOut;
+        isChiitoiHand = resultData.isChiitoi;
+        isRyanpeikouHand = resultData.isRyanpeikou;
 
         renderHand();
         renderButtons();
@@ -633,16 +659,31 @@
         document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
+    /* 정답 포맷팅 헬퍼 함수 (량페코 / 치토이즈 태그 구분) */
+    function getAnswerString() {
+        let tagNotice = '';
+        if (isRyanpeikouHand) {
+            tagNotice = `<div class="special-tag ryanpeikou-tag">💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다. (치토이즈 상위 역)</div><br>`;
+        } else if (isChiitoiHand) {
+            tagNotice = `<div class="special-tag chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 단기대기 문제입니다.</div><br>`;
+        }
+
+        const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
+        if (maxedOutWinningTiles.length > 0) {
+            const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+            return `${tagNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+        } else {
+            return `${tagNotice}오름패: [ ${actualStr} ]`;
+        }
+    }
+
     function handleTimeout() {
         isSubmitted = true;
         const resultDiv = document.getElementById('result');
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
 
-        let maxedInfo = maxedOutWinningTiles.length > 0 ? 
-            `<br><small style="color:#666;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
-
-        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다! 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
+        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>👉 ${getAnswerString()}`;
 
         checkStreakRecordAndReset();
 
@@ -664,31 +705,111 @@
         return hand.sort((a, b) => a - b);
     }
 
+    /* 대기패 판별 로직 (량페코 / 치토이즈 구별) */
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
+        let isChiitoi = false;
+        let isRyanpeikou = false;
         let counts = Array(10).fill(0);
         hand.forEach(num => counts[num]++);
 
         for (let tile = 1; tile <= 9; tile++) {
             if (counts[tile] < 4) {
                 counts[tile]++;
-                if (canFormHand(counts, 14)) {
+                const checkRes = checkCompleteHand(counts, tile);
+                if (checkRes.complete) {
                     waits.push(tile);
+                    if (checkRes.isRyanpeikou) isRyanpeikou = true;
+                    else if (checkRes.isChiitoi) isChiitoi = true;
                 }
                 counts[tile]--;
             } else {
                 counts[tile]++;
-                if (canFormHand(counts, 14)) {
+                const checkRes = checkCompleteHand(counts, tile);
+                if (checkRes.complete) {
                     maxedOut.push(tile);
+                    if (checkRes.isRyanpeikou) isRyanpeikou = true;
+                    else if (checkRes.isChiitoi) isChiitoi = true;
                 }
                 counts[tile]--;
             }
         }
-        return { waits, maxedOut };
+
+        // 량페코가 성립하는 손패는 상위 역 우선 원칙에 의해 치토이즈 플래그를 해제합니다.
+        if (isRyanpeikou) {
+            isChiitoi = false;
+        }
+
+        return { waits, maxedOut, isChiitoi, isRyanpeikou };
     }
 
-    function canFormHand(counts, remaining) {
+    /* 완성 및 량페코/치토이즈 검증 함수 */
+    function checkCompleteHand(counts, addedTile) {
+        // 1. 일반 4멘츠 1작두 형태 완성 여부 검사
+        const isStandard = canFormStandardHand(counts, 14);
+
+        // 2. 7쌍(또이츠 7개) 구조 여부 검사
+        let pairCount = 0;
+        for (let i = 1; i <= 9; i++) {
+            if (counts[i] === 2) pairCount++;
+        }
+        const is7Pairs = (pairCount === 7 && counts[addedTile] === 2);
+
+        // 3. 량페코 검사: 일반 형태(4멘츠 1작두)로 완성이 되면서 동시에 동일 슌츠 2쌍(총 량페코)을 이루는지 검증
+        if (isStandard && is7Pairs) {
+            if (checkRyanpeikouForm(counts)) {
+                return { complete: true, isChiitoi: false, isRyanpeikou: true };
+            }
+        }
+
+        // 4. 일반 형태 완성 시
+        if (isStandard) {
+            return { complete: true, isChiitoi: false, isRyanpeikou: false };
+        }
+
+        // 5. 순수 치이토이츠(단기대기) 완성 시
+        if (is7Pairs) {
+            return { complete: true, isChiitoi: true, isRyanpeikou: false };
+        }
+
+        return { complete: false, isChiitoi: false, isRyanpeikou: false };
+    }
+
+    /* 량페코(동일한 슌츠 2개씩 2쌍) 구조 확인 헬퍼 */
+    function checkRyanpeikouForm(counts) {
+        let tempCounts = [...counts];
+        let pairFound = false;
+
+        for (let i = 1; i <= 9; i++) {
+            if (tempCounts[i] >= 2) {
+                tempCounts[i] -= 2;
+                if (canFormTwoIdenticalChowPairs(tempCounts)) {
+                    return true;
+                }
+                tempCounts[i] += 2;
+            }
+        }
+        return false;
+    }
+
+    /* 12장의 패가 동일 슌츠 2쌍(4개 슌츠)으로 분해 가능한지 확인 */
+    function canFormTwoIdenticalChowPairs(counts) {
+        let tempCounts = [...counts];
+        let doubleChowCount = 0;
+
+        for (let i = 1; i <= 7; i++) {
+            while (tempCounts[i] >= 2 && tempCounts[i+1] >= 2 && tempCounts[i+2] >= 2) {
+                tempCounts[i] -= 2;
+                tempCounts[i+1] -= 2;
+                tempCounts[i+2] -= 2;
+                doubleChowCount++;
+            }
+        }
+        return doubleChowCount === 2;
+    }
+
+    function canFormStandardHand(counts, remaining) {
         if (remaining === 0) return true;
 
         let tempCounts = [...counts];
@@ -697,7 +818,7 @@
             for (let i = 1; i <= 9; i++) {
                 if (tempCounts[i] >= 2) {
                     tempCounts[i] -= 2;
-                    if (canFormHand(tempCounts, remaining - 2)) return true;
+                    if (canFormStandardHand(tempCounts, remaining - 2)) return true;
                     tempCounts[i] += 2;
                 }
             }
@@ -711,7 +832,7 @@
 
         if (tempCounts[first] >= 3) {
             tempCounts[first] -= 3;
-            if (canFormHand(tempCounts, remaining - 3)) return true;
+            if (canFormStandardHand(tempCounts, remaining - 3)) return true;
             tempCounts[first] += 3;
         }
 
@@ -719,7 +840,7 @@
             tempCounts[first]--;
             tempCounts[first + 1]--;
             tempCounts[first + 2]--;
-            if (canFormHand(tempCounts, remaining - 3)) return true;
+            if (canFormStandardHand(tempCounts, remaining - 3)) return true;
             tempCounts[first]++;
             tempCounts[first + 1]++;
             tempCounts[first + 2]++;
@@ -747,6 +868,7 @@
         for (let i = 1; i <= 9; i++) {
             const btn = document.createElement('button');
             btn.className = 'btn-number';
+            btn.id = `btn-num-${i}`;
             btn.innerText = `${i}`;
             btn.onclick = () => toggleSelect(i, btn);
             grid.appendChild(btn);
@@ -775,28 +897,34 @@
 
         clearInterval(timerInterval);
 
-        const userAnswers = Array.from(selectedTiles).filter(tile => !maxedOutWinningTiles.includes(tile)).sort((a, b) => a - b);
-        const isCorrect = userAnswers.length === winningTiles.length && 
-                          userAnswers.every((val, idx) => val === winningTiles[idx]);
+        const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
+        
+        const isCorrectActual = userAnswers.length === winningTiles.length && 
+                                userAnswers.every((val, idx) => val === winningTiles[idx]);
+
+        const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+        const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
+                                    userAnswers.every((val, idx) => val === theoreticalList[idx]);
+
+        const isCorrect = isCorrectActual || isCorrectTheoretical;
 
         const resultDiv = document.getElementById('result');
         resultDiv.style.display = 'block';
 
-        let maxedInfo = maxedOutWinningTiles.length > 0 ? 
-            `<br><small style="font-size:13px; opacity:0.85;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
+        const answerText = getAnswerString();
 
         if (isCorrect) {
             resultDiv.className = 'result-message correct';
             if (currentMode === 'streak') {
                 streakCount++;
                 document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
-                resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!) (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
+                resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!)<br>👉 ${answerText}`;
             } else {
-                resultDiv.innerHTML = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
+                resultDiv.innerHTML = `🎉 정답입니다!<br>👉 ${answerText}`;
             }
         } else {
             resultDiv.className = 'result-message incorrect';
-            resultDiv.innerHTML = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
+            resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
             if (currentMode === 'streak') {
                 checkStreakRecordAndReset();
             }
