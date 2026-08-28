@@ -1,3 +1,5 @@
+[file-tag: code-generated-file-e3fb4ff3-970c-4f2e-a891-6622d0f77bfd]
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 950px;
@@ -28,18 +30,20 @@ h1 {
     margin-top: 10px;
 }
 .btn-diff {
-    padding: 12px 4px;
-    font-size: 15px;
+    width: 100%;
+    padding: 14px 4px;
+    font-size: 16px;
     font-weight: bold;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.btn-diff:hover:not(:disabled) { transform: translateY(-2px); }
-.btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; transform: none; }
+.btn-diff:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; transform: none; } 
+.btn-diff.active { outline: 3px solid #3498db; outline-offset: 2px; }
 
 .btn-easy { background-color: #27ae60; }
 .btn-normal { background-color: #e67e22; }
@@ -85,15 +89,33 @@ h1 {
     font-size: 16px;
 }
 
-/* 연승 모드 안내 상자 (화면용) */
-.streak-info-box {
-    background-color: #f5ee2e15;
-    border: 1px solid #8e44ad;
+/* 타이머 게이지 바 스타일 */
+.timer-gauge-container {
+    width: 100%;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+.timer-gauge-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #d35400, #e67e22);
+    border-radius: 5px;
+    transition: width 1s linear;
+}
+
+/* 동적 모드 안내 상자 */
+.mode-info-box {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
     border-radius: 8px;
     padding: 12px 16px;
     margin-top: 15px;
     font-size: 14px;
-    color: #4a235a;
+    color: #2c3e50;
     line-height: 1.5;
 }
 
@@ -174,12 +196,77 @@ h1 {
     margin-top: 15px;
     padding: 12px;
     border-radius: 8px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-/* 명예의 전당 입력 및 리더보드 스타일 */
+/* 해설 상자 스타일 */
+.explanation-box {
+    margin-top: 15px;
+    background: #ffffff;
+    border: 1px solid #abdde5;
+    border-radius: 8px;
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: normal;
+    line-height: 1.6;
+}
+.explanation-box h4 {
+    margin: 0 0 8px 0;
+    color: #16a085;
+    font-size: 15px;
+    border-bottom: 1px solid #e0f2f1;
+    padding-bottom: 4px;
+}
+.explanation-item {
+    margin-bottom: 6px;
+    padding: 6px 10px;
+    border-left: 4px solid #2980b9;
+    background-color: #f4f9fc;
+    border-radius: 0 4px 4px 0;
+}
+.wait-type-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    margin-right: 5px;
+}
+.badge-ryanmen { background-color: #27ae60; }
+.badge-tanki { background-color: #8e44ad; }
+.badge-shanpon { background-color: #d35400; }
+.badge-kanchan { background-color: #2980b9; }
+.badge-penchan { background-color: #c0392b; }
+
+/* 대기패 들어가는 위치 강조 가시성 */
+.filled-slot {
+    color: #e67e22;
+    font-weight: bold;
+    background-color: #fef5e7;
+    padding: 0 3px;
+    border-radius: 3px;
+    border: 1px dashed #e67e22;
+}
+
+/* 치이토이츠 및 량페코 안내 태그 스타일 */
+.special-tag {
+    display: inline-block;
+    color: #ffffff;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+.chiitoi-tag { background-color: #8e44ad; }
+.ryanpeikou-tag { background-color: #d35400; }
+
+/* 명예의 전당 리더보드 스타일 */
 .hall-of-fame {
     margin-top: 15px;
     background: #faf8f5;
@@ -247,7 +334,7 @@ h1 {
 }
 .btn-reset-records:hover { background-color: #c0392b; }
 
-/* 규칙 안내 모달 팝업 스타일 */
+/* 모달 팝업 스타일 */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -298,12 +385,11 @@ h1 {
     to { opacity: 1; transform: scale(1); }
 }
 
-/* 모바일 대응 반응형 CSS */
 @media (max-width: 600px) {
     body { padding: 10px; }
     .card { padding: 15px 10px; }
-    .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .btn-diff { font-size: 13px; padding: 10px 2px; }
+    .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .btn-diff { font-size: 14px; padding: 12px 2px; }
     .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
     .hand-display { gap: 2px; }
     .selection-grid { gap: 4px; }
