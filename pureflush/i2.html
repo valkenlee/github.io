@@ -94,6 +94,18 @@
             font-size: 16px;
         }
 
+        /* 연승 모드 안내 상자 (화면용) */
+        .streak-info-box {
+            background-color: #f5ee2e15;
+            border: 1px solid #8e44ad;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #4a235a;
+            line-height: 1.5;
+        }
+
         .hand-container-wrapper {
             width: 100%;
             padding: 12px 5px;
@@ -324,6 +336,14 @@
         <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
     </div>
 
+    <!-- 연승 모드 화면 내 상시 안내 상자 -->
+    <div id="streak-info-box" class="streak-info-box" style="display: none;">
+        📌 <b>어려움 연승 모드 규칙:</b><br>
+        • ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>
+        • 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>
+        • 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
+    </div>
+
     <div class="status-bar" style="margin-top: 15px;">
         <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
         <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
@@ -375,8 +395,7 @@
         <div class="modal-body">
             ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br><br>
             🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br><br>
-            🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.<br><br>
-            🎯 <b>출제 구성:</b> 보통 난이도(20%), 어려움 난이도(80%)로 출제됩니다.
+            🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
         </div>
         <button class="modal-btn" onclick="startStreakModeAfterNotice()">도전 시작하기</button>
     </div>
@@ -511,6 +530,7 @@
         const hintElem = document.getElementById('easy-hint');
         const streakElem = document.getElementById('streak-display');
         const timerElem = document.getElementById('timer-display');
+        const streakInfoBox = document.getElementById('streak-info-box');
 
         if (currentMode === 'easy') {
             hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
@@ -523,10 +543,12 @@
             streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
             streakElem.style.display = 'inline-block';
             timerElem.style.display = 'inline-block';
+            streakInfoBox.style.display = 'block'; // 연승 모드 화면 안내 상자 표시
             startTimer();
         } else {
             streakElem.style.display = 'none';
             timerElem.style.display = 'none';
+            streakInfoBox.style.display = 'none';
         }
 
         const submitBtn = document.getElementById('btn-submit');
@@ -773,7 +795,6 @@
         });
     }
 
-    // 기록 리셋 (확인 과정 포함)
     function resetLeaderboard() {
         const isConfirmed = confirm('정말로 저장된 모든 연승 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');
         if (isConfirmed) {
