@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 텐파이 퀴즈 (난이도 선택)</title>
-    <!-- ZIP 파일을 브라우저에서 읽기 위한 JSZip 라이브러리 -->
+    <title>마작 청일색 텐파이 퀴즈 (연승 모드 포함)</title>
+    <!-- ZIP 파일 처리를 위한 JSZip 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
@@ -19,26 +19,26 @@
             text-align: center; 
             color: #ffffff; 
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .card {
             background: #ffffff;
-            padding: 25px;
+            padding: 22px;
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
             margin-bottom: 20px;
         }
 
-        /* 난이도 버튼 그룹 스타일 */
+        /* 난이도 버튼 그룹 */
         .difficulty-group {
-            display: flex;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-top: 10px;
         }
         .btn-diff {
-            flex: 1;
-            padding: 14px;
-            font-size: 16px;
+            padding: 12px 4px;
+            font-size: 15px;
             font-weight: bold;
             color: white;
             border: none;
@@ -51,13 +51,9 @@
         .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; transform: none; }
         
         .btn-easy { background-color: #27ae60; }
-        .btn-easy:hover:not(:disabled) { background-color: #219150; }
-        
         .btn-normal { background-color: #e67e22; }
-        .btn-normal:hover:not(:disabled) { background-color: #d35400; }
-        
         .btn-hard { background-color: #c0392b; }
-        .btn-hard:hover:not(:disabled) { background-color: #a93226; }
+        .btn-streak { background-color: #8e44ad; }
 
         .btn-submit {
             width: 100%;
@@ -73,8 +69,31 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn-submit:hover { background-color: #2471a3; }
-        
-        /* 패를 감싸는 영역: 스크롤 제거 및 중앙 정렬 */
+
+        /* 상태바 및 타이머/연승 표시 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .streak-badge {
+            background-color: #8e44ad;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 16px;
+        }
+        .timer-badge {
+            background-color: #d35400;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 16px;
+        }
+
         .hand-container-wrapper {
             width: 100%;
             padding: 12px 5px;
@@ -84,18 +103,16 @@
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
             box-sizing: border-box;
         }
-        
-        /* flex-wrap: wrap을 적용하여 폭이 부족할 경우 자동 줄바꿈 */
         .hand-display {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 4px;
-            flex-wrap: wrap; /* 화면이 좁으면 다음 줄로 넘어감 */
+            flex-wrap: wrap;
             min-height: 50px;
         }
-        
-        /* 기본(PC) 마작패 크기 */
+
+        /* 입체 마작패 스타일 */
         .tile-img {
             width: 44px;
             height: 60px;
@@ -111,57 +128,6 @@
             object-fit: contain;
             flex-shrink: 0;
             user-select: none;
-        }
-        
-        /* 📱 모바일 화면 (가로 폭 600px 이하) 반응형 스타일 */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            
-            .card {
-                padding: 15px 10px;
-            }
-        
-            .hand-display {
-                gap: 2px; /* 패 사이 간격 축소 */
-            }
-        
-            /* 패 크기를 축소하여 한 줄에 13장이 들어가도록 설정 */
-            .tile-img {
-                width: clamp(22px, 6.8vw, 36px); /* 화면 폭에 맞춰 비율 가변 */
-                height: auto;
-                aspect-ratio: 44 / 60; /* 비율 유지 */
-                border-radius: 3px;
-                padding: 1px;
-            }
-        
-            /* 선택 버튼 그리드 여백 및 폰트 축소 */
-            .selection-grid {
-                gap: 4px;
-            }
-            
-            .btn-number {
-                padding: 10px 0;
-                font-size: 16px;
-            }
-            
-            .difficulty-group {
-                gap: 6px;
-            }
-        
-            .btn-diff {
-                padding: 10px 4px;
-                font-size: 13px;
-            }
-        }
-                
-        .tile-img:hover {
-            transform: translateY(-2px);
-            box-shadow: 
-                inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-                inset -1px -1px 2px rgba(0, 0, 0, 0.15),
-                2px 5px 8px rgba(0, 0, 0, 0.4);
         }
 
         .selection-grid {
@@ -200,14 +166,131 @@
 
         .result-message {
             text-align: center;
-            font-size: 19px;
+            font-size: 18px;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 12px;
             border-radius: 8px;
         }
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 명예의 전당 입력 및 리더보드 스타일 */
+        .hall-of-fame {
+            margin-top: 15px;
+            background: #faf8f5;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0dcd3;
+        }
+        .hall-of-fame h3 {
+            margin-top: 0;
+            color: #8e44ad;
+            text-align: center;
+        }
+        .record-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .record-item:last-child { border-bottom: none; }
+        .record-rank { font-weight: bold; color: #8e44ad; width: 30px; }
+        .record-name { font-weight: bold; flex: 1; margin: 0 10px; word-break: break-all; }
+        .record-score { font-weight: bold; color: #e74c3c; width: 60px; text-align: right; }
+        .record-date { color: #7f8c8d; font-size: 12px; width: 130px; text-align: right; }
+
+        .name-input-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .name-input-box input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #8e44ad;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        .name-input-box button {
+            padding: 10px 15px;
+            background: #8e44ad;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 규칙 안내 모달 팝업 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #ffffff;
+            width: 90%;
+            max-width: 420px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #8e44ad;
+        }
+        .modal-body {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            background: #8e44ad;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .modal-btn:hover { background: #71368a; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 모바일 대응 반응형 CSS */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .card { padding: 15px 10px; }
+            .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .btn-diff { font-size: 13px; padding: 10px 2px; }
+            .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
+            .hand-display { gap: 2px; }
+            .selection-grid { gap: 4px; }
+            .btn-number { padding: 10px 0; font-size: 16px; }
+            .record-date { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -220,12 +303,18 @@
     </div>
     
     <div class="difficulty-group">
-        <button class="btn-diff btn-easy" onclick="generateQuiz('easy')" disabled> 🌱 쉬움 </button>
-        <button class="btn-diff btn-normal" onclick="generateQuiz('normal')" disabled> 🌿 보통 </button>
-        <button class="btn-diff btn-hard" onclick="generateQuiz('hard')" disabled> 🔥 어려움 </button>
+        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움 </button>
+        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통 </button>
+        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움 </button>
+        <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
     </div>
 
-    <div style="text-align: center; margin-top: 15px;">
+    <div class="status-bar" style="margin-top: 15px;">
+        <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
+        <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
+    </div>
+
+    <div style="text-align: center;">
         <span id="suit-name" style="font-weight: bold; font-size: 18px; color: #444;"></span>
         <div id="easy-hint" class="hint-badge" style="display: none;"></div>
     </div>
@@ -238,9 +327,39 @@
 <div class="card" id="quiz-area" style="display: none;">
     <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
     <div class="selection-grid" id="selection-buttons"></div>
-    <!-- id="btn-submit" 추가 -->
     <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
+    
+    <!-- 10연승 이상 달성 시 이름 입력 양식 -->
+    <div id="name-input-container" style="display: none;" class="hall-of-fame">
+        <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
+        <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당에 등록할 이름을 입력해 주세요 (최대 20자).</p>
+        <div class="name-input-box">
+            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)">
+            <button onclick="saveRecord()">기록 등록</button>
+        </div>
+    </div>
+</div>
+
+<!-- 명예의 전당 리더보드 -->
+<div class="card hall-of-fame">
+    <h3>🏆 연승 모드 명예의 전당 (Top 10)</h3>
+    <div id="leaderboard-content">
+        <ul class="record-list" id="record-list-ul"></ul>
+    </div>
+</div>
+
+<!-- 연승 모드 안내 팝업 모달 -->
+<div class="modal-overlay" id="streak-modal">
+    <div class="modal-content">
+        <h2>⚡ 어려움 연승 모드</h2>
+        <div class="modal-body">
+            ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br><br>
+            🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록한 경우 연승 수가 명예의 전당에 등재됩니다.<br><br>
+            🎯 <b>출제 구성:</b> 보통 난이도(20%), 어려움 난이도(80%)로 출제됩니다.
+        </div>
+        <button class="modal-btn" onclick="startStreakModeAfterNotice()">도전 시작하기</button>
+    </div>
 </div>
 
 <script>
@@ -258,12 +377,16 @@
     let winningTiles = [];
     let selectedTiles = new Set();
     
-    // 현재 선택된 난이도 및 제출 상태 추적
-    let currentDifficulty = 'normal';
+    let currentMode = 'normal';
     let isSubmitted = false;
+    
+    let streakCount = 0;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let pendingRecordStreak = 0;
 
-    // 페이지 로드 시 동일 경로의 Regular.zip 파일 읽기
     window.addEventListener('DOMContentLoaded', async () => {
+        loadLeaderboard();
         try {
             const response = await fetch('Regular.zip');
             if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
@@ -272,7 +395,7 @@
             zipInstance = await JSZip.loadAsync(arrayBuffer);
             
             document.getElementById('status-msg').style.color = '#27ae60';
-            document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하는 난이도를 선택하세요.';
+            document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
             
             document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
         } catch (err) {
@@ -305,59 +428,127 @@
         return '';
     }
 
-    function generateQuiz(difficulty) {
-        currentDifficulty = difficulty; // 난이도 기억
-        isSubmitted = false; // 제출 상태 초기화
-    
-        // 이전 무늬와 다른 무늬만 필터링하여 선택
+    function selectMode(mode) {
+        if (currentMode !== mode) {
+            streakCount = 0;
+        }
+        currentMode = mode;
+
+        // 연승 모드 첫 클릭 시 안내 팝업 출력
+        if (mode === 'streak' && !sessionStorage.getItem('streak_notice_shown')) {
+            document.getElementById('streak-modal').style.display = 'flex';
+        } else {
+            generateQuiz();
+        }
+    }
+
+    function startStreakModeAfterNotice() {
+        sessionStorage.setItem('streak_notice_shown', 'true');
+        document.getElementById('streak-modal').style.display = 'none';
+        generateQuiz();
+    }
+
+    function generateQuiz() {
+        clearInterval(timerInterval);
+        isSubmitted = false;
+
         let availableSuits = SUITS;
         if (currentSuitObj) {
             availableSuits = SUITS.filter(suit => suit.code !== currentSuitObj.code);
         }
         currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
-    
+
+        let targetDifficulty = currentMode;
+        if (currentMode === 'streak') {
+            targetDifficulty = Math.random() < 0.2 ? 'normal' : 'hard';
+        }
+
         let hand = [];
         let waits = [];
-    
+
         while (true) {
             hand = generateRandom13Tiles();
             waits = getWinningTiles(hand);
             const count = waits.length;
-    
-            if (difficulty === 'easy') {
+
+            if (targetDifficulty === 'easy') {
                 if (count >= 1 && count <= 2) break;
-            } else if (difficulty === 'normal') {
+            } else if (targetDifficulty === 'normal') {
                 if (count >= 2 && count <= 4) break;
-            } else if (difficulty === 'hard') {
+            } else if (targetDifficulty === 'hard') {
                 if (count >= 3 && count <= 9) break;
                 if (count === 2 && Math.random() < 0.05) break; 
             }
         }
-    
+
         currentHand = hand;
         winningTiles = waits;
-    
+
         renderHand();
         renderButtons();
         
         document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
         
         const hintElem = document.getElementById('easy-hint');
-        if (difficulty === 'easy') {
+        const streakElem = document.getElementById('streak-display');
+        const timerElem = document.getElementById('timer-display');
+
+        if (currentMode === 'easy') {
             hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
             hintElem.style.display = 'inline-block';
         } else {
             hintElem.style.display = 'none';
         }
-    
-        // 제출 버튼 텍스트 및 UI 초기화
+
+        if (currentMode === 'streak') {
+            streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
+            streakElem.style.display = 'inline-block';
+            timerElem.style.display = 'inline-block';
+            startTimer();
+        } else {
+            streakElem.style.display = 'none';
+            timerElem.style.display = 'none';
+        }
+
         const submitBtn = document.getElementById('btn-submit');
         submitBtn.innerText = '제출 및 정답 확인';
         submitBtn.style.backgroundColor = '#2980b9';
-    
+
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('result').style.display = 'none';
+        document.getElementById('name-input-container').style.display = 'none';
         selectedTiles.clear();
+    }
+
+    function startTimer() {
+        timeLeft = 60;
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeout();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
+    }
+
+    function handleTimeout() {
+        isSubmitted = true;
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'result-message incorrect';
+        resultDiv.innerText = `⏰ 시간 초과로 실패했습니다! 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.`;
+
+        checkStreakRecordAndReset();
+
+        const submitBtn = document.getElementById('btn-submit');
+        submitBtn.innerText = '새 문제 제출';
+        submitBtn.style.backgroundColor = '#8e44ad';
     }
 
     function generateRandom13Tiles() {
@@ -456,7 +647,6 @@
     }
 
     function toggleSelect(num, btn) {
-        // 정답을 이미 제출한 상태라면 번호 선택 불가
         if (isSubmitted) return;
 
         if (selectedTiles.has(num)) {
@@ -468,20 +658,16 @@
         }
     }
 
-    // 제출 또는 새 문제 생성 처리 단일 함수
     function handleSubmitOrNext() {
-        // 이미 제출된 상태라면 저장된 난이도로 새 문제 생성
         if (isSubmitted) {
-            generateQuiz(currentDifficulty);
+            generateQuiz();
             return;
         }
 
-        // 1. 아무것도 선택하지 않았을 때는 동작 안 함
-        if (selectedTiles.size === 0) {
-            return;
-        }
+        if (selectedTiles.size === 0) return;
 
-        // 채점 수행
+        clearInterval(timerInterval);
+
         const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
         const isCorrect = userAnswers.length === winningTiles.length && 
                           userAnswers.every((val, idx) => val === winningTiles[idx]);
@@ -491,17 +677,85 @@
 
         if (isCorrect) {
             resultDiv.className = 'result-message correct';
-            resultDiv.innerText = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})`;
+            if (currentMode === 'streak') {
+                streakCount++;
+                document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
+                resultDiv.innerText = `🎉 정답입니다! (${streakCount}연승 성공!) (오름패: ${winningTiles.join(', ')})`;
+            } else {
+                resultDiv.innerText = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})`;
+            }
         } else {
             resultDiv.className = 'result-message incorrect';
             resultDiv.innerText = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.`;
+            if (currentMode === 'streak') {
+                checkStreakRecordAndReset();
+            }
         }
 
-        // 2. 제출 완료 상태로 변경 및 버튼 텍스트 수정
         isSubmitted = true;
         const submitBtn = document.getElementById('btn-submit');
-        submitBtn.innerText = '같은 난이도로 새 문제 제출';
-        submitBtn.style.backgroundColor = '#27ae60';
+        submitBtn.innerText = currentMode === 'streak' ? '다음 연승 문제로 이동' : '같은 난이도로 새 문제 제출';
+        submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
+    }
+
+    function checkStreakRecordAndReset() {
+        if (streakCount >= 10) {
+            pendingRecordStreak = streakCount;
+            document.getElementById('name-input-container').style.display = 'block';
+        }
+        streakCount = 0;
+    }
+
+    function saveRecord() {
+        const inputElem = document.getElementById('player-name-input');
+        const playerName = inputElem.value.trim() || '익명';
+        
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+        const newRecord = {
+            name: playerName.substring(0, 20),
+            streak: pendingRecordStreak,
+            date: dateStr
+        };
+
+        let records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
+        records.push(newRecord);
+        records.sort((a, b) => b.streak - a.streak);
+        records = records.slice(0, 10);
+
+        localStorage.setItem('mahjong_streak_records', JSON.stringify(records));
+        
+        document.getElementById('name-input-container').style.display = 'none';
+        inputElem.value = '';
+        loadLeaderboard();
+    }
+
+    function loadLeaderboard() {
+        const records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
+        const ul = document.getElementById('record-list-ul');
+        ul.innerHTML = '';
+
+        if (records.length === 0) {
+            ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 10연승 이상 기록이 없습니다. 도전에 성공해 보세요!</li>';
+            return;
+        }
+
+        records.forEach((rec, idx) => {
+            const li = document.createElement('li');
+            li.className = 'record-item';
+            li.innerHTML = `
+                <span class="record-rank">${idx + 1}위</span>
+                <span class="record-name">${escapeHtml(rec.name)}</span>
+                <span class="record-score">${rec.streak}연승</span>
+                <span class="record-date">${rec.date}</span>
+            `;
+            ul.appendChild(li);
+        });
+    }
+
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 </script>
 
