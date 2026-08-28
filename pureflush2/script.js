@@ -204,8 +204,15 @@ function generateQuiz() {
     document.getElementById('name-input-container').style.display = 'none';
     selectedTiles.clear();
 
-    // script.js 내 generateQuiz() 함수의 끝부분 근처
-    document.getElementById('selection-buttons').parentElement.style.display = 'block';    
+    // generateQuiz() 내부 끝부분
+    const difficultyElem = document.getElementById('difficulty-container') || document.getElementById('difficulty');
+    if (difficultyElem) difficultyElem.style.display = 'block';
+    
+    const selectionBtnParent = document.getElementById('selection-buttons')?.parentElement;
+    if (selectionBtnParent) selectionBtnParent.style.display = 'block';
+    
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) submitBtn.style.display = 'inline-block';
 }
 
 function startTimer() {
@@ -946,7 +953,7 @@ function handleTitleClick() {
     } else {
         debugClickTimer = setTimeout(() => {
             debugClickCount = 0;
-        }, 1500); // 1.5초 이내에 5번 연속 클릭해야 함
+        }, 1500); // 1.5초 이내 5회 연속 클릭
     }
 }
 
@@ -973,9 +980,9 @@ async function generateCustomHand() {
         }
     }
 
-    // 기존 무늬와 다른 무늬를 랜덤으로 선택
+    // 기존 무늬와 다른 무늬를 랜덤으로 선택 (연속 테스트 시 무늬 전환)
     let availableSuits = SUITS;
-    if (currentSuitObj) {
+    if (typeof currentSuitObj !== 'undefined' && currentSuitObj) {
         availableSuits = SUITS.filter(s => s.code !== currentSuitObj.code);
     }
     currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
@@ -994,14 +1001,23 @@ async function generateCustomHand() {
     // 패 화면 렌더링
     await renderHand();
     
-    // 일반 퀴즈 제출 버튼 영역 숨김 및 정답 영역 노출
-    document.getElementById('quiz-area').style.display = 'block';
-    document.getElementById('selection-buttons').parentElement.style.display = 'none'; // 버튼 선택창 숨김
+    // UI 요소 정리 (난이도 표시 및 선택 버튼 영역 숨기기)
+    const quizArea = document.getElementById('quiz-area');
+    if (quizArea) quizArea.style.display = 'block';
     
+    const difficultyElem = document.getElementById('difficulty-container') || document.getElementById('difficulty');
+    if (difficultyElem) difficultyElem.style.display = 'none';
+    
+    const selectionBtnParent = document.getElementById('selection-buttons')?.parentElement;
+    if (selectionBtnParent) selectionBtnParent.style.display = 'none';
+    
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) submitBtn.style.display = 'none';
+
+    // 결과 및 구조 분석 해설 영역 즉시 노출
     const resultElem = document.getElementById('result');
     resultElem.style.display = 'block';
     
-    // 정답 및 대기패 분석 출력
     if (winningTiles.length === 0) {
         resultElem.className = 'result-message incorrect';
         resultElem.innerHTML = `⚠️ 입력하신 패는 <b>노텐(대기패 없음)</b> 상태이거나 완성할 수 없는 손패입니다.`;
@@ -1009,11 +1025,14 @@ async function generateCustomHand() {
         resultElem.className = 'result-message correct';
         const waitsStr = winningTiles.join(', ');
         
-        // 해설 생성 (기존 generateExplanationHtml 활용)
+        // 기존 해설 생성 함수 호출
         const explanationHtml = generateExplanationHtml();
         
         resultElem.innerHTML = `
-            <div><b>💡 대기패(오름패):</b> <span style="font-size:22px; color:#c0392b;">${waitsStr}</span></div>
+            <div style="font-size: 18px; margin-bottom: 12px;">
+                <b>💡 대기패(오름패):</b> <span style="font-size:24px; color:#c0392b; font-weight:bold;">${waitsStr}</span>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
             ${explanationHtml}
         `;
     }
