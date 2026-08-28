@@ -28,6 +28,7 @@ let pendingRecordStreak = 0;
 let titleClickCount = 0;
 let titleClickTimer = null;
 let customHand = [];
+let customSuitCode = 'Man'; // 히든 패 분석기 현재 무늬
 
 const MODE_DESCRIPTIONS = {
     easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
@@ -88,6 +89,8 @@ function initTitleClickTrigger() {
             if (analyzer) {
                 if (analyzer.style.display === 'none' || analyzer.style.display === '') {
                     analyzer.style.display = 'block';
+                    pickRandomNextSuit(); // 히든 진입 시 이전과 다른 무늬로 랜덤 변경
+                    updateCustomHandDisplay();
                     alert('🔓 히든 패 분석기 모드가 활성화되었습니다!');
                 } else {
                     analyzer.style.display = 'none';
@@ -99,6 +102,13 @@ function initTitleClickTrigger() {
             }, 2000);
         }
     });
+}
+
+// 이전 무늬와 겹치지 않게 새로운 무늬 선택하는 함수
+function pickRandomNextSuit() {
+    const available = SUITS.filter(s => s.code !== customSuitCode);
+    const chosen = available[Math.floor(Math.random() * available.length)];
+    customSuitCode = chosen.code;
 }
 
 function renderCustomButtons() {
@@ -149,13 +159,15 @@ function applyCustomTextInput() {
         newHand.push(n);
     }
 
+    // 입력 반영 시 이전과 다른 무늬로 무늬 변경
+    pickRandomNextSuit();
+
     customHand = newHand.sort((a, b) => a - b);
     updateCustomHandDisplay();
 }
 
 async function updateCustomHandDisplay() {
     const container = document.getElementById('custom-hand-container');
-    const suitCode = document.getElementById('custom-suit-select').value;
     container.innerHTML = '';
 
     if (customHand.length === 0) {
@@ -166,7 +178,7 @@ async function updateCustomHandDisplay() {
     for (let i = 0; i < customHand.length; i++) {
         const num = customHand[i];
         const img = document.createElement('img');
-        img.src = await getTileImageSrc(suitCode, num);
+        img.src = await getTileImageSrc(customSuitCode, num);
         img.className = 'tile-img';
         img.style.cursor = 'pointer';
         img.title = '클릭하면 삭제됩니다';
@@ -184,13 +196,9 @@ function clearCustomHand() {
     customHand = [];
     document.getElementById('custom-text-input').value = '';
     document.getElementById('custom-result').style.display = 'none';
-    updateCustomHandDisplay();
-}
-
-function setRandomSuit() {
-    const select = document.getElementById('custom-suit-select');
-    const randomIndex = Math.floor(Math.random() * SUITS.length);
-    select.value = SUITS[randomIndex].code;
+    
+    // 전체 삭제 시 이전과 다른 무늬로 무늬 변경
+    pickRandomNextSuit();
     updateCustomHandDisplay();
 }
 
@@ -204,7 +212,6 @@ function analyzeCustomHand() {
     const resultDiv = document.getElementById('custom-result');
     resultDiv.style.display = 'block';
 
-    // 기존 퀴즈용 전역변수를 일시 저장 후 복원하여 해설 함수 재활용
     const savedHand = [...currentHand];
     const savedWaits = [...winningTiles];
     const savedMaxed = [...maxedOutWinningTiles];
@@ -246,7 +253,6 @@ function analyzeCustomHand() {
 
     resultDiv.innerHTML = htmlStr;
 
-    // 전역 상태 복원
     currentHand = savedHand;
     winningTiles = savedWaits;
     maxedOutWinningTiles = savedMaxed;
