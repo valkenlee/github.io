@@ -392,7 +392,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* 모바일 대응 반응형 CSS */
         @media (max-width: 600px) {
             body { padding: 10px; }
             .card { padding: 15px 10px; }
@@ -415,7 +414,6 @@
         📦 Regular.zip 패키지를 읽어오는 중입니다...
     </div>
     
-    <!-- 난이도 선택 버튼 영역 -->
     <div class="difficulty-group">
         <button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
         <button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
@@ -423,7 +421,6 @@
         <button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 연승 모드</button>
     </div>
 
-    <!-- 선택된 모드 설명 안내 상자 -->
     <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
     <div class="status-bar" style="margin-top: 15px;">
@@ -431,7 +428,6 @@
         <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
     </div>
 
-    <!-- 타이머 게이지 바 영역 -->
     <div id="timer-gauge-container" class="timer-gauge-container" style="display: none;">
         <div id="timer-gauge-bar" class="timer-gauge-bar"></div>
     </div>
@@ -451,7 +447,6 @@
     <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
     
-    <!-- 10연승 이상 달성 시 이름 입력 양식 -->
     <div id="name-input-container" style="display: none;" class="hall-of-fame">
         <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
         <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당에 등록할 이름을 입력해 주세요 (최대 20자).</p>
@@ -462,7 +457,6 @@
     </div>
 </div>
 
-<!-- 명예의 전당 리더보드 -->
 <div class="card hall-of-fame">
     <h3>🏆 연승 모드 명예의 전당 (Top 10)</h3>
     <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;">
@@ -474,7 +468,6 @@
     <button class="btn-reset-records" onclick="resetLeaderboard()">🗑️ 기록 전체 삭제</button>
 </div>
 
-<!-- 연승 모드 안내 팝업 모달 -->
 <div class="modal-overlay" id="streak-modal">
     <div class="modal-content">
         <h2>⚡ 어려움 연승 모드</h2>
@@ -501,9 +494,9 @@
     let currentHand = [];
     let winningTiles = [];
     let maxedOutWinningTiles = [];
-    let winningDecompositions = {}; // 패 해석 데이터 (오름패별 분해 및 대기 유형 목록)
-    let isChiitoiHand = false;     // 순수 치이토이츠 대기 플래그
-    let isRyanpeikouHand = false; // 량페코 대기 플래그
+    let winningDecompositions = {}; 
+    let isChiitoiHand = false;     
+    let isRyanpeikouHand = false; 
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -714,7 +707,6 @@
         document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
-    /* 대기 유형별 뱃지 HTML 생성 */
     function getWaitTypeBadgeHtml(waitType) {
         switch(waitType) {
             case '양면': return `<span class="wait-type-badge badge-ryanmen">양면 대기</span>`;
@@ -726,9 +718,9 @@
         }
     }
 
-    /* 패 분해 형태 HTML 생성 (비어있는 오름패 표시 및 양면/샤보 통합) */
+    /* 패 분해 구조 및 대기 형태 해설 렌더링 */
     function renderDecompositionExplanation() {
-        if (currentMode === 'streak') return ''; // 연승 모드에서는 해설 미출력
+        if (currentMode === 'streak') return ''; 
 
         let html = `<div class="explanation-box">`;
         html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
@@ -736,7 +728,6 @@
         const allWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
         let itemsList = [];
 
-        // 1. 모든 분해 구조 추출 및 그룹화 준비
         allWaits.forEach(tile => {
             const decomps = winningDecompositions[tile] || [];
             if (decomps.length === 0) {
@@ -750,7 +741,6 @@
                 }
             } else {
                 decomps.forEach(d => {
-                    // 완성 멘츠 내에 들어올 대기패 위치 명확히 표시
                     let parts = [];
                     // 머리
                     if (d.waitType === '단기') {
@@ -770,7 +760,7 @@
 
                     // 슌츠
                     d.sequences.forEach(s => {
-                        if (tile >= s && tile <= s + 2 && (d.waitType === '양면' || d.waitType === '간짱' || d.waitType === '변짱') && d.targetMeldStart === s) {
+                        if (d.targetMeldStart === s && (d.waitType === '양면' || d.waitType === '간짱' || d.waitType === '변짱')) {
                             let meldStr = [];
                             for (let i = 0; i < 3; i++) {
                                 let curr = s + i;
@@ -786,14 +776,14 @@
                         }
                     });
 
-                    // 대기 그룹핑을 위한 키
+                    // 그룹화를 위한 key
                     let groupKey = '';
                     if (d.waitType === '양면') {
-                        groupKey = `ryanmen_${d.targetMeldStart}_${d.pair}_${d.triplets.join(',')}_${d.sequences.join(',')}`;
+                        groupKey = `ryanmen_${d.targetMeldStart}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
                     } else if (d.waitType === '샤보') {
-                        groupKey = `shanpon_${d.pair}_${d.triplets.join(',')}_${d.sequences.join(',')}`;
+                        groupKey = `shanpon_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
                     } else {
-                        groupKey = `single_${d.waitType}_${tile}_${d.pair}_${d.triplets.join(',')}_${d.sequences.join(',')}`;
+                        groupKey = `single_${d.waitType}_${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
                     }
 
                     itemsList.push({
@@ -806,8 +796,6 @@
             }
         });
 
-        // 2. 그룹화 처리 (양면대기 및 샤보대기를 한 줄로 통합)
-        let processedGroups = [];
         let groupMap = new Map();
 
         itemsList.forEach(item => {
@@ -826,7 +814,6 @@
             }
         });
 
-        // 3. 통합된 결과물 HTML 출력
         groupMap.forEach(group => {
             group.tiles.sort((a, b) => a - b);
             const tileHeader = group.tiles.length > 1 ? `[ ${group.tiles.join(', ')} ]` : `[ ${group.tiles[0]} ]`;
@@ -843,7 +830,6 @@
         return html;
     }
 
-    /* 정답 포맷팅 헬퍼 함수 */
     function getAnswerString() {
         let tagNotice = '';
         if (isRyanpeikouHand) {
@@ -897,7 +883,6 @@
         return hand.sort((a, b) => a - b);
     }
 
-    /* 대기패 판별 로직 및 대기 유형 분석 */
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
@@ -938,7 +923,6 @@
         return { waits, maxedOut, decomps, isChiitoi, isRyanpeikou };
     }
 
-    /* 완성 및 대기 유형 판별 검증 함수 */
     function checkCompleteHand(counts, addedTile, originalHand) {
         const decompositions = findAllDecompositions(counts, addedTile, originalHand);
         const isStandard = decompositions.length > 0;
@@ -968,8 +952,9 @@
         return { complete: false, decompositions: [], isChiitoi: false, isRyanpeikou: false };
     }
 
-    /* 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 판별 알고리즘 */
+    /* 대기 유형(단기, 샤보, 간짱, 변짱, 양면) 정밀 판별 함수 */
     function classifyWaitType(decomp, addedTile, originalHand) {
+        // 1. 단기대기: 완성 패가 머리(작두)가 되는 경우
         if (decomp.pair === addedTile) {
             return { waitType: '단기', targetMeldStart: null };
         }
@@ -977,27 +962,27 @@
         let origCounts = Array(10).fill(0);
         originalHand.forEach(n => origCounts[n]++);
 
+        // 2. 샤보대기: 원본 손패에 이미 2장(쌍)이 있었고 완성되어 커츠가 되는 경우
         if (decomp.triplets.includes(addedTile) && origCounts[addedTile] === 2) {
             return { waitType: '샤보', targetMeldStart: null };
         }
 
+        // 3. 슌츠 완성 대기 (간짱, 변짱, 양면)
         for (let s of decomp.sequences) {
             if (addedTile >= s && addedTile <= s + 2) {
-                const pos = addedTile - s; 
+                const pos = addedTile - s;
                 if (pos === 1) {
+                    // 중간 패 대기 -> 간짱
                     return { waitType: '간짱', targetMeldStart: s };
-                } else if (pos === 0) {
-                    if (s + 2 === 3) {
-                        return { waitType: '변짱', targetMeldStart: s };
-                    } else {
-                        return { waitType: '양면', targetMeldStart: s };
-                    }
-                } else if (pos === 2) {
-                    if (s === 7) {
-                        return { waitType: '변짱', targetMeldStart: s };
-                    } else {
-                        return { waitType: '양면', targetMeldStart: s };
-                    }
+                } else if (pos === 2 && s === 1) {
+                    // 1,2에서 3 대기 -> 변짱
+                    return { waitType: '변짱', targetMeldStart: s };
+                } else if (pos === 0 && s === 7) {
+                    // 8,9에서 7 대기 -> 변짱
+                    return { waitType: '변짱', targetMeldStart: s };
+                } else if (pos === 0 || pos === 2) {
+                    // 그 외 양끝 대기 -> 양면
+                    return { waitType: '양면', targetMeldStart: s };
                 }
             }
         }
@@ -1005,6 +990,7 @@
         return { waitType: '양면', targetMeldStart: null };
     }
 
+    /* 대기 분석 시 완성 패가 속한 정확한 멘츠를 추적하는 분해 알고리즘 */
     function findAllDecompositions(counts, addedTile, originalHand) {
         let results = [];
         let tempCounts = [...counts];
@@ -1034,7 +1020,7 @@
                         sequences: seqs,
                         waitType: waitInfo.waitType,
                         targetMeldStart: waitInfo.targetMeldStart,
-                        key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}`
+                        key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}|W:${waitInfo.waitType}|M:${waitInfo.targetMeldStart}`
                     });
                 });
 
