@@ -339,6 +339,9 @@ function updateModeUI() {
 }
 
 function generateQuiz() {
+    
+console.log('[DEBUG] generateQuiz! ');
+    
     clearInterval(timerInterval);
     isSubmitted = false;
 
