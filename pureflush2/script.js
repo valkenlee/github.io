@@ -235,7 +235,7 @@ function getWaitTypeBadgeHtml(waitType) {
     }
 }
 
-/* 패 분해 구조 및 대기 형태 해설 렌더링 */
+/* 수정한 패 분해 구조 및 대기 형태 해설 렌더링 함수 */
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
@@ -245,30 +245,30 @@ function renderDecompositionExplanation() {
     const allWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
     let itemsList = [];
 
-    allWaits.forEach(tile => {
-        const decomps = winningDecompositions[tile] || [];
-        if (decomps.length === 0) {
-            if (isChiitoiHand) {
-                itemsList.push({
-                    tile: tile,
-                    waitType: '단기',
-                    groupKey: `chiitoi_${tile}`,
-                    htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <b style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</b>`
-                });
-            }
-        } else {
+    // 치또이츠 처리
+    if (isChiitoiHand) {
+        allWaits.forEach(tile => {
+            itemsList.push({
+                waitType: '단기',
+                sortOrder: 3, // 단기
+                tiles: [tile],
+                htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <b style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</b>`
+            });
+        });
+    } else {
+        allWaits.forEach(tile => {
+            const decomps = winningDecompositions[tile] || [];
             decomps.forEach(d => {
                 let parts = [];
                 let groupKey = '';
+                let waitType = d.waitType;
 
-                if (d.waitType === '양면') {
-                    // 양면대기: targetMeldStart(s)에 대해 양쪽 대기패 (s-1)과 (s+2) 구성
+                if (waitType === '양면') {
                     const w1 = d.targetMeldStart - 1;
                     const w2 = d.targetMeldStart + 2;
-
-                    // 1~9 범위 내의 패만 표시 (0이나 10 등 범위를 벗어나는 숫자 방지)
-                    const w1Str = (w1 >= 1 && w1 <= 9) ? `<span class="filled-slot">(${w1})</span>` : '';
-                    const w2Str = (w2 >= 1 && w2 <= 9) ? `<span class="filled-slot">(${w2})</span>` : '';
+                    
+                    const w1Str = (w1 >= 1 && w1 <= 9) ? `(${w1})` : '';
+                    const w2Str = (w2 >= 1 && w2 <= 9) ? `(${w2})` : '';
 
                     let meldParts = [];
                     if (w1Str) meldParts.push(w1Str);
@@ -286,23 +286,53 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    // 1과 4 어느 대기패에서 접근하든 동일한 손패 분해 형태면 같은 groupKey로 묶음
+                    // 양면대기 고유 식별키
                     groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
 
-                } else if (d.waitType === '샤보') {
-                    // 샤보대기: 해당 분해 형태에서 또이츠 패들을 묶어 대기 형태로 표현
-                    parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
+                    itemsList.push({
+                        waitType: '양면',
+                        sortOrder: 1,
+                        groupKey: groupKey,
+                        tiles: [w1, w2].filter(x => x >= 1 && x <= 9).sort((a,b)=>a-b),
+                        partsStr: parts.join(' ')
+                    });
+
+                } else if (waitType === '샤보') {
+                    // 샤보 대기는 머리(pair)와 triplet으로 지정된 두 패가 샤보 대상패가 됨
+                    let shanponTiles = [d.pair];
+                    if (d.triplets.length > 0) {
+                        d.triplets.forEach(t => {
+                            if (!shanponTiles.includes(t)) shanponTiles.push(t);
+                        });
+                    }
+                    shanponTiles.sort((a, b) => a - b);
+
+                    // 두 샤보 패에 대한 강조 포맷팅: [1, 1, (1)] [4, 4, (4)]
+                    shanponTiles.forEach(st => {
+                        parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st}, ${st}, <span class="filled-slot">(${st})</span>]</span>`);
+                    });
+
+                    // 그 외 remaining triplets 및 sequences 처리
                     d.triplets.forEach(t => {
-                        parts.push(`<span style="color:#27ae60; font-weight:bold;">[${t}, ${t}, <span class="filled-slot">(${t})</span>]</span>`);
+                        if (!shanponTiles.includes(t)) {
+                            parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`);
+                        }
                     });
                     d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
 
-                    // 샤보는 pair(머리)와 슌츠 목록이 같으면 동일 손패 구조로 묶음
-                    groupKey = `shanpon_p${d.pair}_s${d.sequences.join(',')}`;
+                    groupKey = `shanpon_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
+
+                    itemsList.push({
+                        waitType: '샤보',
+                        sortOrder: 2,
+                        groupKey: groupKey,
+                        tiles: shanponTiles,
+                        partsStr: parts.join(' ')
+                    });
 
                 } else {
-                    // 단기, 간짱, 변짱 대기 처리
-                    if (d.waitType === '단기') {
+                    // 단기, 간짱, 변짱 대기 (단일 대기패)
+                    if (waitType === '단기') {
                         parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
                     } else {
                         parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
@@ -312,7 +342,7 @@ function renderDecompositionExplanation() {
 
                     let targetMeldHandled = false;
                     d.sequences.forEach(s => {
-                        if (!targetMeldHandled && d.targetMeldStart === s && (d.waitType === '간짱' || d.waitType === '변짱')) {
+                        if (!targetMeldHandled && d.targetMeldStart === s && (waitType === '간짱' || waitType === '변짱')) {
                             let meldStr = [];
                             for (let i = 0; i < 3; i++) {
                                 let curr = s + i;
@@ -329,39 +359,44 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    groupKey = `${d.waitType}_tile${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                    let sortOrder = 3; // 단기
+                    if (waitType === '간짱') sortOrder = 4;
+                    if (waitType === '변짱') sortOrder = 5;
+
+                    groupKey = `${waitType}_tile${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+
+                    itemsList.push({
+                        waitType: waitType,
+                        sortOrder: sortOrder,
+                        groupKey: groupKey,
+                        tiles: [tile],
+                        partsStr: parts.join(' ')
+                    });
                 }
-
-                itemsList.push({
-                    tile: tile,
-                    waitType: d.waitType,
-                    groupKey: groupKey,
-                    partsStr: parts.join(' ')
-                });
             });
-        }
-    });
+        });
+    }
 
-    let groupMap = new Map();
-
+    // 중복 제거
+    let uniqueMap = new Map();
     itemsList.forEach(item => {
-        if (!groupMap.has(item.groupKey)) {
-            groupMap.set(item.groupKey, {
-                waitType: item.waitType,
-                tiles: [item.tile],
-                partsStr: item.partsStr,
-                htmlContent: item.htmlContent || ''
-            });
-        } else {
-            let existing = groupMap.get(item.groupKey);
-            if (!existing.tiles.includes(item.tile)) {
-                existing.tiles.push(item.tile);
-            }
+        if (!uniqueMap.has(item.groupKey)) {
+            uniqueMap.set(item.groupKey, item);
         }
     });
 
-    groupMap.forEach(group => {
-        group.tiles.sort((a, b) => a - b);
+    let renderItems = Array.from(uniqueMap.values());
+
+    // 요청된 순서대로 정렬 (양면 -> 샤보 -> 단기 -> 간짱 -> 변짱)
+    renderItems.sort((a, b) => {
+        if (a.sortOrder !== b.sortOrder) {
+            return a.sortOrder - b.sortOrder;
+        }
+        return a.tiles[0] - b.tiles[0];
+    });
+
+    // HTML 생성
+    renderItems.forEach(group => {
         const tileHeader = group.tiles.length > 1 ? `[ ${group.tiles.join(', ')} ]` : `[ ${group.tiles[0]} ]`;
         const badge = getWaitTypeBadgeHtml(group.waitType);
 
@@ -421,389 +456,4 @@ function generateRandom13Tiles() {
     let hand = [];
     while (hand.length < 13) {
         let num = Math.floor(Math.random() * 9) + 1;
-        if (counts[num] < 4) {
-            counts[num]++;
-            hand.push(num);
-        }
-    }
-    return hand.sort((a, b) => a - b);
-}
-
-function getWinningTiles(hand) {
-    let waits = [];
-    let maxedOut = [];
-    let decomps = {};
-    let isChiitoi = false;
-    let isRyanpeikou = false;
-    let counts = Array(10).fill(0);
-    hand.forEach(num => counts[num]++);
-
-    for (let tile = 1; tile <= 9; tile++) {
-        if (counts[tile] < 4) {
-            counts[tile]++;
-            const checkRes = checkCompleteHand(counts, tile, hand);
-            if (checkRes.complete) {
-                waits.push(tile);
-                decomps[tile] = checkRes.decompositions;
-                if (checkRes.isRyanpeikou) isRyanpeikou = true;
-                else if (checkRes.isChiitoi) isChiitoi = true;
-            }
-            counts[tile]--;
-        } else {
-            counts[tile]++;
-            const checkRes = checkCompleteHand(counts, tile, hand);
-            if (checkRes.complete) {
-                maxedOut.push(tile);
-                decomps[tile] = checkRes.decompositions;
-                if (checkRes.isRyanpeikou) isRyanpeikou = true;
-                else if (checkRes.isChiitoi) isChiitoi = true;
-            }
-            counts[tile]--;
-        }
-    }
-
-    if (isRyanpeikou) {
-        isChiitoi = false;
-    }
-
-    return { waits, maxedOut, decomps, isChiitoi, isRyanpeikou };
-}
-
-function checkCompleteHand(counts, addedTile, originalHand) {
-    const decompositions = findAllDecompositions(counts, addedTile, originalHand);
-    const isStandard = decompositions.length > 0;
-
-    let pairCount = 0;
-    let hasQuad = false;
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] === 2) pairCount++;
-        if (counts[i] === 4) hasQuad = true;
-    }
-    const is7Pairs = (pairCount === 7 && !hasQuad);
-
-    if (isStandard && is7Pairs) {
-        if (checkRyanpeikouForm(counts)) {
-            return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: true };
-        }
-    }
-
-    if (isStandard) {
-        return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: false };
-    }
-
-    if (is7Pairs) {
-        return { complete: true, decompositions: [], isChiitoi: true, isRyanpeikou: false };
-    }
-
-    return { complete: false, decompositions: [], isChiitoi: false, isRyanpeikou: false };
-}
-
-/* 대기 유형(단기, 샤보, 간짱, 변짱, 양면) 정밀 판별 함수 - 중복 및 다중 대기 유형 모두 수집 */
-function classifyWaitTypes(decomp, addedTile, originalHand) {
-    let results = [];
-
-    let origCounts = Array(10).fill(0);
-    originalHand.forEach(n => origCounts[n]++);
-
-    // 1. 단기대기: 완성 패가 머리(작두)가 되는 경우
-    if (decomp.pair === addedTile) {
-        results.push({ waitType: '단기', targetMeldStart: null });
-    }
-
-    // 2. 샤보대기: 원본 손패(originalHand)에 완성 패가 2장 이상 존재하고, 해당 분해에서 커츠(triplets)를 형성하는 경우
-    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] >= 2) {
-        results.push({ waitType: '샤보', targetMeldStart: null });
-    }
-
-    // 3. 슌츠 완성 대기 (간짱, 변짱, 양면)
-    for (let s of decomp.sequences) {
-        if (addedTile >= s && addedTile <= s + 2) {
-            const pos = addedTile - s;
-
-            if (pos === 1) {
-                results.push({ waitType: '간짱', targetMeldStart: s });
-            } else if ((s === 1 && addedTile === 3) || (s === 7 && addedTile === 7)) {
-                results.push({ waitType: '변짱', targetMeldStart: s });
-            } else if (pos === 0 || pos === 2) {
-                results.push({ waitType: '양면', targetMeldStart: s });
-            }
-        }
-    }
-
-    return results;
-}
-
-/* 대기 분석 시 완성 패가 속한 정확한 멘츠를 추적하는 분해 알고리즘 */
-function findAllDecompositions(counts, addedTile, originalHand) {
-    let results = [];
-    let tempCounts = [...counts];
-
-    for (let pairVal = 1; pairVal <= 9; pairVal++) {
-        if (tempCounts[pairVal] >= 2) {
-            tempCounts[pairVal] -= 2;
-            
-            let meldResults = [];
-            findMeldsRecursive(tempCounts, [], meldResults);
-
-            meldResults.forEach(m => {
-                const trips = [...m.triplets].sort((a,b)=>a-b);
-                const seqs = [...m.sequences].sort((a,b)=>a-b);
-                
-                const decompCandidate = {
-                    pair: pairVal,
-                    triplets: trips,
-                    sequences: seqs
-                };
-
-                const waitInfos = classifyWaitTypes(decompCandidate, addedTile, originalHand);
-
-                waitInfos.forEach(waitInfo => {
-                    results.push({
-                        pair: pairVal,
-                        triplets: trips,
-                        sequences: seqs,
-                        waitType: waitInfo.waitType,
-                        targetMeldStart: waitInfo.targetMeldStart,
-                        key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}|W:${waitInfo.waitType}|M:${waitInfo.targetMeldStart}`
-                    });
-                });
-            });
-
-            tempCounts[pairVal] += 2;
-        }
-    }
-
-    let uniqueResults = [];
-    let seenKeys = new Set();
-    results.forEach(r => {
-        if (!seenKeys.has(r.key)) {
-            seenKeys.add(r.key);
-            uniqueResults.push(r);
-        }
-    });
-
-    return uniqueResults;
-}
-
-function findMeldsRecursive(counts, currentMelds, results) {
-    let first = 0;
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] > 0) { first = i; break; }
-    }
-
-    if (first === 0) {
-        let triplets = [];
-        let sequences = [];
-        currentMelds.forEach(m => {
-            if (m.type === 'triplet') triplets.push(m.val);
-            else if (m.type === 'sequence') sequences.push(m.val);
-        });
-        results.push({ triplets, sequences });
-        return;
-    }
-
-    if (counts[first] >= 3) {
-        counts[first] -= 3;
-        currentMelds.push({ type: 'triplet', val: first });
-        findMeldsRecursive(counts, currentMelds, results);
-        currentMelds.pop();
-        counts[first] += 3;
-    }
-
-    if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
-        counts[first]--;
-        counts[first + 1]--;
-        counts[first + 2]--;
-        currentMelds.push({ type: 'sequence', val: first });
-        findMeldsRecursive(counts, currentMelds, results);
-        currentMelds.pop();
-        counts[first]++;
-        counts[first + 1]++;
-        counts[first + 2]++;
-    }
-}
-
-function checkRyanpeikouForm(counts) {
-    let tempCounts = [...counts];
-    for (let i = 1; i <= 9; i++) {
-        if (tempCounts[i] >= 2) {
-            tempCounts[i] -= 2;
-            if (canFormTwoIdenticalChowPairs(tempCounts)) {
-                return true;
-            }
-            tempCounts[i] += 2;
-        }
-    }
-    return false;
-}
-
-function canFormTwoIdenticalChowPairs(counts) {
-    let tempCounts = [...counts];
-    let doubleChowCount = 0;
-
-    for (let i = 1; i <= 7; i++) {
-        while (tempCounts[i] >= 2 && tempCounts[i+1] >= 2 && tempCounts[i+2] >= 2) {
-            tempCounts[i] -= 2;
-            tempCounts[i+1] -= 2;
-            tempCounts[i+2] -= 2;
-            doubleChowCount++;
-        }
-    }
-    return doubleChowCount === 2;
-}
-
-async function renderHand() {
-    const container = document.getElementById('hand-container');
-    container.innerHTML = '';
-    
-    for (const num of currentHand) {
-        const img = document.createElement('img');
-        img.src = await getTileImageSrc(currentSuitObj.code, num);
-        img.className = 'tile-img';
-        img.alt = `${currentSuitObj.code}${num}`;
-        container.appendChild(img);
-    }
-}
-
-function renderButtons() {
-    const grid = document.getElementById('selection-buttons');
-    grid.innerHTML = '';
-    for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'btn-number';
-        btn.id = `btn-num-${i}`;
-        btn.innerText = `${i}`;
-        btn.onclick = () => toggleSelect(i, btn);
-        grid.appendChild(btn);
-    }
-}
-
-function toggleSelect(num, btn) {
-    if (isSubmitted) return;
-
-    if (selectedTiles.has(num)) {
-        selectedTiles.delete(num);
-        btn.classList.remove('selected');
-    } else {
-        selectedTiles.add(num);
-        btn.classList.add('selected');
-    }
-}
-
-function handleSubmitOrNext() {
-    if (isSubmitted) {
-        generateQuiz();
-        return;
-    }
-
-    if (selectedTiles.size === 0) return;
-
-    clearInterval(timerInterval);
-
-    const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
-    
-    const isCorrectActual = userAnswers.length === winningTiles.length && 
-                            userAnswers.every((val, idx) => val === winningTiles[idx]);
-
-    const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-    const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
-                                userAnswers.every((val, idx) => val === theoreticalList[idx]);
-
-    const isCorrect = isCorrectActual || isCorrectTheoretical;
-
-    const resultDiv = document.getElementById('result');
-    resultDiv.style.display = 'block';
-
-    const answerText = getAnswerString();
-
-    if (isCorrect) {
-        resultDiv.className = 'result-message correct';
-        if (currentMode === 'streak') {
-            streakCount++;
-            document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
-            resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!)<br>👉 ${answerText}`;
-        } else {
-            resultDiv.innerHTML = `🎉 정답입니다!<br>👉 ${answerText}`;
-        }
-    } else {
-        resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
-        if (currentMode === 'streak') {
-            checkStreakRecordAndReset();
-        }
-    }
-
-    isSubmitted = true;
-    const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = currentMode === 'streak' ? '다음 연승 문제로 이동' : '같은 난이도로 새 문제 제출';
-    submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
-}
-
-function checkStreakRecordAndReset() {
-    if (streakCount >= 10) {
-        pendingRecordStreak = streakCount;
-        document.getElementById('name-input-container').style.display = 'block';
-    }
-    streakCount = 0;
-}
-
-function saveRecord() {
-    const inputElem = document.getElementById('player-name-input');
-    const playerName = inputElem.value.trim() || '익명';
-    
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-    const newRecord = {
-        name: playerName.substring(0, 20),
-        streak: pendingRecordStreak,
-        date: dateStr
-    };
-
-    let records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
-    records.push(newRecord);
-    records.sort((a, b) => b.streak - a.streak);
-    records = records.slice(0, 10);
-
-    localStorage.setItem('mahjong_streak_records', JSON.stringify(records));
-    
-    document.getElementById('name-input-container').style.display = 'none';
-    inputElem.value = '';
-    loadLeaderboard();
-}
-
-function loadLeaderboard() {
-    const records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
-    const ul = document.getElementById('record-list-ul');
-    ul.innerHTML = '';
-
-    if (records.length === 0) {
-        ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 10연승 이상 기록이 없습니다. 도전에 성공해 보세요!</li>';
-        return;
-    }
-
-    records.forEach((rec, idx) => {
-        const li = document.createElement('li');
-        li.className = 'record-item';
-        li.innerHTML = `
-            <span class="record-rank">${idx + 1}위</span>
-            <span class="record-name">${escapeHtml(rec.name)}</span>
-            <span class="record-score">${rec.streak}연승</span>
-            <span class="record-date">${rec.date}</span>
-        `;
-        ul.appendChild(li);
-    });
-}
-
-function resetLeaderboard() {
-    const isConfirmed = confirm('정말로 저장된 모든 연승 기록을 삭제하시겠습니까?\\n이 작업은 되돌릴 수 없습니다.');
-    if (isConfirmed) {
-        localStorage.removeItem('mahjong_streak_records');
-        loadLeaderboard();
-        alert('연승 기록이 모두 삭제되었습니다.');
-    }
-}
-
-function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
+        if (counts
