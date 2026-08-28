@@ -1,5 +1,3 @@
-[file-tag: code-generated-file-0c0c58b4-08b7-4eed-9742-63fa504a2b76]
-
 let zipInstance = null;
 const tileSvgCache = {};
 
