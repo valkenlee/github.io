@@ -219,13 +219,21 @@ h1 {
     border-bottom: 1px solid #e0f2f1;
     padding-bottom: 4px;
 }
+/* 해설 항목 스타일 */
 .explanation-item {
-    margin-bottom: 6px;
-    padding: 6px 10px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
     border-left: 4px solid #2980b9;
-    background-color: #f4f9fc;
+    background-color: #f8f9fa;
     border-radius: 0 4px 4px 0;
+    font-size: 15px;
+    line-height: 1.5;
 }
+
+.explanation-item b {
+    color: #2c3e50;
+}
+
 .wait-type-badge {
     display: inline-block;
     padding: 2px 6px;
@@ -241,13 +249,13 @@ h1 {
 .badge-kanchan { background-color: #2980b9; }
 .badge-penchan { background-color: #c0392b; }
 
-/* 대기패 들어가는 위치 강조 가시성 */
+/* 대기패 강조 스타일 */
 .filled-slot {
     color: #e67e22;
     font-weight: bold;
     background-color: #fef5e7;
-    padding: 0 3px;
-    border-radius: 3px;
+    padding: 2px 4px;
+    border-radius: 4px;
     border: 1px dashed #e67e22;
 }
 
