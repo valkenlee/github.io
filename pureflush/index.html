@@ -37,18 +37,20 @@
             margin-top: 10px;
         }
         .btn-diff {
-            padding: 12px 4px;
-            font-size: 15px;
+            width: 100%;
+            padding: 14px 4px;
+            font-size: 16px;
             font-weight: bold;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-diff:hover:not(:disabled) { transform: translateY(-2px); }
-        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; transform: none; }
+        .btn-diff:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; transform: none; } 
+        .btn-diff.active { outline: 3px solid #3498db; outline-offset: 2px; }
         
         .btn-easy { background-color: #27ae60; }
         .btn-normal { background-color: #e67e22; }
@@ -94,15 +96,33 @@
             font-size: 16px;
         }
 
-        /* 연승 모드 안내 상자 (화면용) */
-        .streak-info-box {
-            background-color: #f5ee2e15;
-            border: 1px solid #8e44ad;
+        /* 타이머 게이지 바 스타일 */
+        .timer-gauge-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .timer-gauge-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #d35400, #e67e22);
+            border-radius: 5px;
+            transition: width 1s linear;
+        }
+
+        /* 동적 모드 안내 상자 */
+        .mode-info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
             border-radius: 8px;
             padding: 12px 16px;
             margin-top: 15px;
             font-size: 14px;
-            color: #4a235a;
+            color: #2c3e50;
             line-height: 1.5;
         }
 
@@ -188,7 +208,7 @@
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        /* 명예의 전당 입력 및 리더보드 스타일 */
+        /* 명예의 전당 리더보드 스타일 */
         .hall-of-fame {
             margin-top: 15px;
             background: #faf8f5;
@@ -256,7 +276,7 @@
         }
         .btn-reset-records:hover { background-color: #c0392b; }
 
-        /* 규칙 안내 모달 팝업 스타일 */
+        /* 모달 팝업 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -311,8 +331,8 @@
         @media (max-width: 600px) {
             body { padding: 10px; }
             .card { padding: 15px 10px; }
-            .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-            .btn-diff { font-size: 13px; padding: 10px 2px; }
+            .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .btn-diff { font-size: 14px; padding: 12px 2px; }
             .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
             .hand-display { gap: 2px; }
             .selection-grid { gap: 4px; }
@@ -330,28 +350,28 @@
         📦 Regular.zip 패키지를 읽어오는 중입니다...
     </div>
     
+    <!-- 난이도 선택 버튼 영역 -->
     <div class="difficulty-group">
-        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
-        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
-        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
-        <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
+        <button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
+        <button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
+        <button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
+        <button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 연승 모드</button>
     </div>
 
-    <!-- 연승 모드 화면 내 상시 안내 상자 -->
-    <div id="streak-info-box" class="streak-info-box" style="display: none;">
-        📌 <b>어려움 연승 모드 규칙:</b><br>
-        • ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>
-        • 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>
-        • 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
-    </div>
+    <!-- 선택된 모드 설명 안내 상자 -->
+    <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
     <div class="status-bar" style="margin-top: 15px;">
         <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
         <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
     </div>
 
-    <div style="text-align: center;">
-        <span id="suit-name" style="font-weight: bold; font-size: 18px; color: #444;"></span>
+    <!-- 타이머 게이지 바 영역 -->
+    <div id="timer-gauge-container" class="timer-gauge-container" style="display: none;">
+        <div id="timer-gauge-bar" class="timer-gauge-bar"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
         <div id="easy-hint" class="hint-badge" style="display: none;"></div>
     </div>
     
@@ -407,15 +427,15 @@
     const tileSvgCache = {};
 
     const SUITS = [
-        { code: 'Man', name: '만자패(萬)' },
-        { code: 'Pin', name: '통자패(筒)' },
-        { code: 'Sou', name: '삭자패(索)' }
+        { code: 'Man', name: '만자패' },
+        { code: 'Pin', name: '통자패' },
+        { code: 'Sou', name: '삭자패' }
     ];
     
     let currentSuitObj = null;
     let currentHand = [];
     let winningTiles = [];
-    let maxedOutWinningTiles = []; // 4장 보유하여 실제로는 오를 수 없는 패 목록
+    let maxedOutWinningTiles = [];
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -425,6 +445,13 @@
     let timerInterval = null;
     let timeLeft = 60;
     let pendingRecordStreak = 0;
+
+    const MODE_DESCRIPTIONS = {
+        easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제입니다.<br>• 상단에 오름패가 몇 개인지 힌트로 알려줍니다.`,
+        normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 때때로 3~4개의 오름패가 존재할 수 있습니다.`,
+        hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기(3~9면 대기) 문제입니다.<br>• 복잡한 모양이 출제되므로 주의 깊게 살펴봐야 합니다.`,
+        streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>• 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.`
+    };
 
     window.addEventListener('DOMContentLoaded', async () => {
         loadLeaderboard();
@@ -488,9 +515,34 @@
         generateQuiz();
     }
 
+    function updateModeUI() {
+        // 모든 버튼 활성화 강조 상태 초기화
+        document.querySelectorAll('.btn-diff').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // 하단 안내 상자 출력
+        const infoBox = document.getElementById('mode-info-box');
+        infoBox.innerHTML = MODE_DESCRIPTIONS[currentMode] || '';
+        infoBox.style.display = 'block';
+
+        // 연승 모드 테마 적용
+        if (currentMode === 'streak') {
+            infoBox.style.backgroundColor = '#f5ee2e15';
+            infoBox.style.borderColor = '#8e44ad';
+            infoBox.style.color = '#4a235a';
+        } else {
+            infoBox.style.backgroundColor = '#f8f9fa';
+            infoBox.style.borderColor = '#ced4da';
+            infoBox.style.color = '#2c3e50';
+        }
+    }
+
     function generateQuiz() {
         clearInterval(timerInterval);
         isSubmitted = false;
+
+        updateModeUI();
 
         let availableSuits = SUITS;
         if (currentSuitObj) {
@@ -528,12 +580,10 @@
         renderHand();
         renderButtons();
         
-        document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
-        
         const hintElem = document.getElementById('easy-hint');
         const streakElem = document.getElementById('streak-display');
         const timerElem = document.getElementById('timer-display');
-        const streakInfoBox = document.getElementById('streak-info-box');
+        const timerGaugeContainer = document.getElementById('timer-gauge-container');
 
         if (currentMode === 'easy') {
             hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
@@ -546,12 +596,12 @@
             streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
             streakElem.style.display = 'inline-block';
             timerElem.style.display = 'inline-block';
-            streakInfoBox.style.display = 'block';
+            timerGaugeContainer.style.display = 'block';
             startTimer();
         } else {
             streakElem.style.display = 'none';
             timerElem.style.display = 'none';
-            streakInfoBox.style.display = 'none';
+            timerGaugeContainer.style.display = 'none';
         }
 
         const submitBtn = document.getElementById('btn-submit');
@@ -579,6 +629,8 @@
 
     function updateTimerDisplay() {
         document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
+        const percentage = Math.max(0, (timeLeft / 60) * 100);
+        document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
     function handleTimeout() {
@@ -612,7 +664,6 @@
         return hand.sort((a, b) => a - b);
     }
 
-    // 오름패 계산 및 4장 모두 보유한 형태상 오름패(maxedOut) 구분 기능 추가
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
@@ -627,7 +678,6 @@
                 }
                 counts[tile]--;
             } else {
-                // 4장을 이미 가졌을 때, 가상으로 완성되는지 판별
                 counts[tile]++;
                 if (canFormHand(counts, 14)) {
                     maxedOut.push(tile);
@@ -725,7 +775,6 @@
 
         clearInterval(timerInterval);
 
-        // 정답 검증 시 maxedOutWinningTiles 패는 선택 여부에 영향을 주지 않도록 제외 및 비교
         const userAnswers = Array.from(selectedTiles).filter(tile => !maxedOutWinningTiles.includes(tile)).sort((a, b) => a - b);
         const isCorrect = userAnswers.length === winningTiles.length && 
                           userAnswers.every((val, idx) => val === winningTiles[idx]);
