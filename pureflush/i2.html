@@ -29,31 +29,53 @@
             margin-bottom: 20px;
         }
 
-        /* 난이도 버튼 그룹 */
+        /* 난이도 버튼 카드 그룹 */
         .difficulty-group {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-top: 10px;
         }
+        .diff-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         .btn-diff {
+            width: 100%;
             padding: 12px 4px;
             font-size: 15px;
             font-weight: bold;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 8px 8px 0 0;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-diff:hover:not(:disabled) { transform: translateY(-2px); }
-        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; transform: none; } 
+        .btn-diff:hover:not(:disabled) { filter: brightness(1.1); }
+        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; } 
         
         .btn-easy { background-color: #27ae60; }
         .btn-normal { background-color: #e67e22; }
         .btn-hard { background-color: #c0392b; }
         .btn-streak { background-color: #8e44ad; }
+
+        .diff-desc {
+            width: 100%;
+            flex: 1;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 10px 8px;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.4;
+            box-sizing: border-box;
+            text-align: center;
+            word-break: keep-all;
+        }
 
         .btn-submit {
             width: 100%;
@@ -94,7 +116,7 @@
             font-size: 16px;
         }
 
-        /* 타이머 게이지 바 스타일 추가 */
+        /* 타이머 게이지 바 스타일 */
         .timer-gauge-container {
             width: 100%;
             height: 10px;
@@ -112,7 +134,7 @@
             transition: width 1s linear;
         }
 
-        /* 연승 모드 안내 상자 (화면용) */
+        /* 연승 모드 안내 상자 */
         .streak-info-box {
             background-color: #f5ee2e15;
             border: 1px solid #8e44ad;
@@ -206,7 +228,7 @@
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        /* 명예의 전당 입력 및 리더보드 스타일 */
+        /* 명예의 전당 리더보드 스타일 */
         .hall-of-fame {
             margin-top: 15px;
             background: #faf8f5;
@@ -274,7 +296,7 @@
         }
         .btn-reset-records:hover { background-color: #c0392b; }
 
-        /* 규칙 안내 모달 팝업 스타일 */
+        /* 모달 팝업 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -329,8 +351,9 @@
         @media (max-width: 600px) {
             body { padding: 10px; }
             .card { padding: 15px 10px; }
-            .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .btn-diff { font-size: 13px; padding: 10px 2px; }
+            .diff-desc { font-size: 11px; padding: 8px 4px; }
             .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
             .hand-display { gap: 2px; }
             .selection-grid { gap: 4px; }
@@ -348,14 +371,27 @@
         📦 Regular.zip 패키지를 읽어오는 중입니다...
     </div>
     
+    <!-- 난이도 선택 영역 및 설명 추가 -->
     <div class="difficulty-group">
-        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
-        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
-        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
-        <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
+        <div class="diff-card">
+            <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
+            <div class="diff-desc">1~2개의 오름패만 존재하며, 오름패가 몇 개인지 힌트로 알려 줍니다.</div>
+        </div>
+        <div class="diff-card">
+            <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
+            <div class="diff-desc">일반적으로 2개의 오름패인 문제이지만, 이보다 오름패가 많은 경우도 있습니다.</div>
+        </div>
+        <div class="diff-card">
+            <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
+            <div class="diff-desc">기본적으로 여러 형태의 다면대기인 문제입니다. 생각보다 오름패의 개수가 많을 수 있습니다.</div>
+        </div>
+        <div class="diff-card">
+            <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 연승 모드</button>
+            <div class="diff-desc">어려움 레벨의 문제를 60초 시간제한 내 연속 정답을 도전합니다.</div>
+        </div>
     </div>
 
-    <!-- 연승 모드 화면 내 상시 안내 상자 -->
+    <!-- 연승 모드 안내 상자 -->
     <div id="streak-info-box" class="streak-info-box" style="display: none;">
         📌 <b>어려움 연승 모드 규칙:</b><br>
         • ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>
@@ -438,7 +474,7 @@
     let currentSuitObj = null;
     let currentHand = [];
     let winningTiles = [];
-    let maxedOutWinningTiles = []; // 4장 보유하여 실제로는 오를 수 없는 패 목록
+    let maxedOutWinningTiles = [];
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -605,7 +641,6 @@
 
     function updateTimerDisplay() {
         document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
-        // 게이지 바 비율 계산 (60초 기준)
         const percentage = Math.max(0, (timeLeft / 60) * 100);
         document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
@@ -641,7 +676,6 @@
         return hand.sort((a, b) => a - b);
     }
 
-    // 오름패 계산 및 4장 모두 보유한 형태상 오름패(maxedOut) 구분 기능 추가
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
@@ -656,7 +690,6 @@
                 }
                 counts[tile]--;
             } else {
-                // 4장을 이미 가졌을 때, 가상으로 완성되는지 판별
                 counts[tile]++;
                 if (canFormHand(counts, 14)) {
                     maxedOut.push(tile);
@@ -754,7 +787,6 @@
 
         clearInterval(timerInterval);
 
-        // 정답 검증 시 maxedOutWinningTiles 패는 선택 여부에 영향을 주지 않도록 제외 및 비교
         const userAnswers = Array.from(selectedTiles).filter(tile => !maxedOutWinningTiles.includes(tile)).sort((a, b) => a - b);
         const isCorrect = userAnswers.length === winningTiles.length && 
                           userAnswers.every((val, idx) => val === winningTiles[idx]);
