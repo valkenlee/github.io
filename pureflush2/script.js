@@ -203,6 +203,9 @@ function generateQuiz() {
     document.getElementById('result').style.display = 'none';
     document.getElementById('name-input-container').style.display = 'none';
     selectedTiles.clear();
+
+    // script.js 내 generateQuiz() 함수의 끝부분 근처
+    document.getElementById('selection-buttons').parentElement.style.display = 'block';    
 }
 
 function startTimer() {
