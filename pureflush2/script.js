@@ -456,4 +456,384 @@ function generateRandom13Tiles() {
     let hand = [];
     while (hand.length < 13) {
         let num = Math.floor(Math.random() * 9) + 1;
-        if (counts
+        if (counts[num] < 4) {
+            counts[num]++;
+            hand.push(num);
+        }
+    }
+    return hand.sort((a, b) => a - b);
+}
+
+function getWinningTiles(hand) {
+    let waits = [];
+    let maxedOut = [];
+    let decomps = {};
+    let isChiitoi = false;
+    let isRyanpeikou = false;
+    let counts = Array(10).fill(0);
+    hand.forEach(num => counts[num]++);
+
+    for (let tile = 1; tile <= 9; tile++) {
+        if (counts[tile] < 4) {
+            counts[tile]++;
+            const checkRes = checkCompleteHand(counts, tile, hand);
+            if (checkRes.complete) {
+                waits.push(tile);
+                decomps[tile] = checkRes.decompositions;
+                if (checkRes.isRyanpeikou) isRyanpeikou = true;
+                else if (checkRes.isChiitoi) isChiitoi = true;
+            }
+            counts[tile]--;
+        } else {
+            counts[tile]++;
+            const checkRes = checkCompleteHand(counts, tile, hand);
+            if (checkRes.complete) {
+                maxedOut.push(tile);
+                decomps[tile] = checkRes.decompositions;
+                if (checkRes.isRyanpeikou) isRyanpeikou = true;
+                else if (checkRes.isChiitoi) isChiitoi = true;
+            }
+            counts[tile]--;
+        }
+    }
+
+    if (isRyanpeikou) {
+        isChiitoi = false;
+    }
+
+    return { waits, maxedOut, decomps, isChiitoi, isRyanpeikou };
+}
+
+function checkCompleteHand(counts, addedTile, originalHand) {
+    const decompositions = findAllDecompositions(counts, addedTile, originalHand);
+    const isStandard = decompositions.length > 0;
+
+    let pairCount = 0;
+    let hasQuad = false;
+    for (let i = 1; i <= 9; i++) {
+        if (counts[i] === 2) pairCount++;
+        if (counts[i] === 4) hasQuad = true;
+    }
+    const is7Pairs = (pairCount === 7 && !hasQuad);
+
+    if (isStandard && is7Pairs) {
+        if (checkRyanpeikouForm(counts)) {
+            return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: true };
+        }
+    }
+
+    if (isStandard) {
+        return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: false };
+    }
+
+    if (is7Pairs) {
+        return { complete: true, decompositions: [], isChiitoi: true, isRyanpeikou: false };
+    }
+
+    return { complete: false, decompositions: [], isChiitoi: false, isRyanpeikou: false };
+}
+
+function classifyWaitTypes(decomp, addedTile, originalHand) {
+    let results = [];
+
+    let origCounts = Array(10).fill(0);
+    originalHand.forEach(n => origCounts[n]++);
+
+    if (decomp.pair === addedTile) {
+        results.push({ waitType: '단기', targetMeldStart: null });
+    }
+
+    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] >= 2) {
+        results.push({ waitType: '샤보', targetMeldStart: null });
+    }
+
+    for (let s of decomp.sequences) {
+        if (addedTile >= s && addedTile <= s + 2) {
+            const pos = addedTile - s;
+
+            if (pos === 1) {
+                results.push({ waitType: '간짱', targetMeldStart: s });
+            } else if ((s === 1 && addedTile === 3) || (s === 7 && addedTile === 7)) {
+                results.push({ waitType: '변짱', targetMeldStart: s });
+            } else if (pos === 0 || pos === 2) {
+                results.push({ waitType: '양면', targetMeldStart: s });
+            }
+        }
+    }
+
+    return results;
+}
+
+function findAllDecompositions(counts, addedTile, originalHand) {
+    let results = [];
+    let tempCounts = [...counts];
+
+    for (let pairVal = 1; pairVal <= 9; pairVal++) {
+        if (tempCounts[pairVal] >= 2) {
+            tempCounts[pairVal] -= 2;
+            
+            let meldResults = [];
+            findMeldsRecursive(tempCounts, [], meldResults);
+
+            meldResults.forEach(m => {
+                const trips = [...m.triplets].sort((a,b)=>a-b);
+                const seqs = [...m.sequences].sort((a,b)=>a-b);
+                
+                const decompCandidate = {
+                    pair: pairVal,
+                    triplets: trips,
+                    sequences: seqs
+                };
+
+                const waitInfos = classifyWaitTypes(decompCandidate, addedTile, originalHand);
+
+                waitInfos.forEach(waitInfo => {
+                    results.push({
+                        pair: pairVal,
+                        triplets: trips,
+                        sequences: seqs,
+                        waitType: waitInfo.waitType,
+                        targetMeldStart: waitInfo.targetMeldStart,
+                        key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}|W:${waitInfo.waitType}|M:${waitInfo.targetMeldStart}`
+                    });
+                });
+            });
+
+            tempCounts[pairVal] += 2;
+        }
+    }
+
+    let uniqueResults = [];
+    let seenKeys = new Set();
+    results.forEach(r => {
+        if (!seenKeys.has(r.key)) {
+            seenKeys.add(r.key);
+            uniqueResults.push(r);
+        }
+    });
+
+    return uniqueResults;
+}
+
+function findMeldsRecursive(counts, currentMelds, results) {
+    let first = 0;
+    for (let i = 1; i <= 9; i++) {
+        if (counts[i] > 0) { first = i; break; }
+    }
+
+    if (first === 0) {
+        let triplets = [];
+        let sequences = [];
+        currentMelds.forEach(m => {
+            if (m.type === 'triplet') triplets.push(m.val);
+            else if (m.type === 'sequence') sequences.push(m.val);
+        });
+        results.push({ triplets, sequences });
+        return;
+    }
+
+    if (counts[first] >= 3) {
+        counts[first] -= 3;
+        currentMelds.push({ type: 'triplet', val: first });
+        findMeldsRecursive(counts, currentMelds, results);
+        currentMelds.pop();
+        counts[first] += 3;
+    }
+
+    if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
+        counts[first]--;
+        counts[first + 1]--;
+        counts[first + 2]--;
+        currentMelds.push({ type: 'sequence', val: first });
+        findMeldsRecursive(counts, currentMelds, results);
+        currentMelds.pop();
+        counts[first]++;
+        counts[first + 1]++;
+        counts[first + 2]++;
+    }
+}
+
+function checkRyanpeikouForm(counts) {
+    let tempCounts = [...counts];
+    for (let i = 1; i <= 9; i++) {
+        if (tempCounts[i] >= 2) {
+            tempCounts[i] -= 2;
+            if (canFormTwoIdenticalChowPairs(tempCounts)) {
+                return true;
+            }
+            tempCounts[i] += 2;
+        }
+    }
+    return false;
+}
+
+function canFormTwoIdenticalChowPairs(counts) {
+    let tempCounts = [...counts];
+    let doubleChowCount = 0;
+
+    for (let i = 1; i <= 7; i++) {
+        while (tempCounts[i] >= 2 && tempCounts[i+1] >= 2 && tempCounts[i+2] >= 2) {
+            tempCounts[i] -= 2;
+            tempCounts[i+1] -= 2;
+            tempCounts[i+2] -= 2;
+            doubleChowCount++;
+        }
+    }
+    return doubleChowCount === 2;
+}
+
+async function renderHand() {
+    const container = document.getElementById('hand-container');
+    container.innerHTML = '';
+    
+    for (const num of currentHand) {
+        const img = document.createElement('img');
+        img.src = await getTileImageSrc(currentSuitObj.code, num);
+        img.className = 'tile-img';
+        img.alt = `${currentSuitObj.code}${num}`;
+        container.appendChild(img);
+    }
+}
+
+function renderButtons() {
+    const grid = document.getElementById('selection-buttons');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-number';
+        btn.id = `btn-num-${i}`;
+        btn.innerText = `${i}`;
+        btn.onclick = () => toggleSelect(i, btn);
+        grid.appendChild(btn);
+    }
+}
+
+function toggleSelect(num, btn) {
+    if (isSubmitted) return;
+
+    if (selectedTiles.has(num)) {
+        selectedTiles.delete(num);
+        btn.classList.remove('selected');
+    } else {
+        selectedTiles.add(num);
+        btn.classList.add('selected');
+    }
+}
+
+function handleSubmitOrNext() {
+    if (isSubmitted) {
+        generateQuiz();
+        return;
+    }
+
+    if (selectedTiles.size === 0) return;
+
+    clearInterval(timerInterval);
+
+    const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
+    
+    const isCorrectActual = userAnswers.length === winningTiles.length && 
+                            userAnswers.every((val, idx) => val === winningTiles[idx]);
+
+    const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+    const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
+                                userAnswers.every((val, idx) => val === theoreticalList[idx]);
+
+    const isCorrect = isCorrectActual || isCorrectTheoretical;
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+
+    const answerText = getAnswerString();
+
+    if (isCorrect) {
+        resultDiv.className = 'result-message correct';
+        if (currentMode === 'streak') {
+            streakCount++;
+            document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
+            resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!)<br>👉 ${answerText}`;
+        } else {
+            resultDiv.innerHTML = `🎉 정답입니다!<br>👉 ${answerText}`;
+        }
+    } else {
+        resultDiv.className = 'result-message incorrect';
+        resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
+        if (currentMode === 'streak') {
+            checkStreakRecordAndReset();
+        }
+    }
+
+    isSubmitted = true;
+    const submitBtn = document.getElementById('btn-submit');
+    submitBtn.innerText = currentMode === 'streak' ? '다음 연승 문제로 이동' : '같은 난이도로 새 문제 제출';
+    submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
+}
+
+function checkStreakRecordAndReset() {
+    if (streakCount >= 10) {
+        pendingRecordStreak = streakCount;
+        document.getElementById('name-input-container').style.display = 'block';
+    }
+    streakCount = 0;
+}
+
+function saveRecord() {
+    const inputElem = document.getElementById('player-name-input');
+    const playerName = inputElem.value.trim() || '익명';
+    
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    const newRecord = {
+        name: playerName.substring(0, 20),
+        streak: pendingRecordStreak,
+        date: dateStr
+    };
+
+    let records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
+    records.push(newRecord);
+    records.sort((a, b) => b.streak - a.streak);
+    records = records.slice(0, 10);
+
+    localStorage.setItem('mahjong_streak_records', JSON.stringify(records));
+    
+    document.getElementById('name-input-container').style.display = 'none';
+    inputElem.value = '';
+    loadLeaderboard();
+}
+
+function loadLeaderboard() {
+    const records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
+    const ul = document.getElementById('record-list-ul');
+    ul.innerHTML = '';
+
+    if (records.length === 0) {
+        ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 10연승 이상 기록이 없습니다. 도전에 성공해 보세요!</li>';
+        return;
+    }
+
+    records.forEach((rec, idx) => {
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        li.innerHTML = `
+            <span class="record-rank">${idx + 1}위</span>
+            <span class="record-name">${escapeHtml(rec.name)}</span>
+            <span class="record-score">${rec.streak}연승</span>
+            <span class="record-date">${rec.date}</span>
+        `;
+        ul.appendChild(li);
+    });
+}
+
+function resetLeaderboard() {
+    const isConfirmed = confirm('정말로 저장된 모든 연승 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');
+    if (isConfirmed) {
+        localStorage.removeItem('mahjong_streak_records');
+        loadLeaderboard();
+        alert('연승 기록이 모두 삭제되었습니다.');
+    }
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
