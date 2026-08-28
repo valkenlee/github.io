@@ -234,6 +234,7 @@ function getWaitTypeBadgeHtml(waitType) {
         default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
     }
 }
+
 /* 패 분해 구조 및 대기 형태 해설 렌더링 */
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
@@ -261,34 +262,43 @@ function renderDecompositionExplanation() {
                 let groupKey = '';
 
                 if (d.waitType === '양면') {
-                    // 양면대기: (s-1)과 (s+3) 패가 대기패가 됨 -> [ (s-1), s, s+1, (s+3) ] 형태로 묶음
-                    const wait1 = d.targetMeldStart - 1;
-                    const wait2 = d.targetMeldStart + 2;
-                    const meldStr = `<span class="filled-slot">(${wait1})</span>, <span style="color:#2980b9; font-weight:bold;">${d.targetMeldStart}, ${d.targetMeldStart+1}</span>, <span class="filled-slot">(${wait2})</span>`;
-                    
+                    // 양면대기: targetMeldStart(s)에 대해 양쪽 대기패 (s-1)과 (s+2) 구성
+                    const w1 = d.targetMeldStart - 1;
+                    const w2 = d.targetMeldStart + 2;
+
+                    // 1~9 범위 내의 패만 표시 (0이나 10 등 범위를 벗어나는 숫자 방지)
+                    const w1Str = (w1 >= 1 && w1 <= 9) ? `<span class="filled-slot">(${w1})</span>` : '';
+                    const w2Str = (w2 >= 1 && w2 <= 9) ? `<span class="filled-slot">(${w2})</span>` : '';
+
+                    let meldParts = [];
+                    if (w1Str) meldParts.push(w1Str);
+                    meldParts.push(d.targetMeldStart);
+                    meldParts.push(d.targetMeldStart + 1);
+                    if (w2Str) meldParts.push(w2Str);
+
                     parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
                     d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
                     d.sequences.forEach(s => {
                         if (s === d.targetMeldStart) {
-                            parts.push(`[${meldStr}]`);
+                            parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldParts.join(', ')}]</span>`);
                         } else {
                             parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
                         }
                     });
 
-                    // 대기패(1,4)와 상관없이 동일 슌츠 시작지점(targetMeldStart) 기준 그룹화
+                    // 1과 4 어느 대기패에서 접근하든 동일한 손패 분해 형태면 같은 groupKey로 묶음
                     groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
 
                 } else if (d.waitType === '샤보') {
-                    // 샤보대기: 손패의 또 다른 또이츠(머리 candidate)와 짝을 이루어 [2,2,(2)] [4,4,(4)] 형태 표현
+                    // 샤보대기: 해당 분해 형태에서 또이츠 패들을 묶어 대기 형태로 표현
                     parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
                     d.triplets.forEach(t => {
                         parts.push(`<span style="color:#27ae60; font-weight:bold;">[${t}, ${t}, <span class="filled-slot">(${t})</span>]</span>`);
                     });
                     d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
 
-                    // 샤보 대기는 동일 머리(pair) 및 커츠(triplets) 구조를 공유하므로 묶어 처리
-                    groupKey = `shanpon_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
+                    // 샤보는 pair(머리)와 슌츠 목록이 같으면 동일 손패 구조로 묶음
+                    groupKey = `shanpon_p${d.pair}_s${d.sequences.join(',')}`;
 
                 } else {
                     // 단기, 간짱, 변짱 대기 처리
