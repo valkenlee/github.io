@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청일색 오름패 계산기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; color: #333; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #45a049; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 5px solid #4CAF50;
+            font-size: 18px;
+        }
+        .error { border-left-color: #f44336; color: #f44336; }
+    </style>
+</head>
+<body>
+
+    <h2>청일색 오름패 계산기</h2>
+    <div class="input-group">
+        <label for="handInput">13자리 숫자 입력 (예: 1112345678999)</label>
+        <input type="text" id="handInput" maxlength="13" placeholder="예: 1112345678999">
+    </div>
+    <button onclick="calculateWaits()">오름패 찾기</button>
+
+    <div id="resultBox" class="result" style="display:none;"></div>
+
+    <script>
+        function calculateWaits() {
+            const input = document.getElementById('handInput').value.trim();
+            const resultBox = document.getElementById('resultBox');
+            resultBox.style.display = 'block';
+
+            // 입력 검증
+            if (!/^[1-9]{13}$/.test(input)) {
+                resultBox.className = "result error";
+                resultBox.innerHTML = "1부터 9까지의 숫자 13자리를 정확히 입력해 주세요.";
+                return;
+            }
+
+            // 패 개수 카운트 (1~9)
+            const counts = Array(10).fill(0);
+            for (let char of input) {
+                counts[parseInt(char)]++;
+            }
+
+            // 동일한 패가 5개 이상 들어갔는지 검사
+            for (let i = 1; i <= 9; i++) {
+                if (counts[i] > 4) {
+                    resultBox.className = "result error";
+                    resultBox.innerHTML = `오류: ${i} 패가 4개를 초과했습니다.`;
+                    return;
+                }
+            }
+
+            const winningTiles = [];
+
+            // 1부터 9까지의 패를 하나씩 추가해보며 완벽한 형태(14장)가 되는지 확인
+            for (let tile = 1; tile <= 9; tile++) {
+                if (counts[tile] < 4) {
+                    counts[tile]++;
+                    if (canWin(counts)) {
+                        winningTiles.push(tile);
+                    }
+                    counts[tile]--;
+                }
+            }
+
+            // 결과 출력
+            resultBox.className = "result";
+            if (winningTiles.length > 0) {
+                resultBox.innerHTML = `<strong>오름패:</strong> ${winningTiles.join(', ')}`;
+            } else {
+                resultBox.innerHTML = "오름패가 없습니다 (노텐).";
+            }
+        }
+
+        // 14장의 패가 완성형(노텐이 아닌 오름 형태)인지 확인
+        function canWin(counts) {
+            // 1. 칠대자(치토이츠) 검사 (머리 7쌍)
+            let pairs = 0;
+            for (let i = 1; i <= 9; i++) {
+                if (counts[i] === 2) pairs++;
+            }
+            if (pairs === 7) return true;
+
+            // 2. 일반 형태 검사 (머리 1개 + 몸통 4개)
+            const tempCounts = [...counts];
+            for (let head = 1; head <= 9; head++) {
+                if (tempCounts[head] >= 2) {
+                    tempCounts[head] -= 2; // 머리 결정
+                    if (checkMentsu(tempCounts, 0)) {
+                        return true;
+                    }
+                    tempCounts[head] += 2; // 백트랙
+                }
+            }
+            return false;
+        }
+
+        // 몸통(커즈 또는 슌즈) 4개를 완성할 수 있는지 재귀적으로 확인
+        function checkMentsu(counts, depth) {
+            if (depth === 4) return true;
+
+            // 가장 작은 숫자의 패 찾기
+            let first = 0;
+            for (let i = 1; i <= 9; i++) {
+                if (counts[i] > 0) {
+                    first = i;
+                    break;
+                }
+            }
+            if (first === 0) return true;
+
+            // 커즈(같은 패 3장) 제거 시도
+            if (counts[first] >= 3) {
+                counts[first] -= 3;
+                if (checkMentsu(counts, depth + 1)) return true;
+                counts[first] += 3;
+            }
+
+            // 슌즈(연속된 패 3장) 제거 시도
+            if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
+                counts[first]--;
+                counts[first + 1]--;
+                counts[first + 2]--;
+                if (checkMentsu(counts, depth + 1)) return true;
+                counts[first]++;
+                counts[first + 1]++;
+                counts[first + 2]++;
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html>
