@@ -482,7 +482,7 @@ function renderDecompositionExplanation() {
         if (group.htmlContent) {
             html += `<div class="explanation-item">${group.htmlContent}</div>`;
         } else {
-            html += `<div class="explanation-item">${badge} <b>${tileHeader}</b> └ ${group.partsStr}</div>`;
+            html += `<div class="explanation-item">${badge} <b>${tileHeader}</b> --- ${group.partsStr}</div>`;
         }
     });
 
