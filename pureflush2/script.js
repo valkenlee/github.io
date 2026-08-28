@@ -235,18 +235,20 @@ function getWaitTypeBadgeHtml(waitType) {
     }
 }
 
-/* 안정화된 해설 렌더링 함수 */
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
     let html = `<div class="explanation-box">`;
     html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
 
-    const allWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+    let origCounts = Array(10).fill(0);
+    currentHand.forEach(n => origCounts[n]++);
+
+    const validWaits = [...winningTiles].sort((a, b) => a - b);
     let itemsList = [];
 
     if (isChiitoiHand) {
-        allWaits.forEach(tile => {
+        validWaits.forEach(tile => {
             itemsList.push({
                 waitType: '단기',
                 sortOrder: 3,
@@ -256,7 +258,7 @@ function renderDecompositionExplanation() {
             });
         });
     } else {
-        allWaits.forEach(tile => {
+        validWaits.forEach(tile => {
             const decomps = winningDecompositions[tile] || [];
             decomps.forEach(d => {
                 let parts = [];
@@ -266,8 +268,11 @@ function renderDecompositionExplanation() {
                     const w1 = d.targetMeldStart - 1;
                     const w2 = d.targetMeldStart + 2;
                     
-                    const w1Str = (w1 >= 1 && w1 <= 9) ? `(${w1})` : '';
-                    const w2Str = (w2 >= 1 && w2 <= 9) ? `(${w2})` : '';
+                    const w1Valid = (w1 >= 1 && w1 <= 9 && origCounts[w1] < 4);
+                    const w2Valid = (w2 >= 1 && w2 <= 9 && origCounts[w2] < 4);
+
+                    const w1Str = w1Valid ? `(${w1})` : '';
+                    const w2Str = w2Valid ? `(${w2})` : '';
 
                     let meldParts = [];
                     if (w1Str) meldParts.push(w1Str);
@@ -285,41 +290,49 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    const waitTiles = [w1, w2].filter(x => x >= 1 && x <= 9).sort((a,b)=>a-b);
-                    const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
-
-                    itemsList.push({
-                        waitType: '양면',
-                        sortOrder: 1,
-                        groupKey: groupKey,
-                        tiles: waitTiles,
-                        partsStr: parts.join(' ')
-                    });
+                    const waitTiles = [w1, w2].filter(x => x >= 1 && x <= 9 && origCounts[x] < 4).sort((a,b)=>a-b);
+                    if (waitTiles.length > 0) {
+                        const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                        itemsList.push({
+                            waitType: '양면',
+                            sortOrder: 1,
+                            groupKey: groupKey,
+                            tiles: waitTiles,
+                            partsStr: parts.join(' ')
+                        });
+                    }
 
                 } else if (waitType === '샤보') {
-                    let shanponTiles = [d.pair];
+                    let shanponTiles = [];
+                    if (origCounts[d.pair] < 4) shanponTiles.push(d.pair);
                     d.triplets.forEach(t => {
-                        if (!shanponTiles.includes(t)) shanponTiles.push(t);
+                        if (origCounts[t] < 4 && !shanponTiles.includes(t)) {
+                            shanponTiles.push(t);
+                        }
                     });
                     shanponTiles.sort((a, b) => a - b);
 
-                    shanponTiles.forEach(st => {
-                        parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st}, ${st}, <span class="filled-slot">(${st})</span>]</span>`);
-                    });
+                    if (shanponTiles.length > 0) {
+                        shanponTiles.forEach(st => {
+                            parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st}, ${st}, <span class="filled-slot">(${st})</span>]</span>`);
+                        });
 
-                    d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
+                        d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
 
-                    const groupKey = `shanpon_p${d.pair}_s${d.sequences.join(',')}`;
+                        const groupKey = `shanpon_tiles_${shanponTiles.join('_')}_seqs_${d.sequences.join('_')}`;
 
-                    itemsList.push({
-                        waitType: '샤보',
-                        sortOrder: 2,
-                        groupKey: groupKey,
-                        tiles: shanponTiles,
-                        partsStr: parts.join(' ')
-                    });
+                        itemsList.push({
+                            waitType: '샤보',
+                            sortOrder: 2,
+                            groupKey: groupKey,
+                            tiles: shanponTiles,
+                            partsStr: parts.join(' ')
+                        });
+                    }
 
                 } else {
+                    if (origCounts[tile] >= 4) return;
+
                     if (waitType === '단기') {
                         parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
                     } else {
@@ -528,7 +541,7 @@ function classifyWaitTypes(decomp, addedTile, originalHand) {
         results.push({ waitType: '단기', targetMeldStart: null });
     }
 
-    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] >= 2) {
+    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] === 2) {
         results.push({ waitType: '샤보', targetMeldStart: null });
     }
 
