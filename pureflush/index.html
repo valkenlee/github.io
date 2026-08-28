@@ -474,6 +474,7 @@
         window.addEventListener('keydown', (e) => {
             if (document.activeElement.tagName === 'INPUT') return;
             if (e.key >= '1' && e.key <= '9') {
+                if (isSubmitted) return; // 제출된 상태에서는 키보드 입력 차단
                 const num = parseInt(e.key);
                 const btn = document.getElementById(`btn-num-${num}`);
                 if (btn) toggleSelect(num, btn);
@@ -744,35 +745,37 @@
         return { waits, maxedOut, isChiitoi, isRyanpeikou };
     }
 
-    /* 완성 및 량페코/치토이즈 검증 함수 */
+    /* 완성 및 량페코/치토이츠 검증 함수 수정본 */
     function checkCompleteHand(counts, addedTile) {
         // 1. 일반 4멘츠 1작두 형태 완성 여부 검사
         const isStandard = canFormStandardHand(counts, 14);
-
-        // 2. 7쌍(또이츠 7개) 구조 여부 검사
+    
+        // 2. 7쌍(또이츠 7개) 구조 여부 검사 (4장 중복 패가 없어야 함)
         let pairCount = 0;
+        let hasQuad = false;
         for (let i = 1; i <= 9; i++) {
             if (counts[i] === 2) pairCount++;
+            if (counts[i] === 4) hasQuad = true; // 4장 동일 패는 치이토이 불인정
         }
-        const is7Pairs = (pairCount === 7 && counts[addedTile] === 2);
-
-        // 3. 량페코 검사: 일반 형태(4멘츠 1작두)로 완성이 되면서 동시에 동일 슌츠 2쌍(총 량페코)을 이루는지 검증
+        const is7Pairs = (pairCount === 7 && !hasQuad);
+    
+        // 3. 량페코 검사: 일반형 완성이면서 동시에 치이토이츠 형태(또이츠 7개)를 만족할 때
         if (isStandard && is7Pairs) {
             if (checkRyanpeikouForm(counts)) {
                 return { complete: true, isChiitoi: false, isRyanpeikou: true };
             }
         }
-
+    
         // 4. 일반 형태 완성 시
         if (isStandard) {
             return { complete: true, isChiitoi: false, isRyanpeikou: false };
         }
-
+    
         // 5. 순수 치이토이츠(단기대기) 완성 시
         if (is7Pairs) {
             return { complete: true, isChiitoi: true, isRyanpeikou: false };
         }
-
+    
         return { complete: false, isChiitoi: false, isRyanpeikou: false };
     }
 
