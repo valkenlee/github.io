@@ -3,63 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 대기패 연습기</title>
+    <title>마작 청일색 텐파이 대기패 퀴즈 (연승 모드 포함)</title>
+    <!-- ZIP 파일 처리를 위한 JSZip 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>🀄 청일색 대기패 연습기</h1>
+<h1>🀄 청일색 텐파이 대기패 퀴즈</h1>
 
-    <div id="mode-selector">
-        <button class="mode-btn active" onclick="setMode('easy')">쉬움 (대기 1~2개)</button>
-        <button class="mode-btn" onclick="setMode('normal')">보통 (대기 2~4개)</button>
-        <button class="mode-btn" onclick="setMode('hard')">어려움 (대기 3~9개)</button>
-        <button class="mode-btn streak-mode" onclick="setMode('streak')">🔥 어려움 연승 모드</button>
+<div class="card">
+    <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
+        📦 Regular.zip 패키지를 읽어오는 중입니다...
     </div>
-
-    <div id="timer-bar-container"><div id="timer-bar"></div></div>
     
-    <div id="streak-info">
-        <span>현재 연승: <strong id="current-streak">0</strong></span>
-        <span>최고 연승: <strong id="best-streak">0</strong></span>
+    <div class="difficulty-group">
+        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
+        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
+        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
+        <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
     </div>
 
-    <!-- 명예의 전당 (Top 10) 영역 -->
-    <div id="hall-of-fame" class="hof-container hidden">
-        <div class="hof-title">🏆 명예의 전당 (어려움 연승 모드 Top 10)</div>
-        <ol id="hof-list" class="hof-list"></ol>
+    <!-- 연승 모드 화면 내 상시 안내 상자 -->
+    <div id="streak-info-box" class="streak-info-box" style="display: none;">
+        📌 <b>어려움 연승 모드 규칙:</b><br>
+        • ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>
+        • 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>
+        • 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
     </div>
 
-    <div id="loader" class="loader">
-        <div class="spinner"></div>
-        <div id="loader-text">이미지 압축 파일을 불러오는 중...</div>
+    <div class="status-bar" style="margin-top: 15px;">
+        <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
+        <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
     </div>
 
-    <div id="game-container">
-        <!-- 타패 정보 영역 -->
-        <div id="discard-info" class="discard-container hidden">
-            <span>버린 패:</span>
-            <div id="discard-tile" class="discard-tile-box"></div>
+    <div style="text-align: center;">
+        <span id="suit-name" style="font-weight: bold; font-size: 18px; color: #444;"></span>
+        <div id="easy-hint" class="hint-badge" style="display: none;"></div>
+    </div>
+    
+    <div class="hand-container-wrapper">
+        <div class="hand-display" id="hand-container"></div>
+    </div>
+</div>
+
+<div class="card" id="quiz-area" style="display: none;">
+    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
+    <div class="selection-grid" id="selection-buttons"></div>
+    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
+    <div id="result" class="result-message" style="display: none;"></div>
+    
+    <!-- 10연승 이상 달성 시 이름 입력 양식 -->
+    <div id="name-input-container" style="display: none;" class="hall-of-fame">
+        <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
+        <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당에 등록할 이름을 입력해 주세요 (최대 20자).</p>
+        <div class="name-input-box">
+            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)">
+            <button onclick="saveRecord()">기록 등록</button>
         </div>
-
-        <div class="hand-container">
-            <p><strong>[ 현재 손패 (13장) ]</strong></p>
-            <div id="hand-display" class="tile-list"></div>
-            <div id="hint-box" class="hint"></div>
-        </div>
-
-        <p><strong>[ 대기패를 모두 선택하세요 ]</strong></p>
-        <div id="wait-selector" class="tile-list"></div>
-
-        <div style="margin-top: 20px;">
-            <button id="submit-btn" class="btn" onclick="checkAnswer()">정답 확인</button>
-            <button id="next-btn" class="btn hidden" onclick="generateProblem()">다음 문제</button>
-        </div>
-
-        <div id="result-message" class="result"></div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<!-- 명예의 전당 리더보드 -->
+<div class="card hall-of-fame">
+    <h3>🏆 연승 모드 명예의 전당 (Top 10)</h3>
+    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;">
+        🔒 기록은 사용 중인 브라우저에만 저장되며, 타인에게는 보이지 않습니다.
+    </p>
+    <div id="leaderboard-content">
+        <ul class="record-list" id="record-list-ul"></ul>
+    </div>
+    <button class="btn-reset-records" onclick="resetLeaderboard()">🗑️ 기록 전체 삭제</button>
+</div>
+
+<!-- 연승 모드 안내 팝업 모달 -->
+<div class="modal-overlay" id="streak-modal">
+    <div class="modal-content">
+        <h2>⚡ 어려움 연승 모드</h2>
+        <div class="modal-body">
+            ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br><br>
+            🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br><br>
+            🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
+        </div>
+        <button class="modal-btn" onclick="startStreakModeAfterNotice()">도전 시작하기</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
