@@ -260,6 +260,7 @@ function validateHandDecomposition(handCounts, decomp, addedTile, waitType, targ
     return true;
 }
 
+
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
@@ -301,12 +302,11 @@ function renderDecompositionExplanation() {
                     const w1Valid = validWaitsSet.has(w1);
                     const w2Valid = validWaitsSet.has(w2);
 
-                    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a,b)=>a-b);
+                    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a, b) => a - b);
                     
                     // 예외 처리: 유효 대기패가 2개 미만(1개)인 경우 출력을 차단
                     if (waitTiles.length < 2) return;
 
-                    // 대기패 항목에 주황색 하이라이트 태그(<span class="filled-slot">) 적용
                     const w1Str = w1Valid ? `<span class="filled-slot">(${w1})</span>` : '';
                     const w2Str = w2Valid ? `<span class="filled-slot">(${w2})</span>` : '';
 
@@ -314,7 +314,7 @@ function renderDecompositionExplanation() {
                     parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
                     d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
 
-                    let targetMeldHandled = false; // 대기 슌츠 1개 고정 처리 플래그
+                    let targetMeldHandled = false; // 대기 슌츠 1개만 고정 처리
                     d.sequences.forEach(s => {
                         if (!targetMeldHandled && s === d.targetMeldStart) {
                             let meldParts = [];
@@ -330,6 +330,7 @@ function renderDecompositionExplanation() {
                         }
                     });
 
+                    // 대기 조합 및 구성 패 기반 유니크 키 생성
                     const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
                     itemsList.push({
                         waitType: '양면',
@@ -350,6 +351,7 @@ function renderDecompositionExplanation() {
                     });
                     shanponTiles.sort((a, b) => a - b);
 
+                    // 샤보 대기는 2개쌍 형태로 묶어서 출력 (3개 이상인 경우 모든 2개 조합 개별 생성)
                     if (shanponTiles.length >= 2) {
                         for (let i = 0; i < shanponTiles.length; i++) {
                             for (let j = i + 1; j < shanponTiles.length; j++) {
@@ -367,10 +369,11 @@ function renderDecompositionExplanation() {
                                 });
                                 d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
 
+                                // 샤보 쌍 전용 고유 키 생성 (중복 출력 방지)
                                 itemsList.push({
                                     waitType: '샤보',
                                     sortOrder: 2,
-                                    groupKey: `shanpon_pair_${st1}_${st2}_seqs_${d.sequences.join('_')}`,
+                                    groupKey: `shanpon_pair_${st1}_${st2}_seqs_${d.sequences.join('_')}_p${d.pair}`,
                                     tiles: [st1, st2],
                                     partsStr: parts.join(' ')
                                 });
@@ -428,6 +431,7 @@ function renderDecompositionExplanation() {
         });
     }
 
+    // groupKey 기준 중복 제거
     let uniqueMap = new Map();
     itemsList.forEach(item => {
         if (!uniqueMap.has(item.groupKey)) {
