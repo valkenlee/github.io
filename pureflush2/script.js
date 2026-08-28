@@ -234,7 +234,6 @@ function getWaitTypeBadgeHtml(waitType) {
         default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
     }
 }
-
 /* 패 분해 구조 및 대기 형태 해설 렌더링 */
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
@@ -253,50 +252,75 @@ function renderDecompositionExplanation() {
                     tile: tile,
                     waitType: '단기',
                     groupKey: `chiitoi_${tile}`,
-                    htmlContent: `${getWaitTypeBadgeHtml('단기')} └ 치이토이츠(7쌍) 완성 형태 → <b style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</b>`
+                    htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <b style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</b>`
                 });
             }
         } else {
             decomps.forEach(d => {
                 let parts = [];
-                // 머리
-                if (d.waitType === '단기') {
-                    parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
-                } else {
+                let groupKey = '';
+
+                if (d.waitType === '양면') {
+                    // 양면대기: (s-1)과 (s+3) 패가 대기패가 됨 -> [ (s-1), s, s+1, (s+3) ] 형태로 묶음
+                    const wait1 = d.targetMeldStart - 1;
+                    const wait2 = d.targetMeldStart + 2;
+                    const meldStr = `<span class="filled-slot">(${wait1})</span>, <span style="color:#2980b9; font-weight:bold;">${d.targetMeldStart}, ${d.targetMeldStart+1}</span>, <span class="filled-slot">(${wait2})</span>`;
+                    
                     parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
-                }
-
-                // 커츠
-                d.triplets.forEach(t => {
-                    if (d.waitType === '샤보' && t === tile) {
-                        parts.push(`<span style="color:#27ae60; font-weight:bold;">[${t},${t},<span class="filled-slot">(${t})</span>]</span>`);
-                    } else {
-                        parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`);
-                    }
-                });
-
-                // 슌츠
-                let targetMeldHandled = false;
-                d.sequences.forEach(s => {
-                    if (!targetMeldHandled && d.targetMeldStart === s && (d.waitType === '양면' || d.waitType === '간짱' || d.waitType === '변짱')) {
-                        let meldStr = [];
-                        for (let i = 0; i < 3; i++) {
-                            let curr = s + i;
-                            if (curr === tile) {
-                                meldStr.push(`<span class="filled-slot">(${curr})</span>`);
-                            } else {
-                                meldStr.push(curr);
-                            }
+                    d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
+                    d.sequences.forEach(s => {
+                        if (s === d.targetMeldStart) {
+                            parts.push(`[${meldStr}]`);
+                        } else {
+                            parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
                         }
-                        parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldStr.join(',')}]</span>`);
-                        targetMeldHandled = true;
-                    } else {
-                        parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
-                    }
-                });
+                    });
 
-                // 대기 유형과 대기패를 모두 조합한 고유 그룹키
-                let groupKey = `${d.waitType}_tile${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                    // 대기패(1,4)와 상관없이 동일 슌츠 시작지점(targetMeldStart) 기준 그룹화
+                    groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+
+                } else if (d.waitType === '샤보') {
+                    // 샤보대기: 손패의 또 다른 또이츠(머리 candidate)와 짝을 이루어 [2,2,(2)] [4,4,(4)] 형태 표현
+                    parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
+                    d.triplets.forEach(t => {
+                        parts.push(`<span style="color:#27ae60; font-weight:bold;">[${t}, ${t}, <span class="filled-slot">(${t})</span>]</span>`);
+                    });
+                    d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
+
+                    // 샤보 대기는 동일 머리(pair) 및 커츠(triplets) 구조를 공유하므로 묶어 처리
+                    groupKey = `shanpon_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
+
+                } else {
+                    // 단기, 간짱, 변짱 대기 처리
+                    if (d.waitType === '단기') {
+                        parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
+                    } else {
+                        parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
+                    }
+
+                    d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
+
+                    let targetMeldHandled = false;
+                    d.sequences.forEach(s => {
+                        if (!targetMeldHandled && d.targetMeldStart === s && (d.waitType === '간짱' || d.waitType === '변짱')) {
+                            let meldStr = [];
+                            for (let i = 0; i < 3; i++) {
+                                let curr = s + i;
+                                if (curr === tile) {
+                                    meldStr.push(`<span class="filled-slot">(${curr})</span>`);
+                                } else {
+                                    meldStr.push(curr);
+                                }
+                            }
+                            parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldStr.join(',')}]</span>`);
+                            targetMeldHandled = true;
+                        } else {
+                            parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
+                        }
+                    });
+
+                    groupKey = `${d.waitType}_tile${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                }
 
                 itemsList.push({
                     tile: tile,
