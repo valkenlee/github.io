@@ -43,11 +43,11 @@
     </div>
 </div>
 
-<!-- 🔒 히든 계산기 / 패 분석기 영역 -->
+<!-- 🔒 히든 패 분석기 영역 -->
 <div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; background: #faf5ff;">
     <h3 style="margin-top:0; color:#8e44ad; text-align:center;">🕵️‍♂️ 히든 패 분석기 (자유 패 입력)</h3>
     
-    <!-- 1. 텍스트 직접 입력창 추가 -->
+    <!-- 1. 텍스트 직접 입력창 -->
     <div style="text-align: center; margin-bottom: 15px;">
         <label for="custom-text-input" style="font-weight: bold; font-size: 14px;">⌨️ 숫자 직접 입력 (예: 1112345678999):</label><br>
         <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <!-- 2. 수패 무늬 선택 (자동 랜덤 지정됨) -->
+    <!-- 2. 수패 무늬 선택 (자동/랜덤 선택) -->
     <div style="text-align: center; margin-bottom: 12px;">
         <label><b>수패 선택: </b></label>
         <select id="custom-suit-select" onchange="updateCustomHandDisplay()" style="padding: 5px 10px; font-size:15px; border-radius: 6px;">
@@ -89,6 +89,7 @@
     <div id="custom-result" class="result-message" style="display: none;"></div>
 </div>
 
+    
 <div class="card" id="quiz-area" style="display: none;">
     <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요: <small style="font-size:12px; font-weight:normal; color:#666;">(단축키: 1~9, Enter)</small></h3>
     <div class="selection-grid" id="selection-buttons"></div>
