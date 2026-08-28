@@ -925,107 +925,164 @@ function escapeHtml(text) {
 }
 
 
-// --- 히든 모드 관련 변수 및 클릭 카운터 ---
-let debugClickCount = 0;
-let debugClickTimer = null;
+// [기존 변수 선언 영역 아래 추가]
+let titleClickCount = 0;
+let customHand = []; // 히든 분석기용 손패 배열 (최대 13장)
 
-function handleTitleClick() {
-    debugClickCount++;
-    clearTimeout(debugClickTimer);
+window.addEventListener('DOMContentLoaded', async () => {
+    loadLeaderboard();
     
-    if (debugClickCount >= 5) {
-        debugClickCount = 0;
-        const debugCard = document.getElementById('debug-mode-card');
-        if (debugCard.style.display === 'none') {
-            debugCard.style.display = 'block';
-            alert('🕵️ 히든 테스트 모드가 활성화되었습니다!');
-        } else {
-            debugCard.style.display = 'none';
+    // 🀄 제목 5회 클릭 시 히든 모드 토글 이벤트 등록
+    const titleElem = document.getElementById('main-title');
+    if (titleElem) {
+        titleElem.addEventListener('click', () => {
+            titleClickCount++;
+            if (titleClickCount === 5) {
+                const hiddenArea = document.getElementById('hidden-analyzer');
+                if (hiddenArea) {
+                    const isHidden = hiddenArea.style.display === 'none';
+                    hiddenArea.style.display = isHidden ? 'block' : 'none';
+                    alert(isHidden ? '🔓 히든 패 분석기가 활성화되었습니다!' : '🔒 히든 패 분석기가 비활성화되었습니다.');
+                    if (isHidden) renderCustomButtons();
+                }
+                titleClickCount = 0;
+            }
+        });
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT') return;
+        if (e.key >= '1' && e.key <= '9') {
+            if (isSubmitted) return; 
+            const num = parseInt(e.key);
+            const btn = document.getElementById(`btn-num-${num}`);
+            if (btn) toggleSelect(num, btn);
+        } else if (e.key === 'Enter') {
+            if (document.getElementById('hidden-analyzer').style.display !== 'none' && customHand.length === 13) {
+                analyzeCustomHand();
+            } else {
+                handleSubmitOrNext();
+            }
         }
-    } else {
-        debugClickTimer = setTimeout(() => {
-            debugClickCount = 0;
-        }, 1500); // 1.5초 이내 5회 연속 클릭
+    });
+
+    try {
+        const response = await fetch('Regular.zip');
+        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
+        
+        const arrayBuffer = await response.arrayBuffer();
+        zipInstance = await JSZip.loadAsync(arrayBuffer);
+        
+        document.getElementById('status-msg').style.color = '#27ae60';
+        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
+        
+        document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
+    } catch (err) {
+        document.getElementById('status-msg').style.color = '#e74c3c';
+        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
+        console.error(err);
+    }
+});
+
+/* ===================================================
+ * 🔒 히든 계산기 / 패 분석기 관련 함수 추가
+ * =================================================== */
+
+// 1. 히든 입력 버튼(1~9) 생성
+function renderCustomButtons() {
+    const btnContainer = document.getElementById('custom-tile-buttons');
+    if (!btnContainer) return;
+    btnContainer.innerHTML = '';
+
+    for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-number';
+        btn.innerText = `${i}`;
+        btn.onclick = () => addTileToCustomHand(i);
+        btnContainer.appendChild(btn);
+    }
+    updateCustomHandDisplay();
+}
+
+// 2. 패 추가 (동일 패 최대 4장 및 전체 13장 제한)
+function addTileToCustomHand(num) {
+    if (customHand.length >= 13) {
+        alert('손패는 최대 13장까지만 입력할 수 있습니다.');
+        return;
+    }
+    const count = customHand.filter(x => x === num).length;
+    if (count >= 4) {
+        alert(`${num}번 패는 이미 4장 선택되었습니다.`);
+        return;
+    }
+    customHand.push(num);
+    customHand.sort((a, b) => a - b);
+    updateCustomHandDisplay();
+}
+
+// 3. 입력된 손패 시각화 화면 렌더링
+async function updateCustomHandDisplay() {
+    const display = document.getElementById('custom-hand-container');
+    const suitCode = document.getElementById('custom-suit-select').value;
+    display.innerHTML = '';
+
+    if (customHand.length === 0) {
+        display.innerHTML = '<span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 눌러 13장의 손패를 구성하세요.</span>';
+        return;
+    }
+
+    for (let i = 0; i < customHand.length; i++) {
+        const num = customHand[i];
+        const img = document.createElement('img');
+        img.className = 'tile-img';
+        img.style.cursor = 'pointer';
+        img.title = '클릭하면 이 패 삭제';
+        img.src = await getTileImageSrc(suitCode, num);
+        img.onclick = () => removeTileFromCustomHand(i);
+        display.appendChild(img);
     }
 }
 
-// --- 사용자 지정 패 생성 및 즉시 해설 표시 ---
-async function generateCustomHand() {
-    const inputElem = document.getElementById('debug-hand-input');
-    const rawVal = inputElem.value.trim();
-    
-    // 1~9 이외의 문자 제거
-    const digits = rawVal.replace(/[^1-9]/g, '').split('').map(Number);
-    
-    if (digits.length === 0) {
-        alert('올바른 숫자(1~9)를 입력해 주세요.');
+// 4. 개별 패 클릭 시 삭제
+function removeTileFromCustomHand(index) {
+    customHand.splice(index, 1);
+    updateCustomHandDisplay();
+}
+
+// 5. 패 전체 초기화
+function clearCustomHand() {
+    customHand = [];
+    updateCustomHandDisplay();
+    document.getElementById('custom-result').style.display = 'none';
+}
+
+// 6. 13장 구성 패 분석 및 결과 출력
+function analyzeCustomHand() {
+    if (customHand.length !== 13) {
+        alert(`손패는 정확히 13장이어야 분석할 수 있습니다. (현재 ${customHand.length}장)`);
         return;
     }
-    
-    // 각 숫자패는 최대 4장까지만 존재 가능
-    const counts = Array(10).fill(0);
-    digits.forEach(d => counts[d]++);
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] > 4) {
-            alert(`${i}번 패가 4장을 초과할 수 없습니다.`);
-            return;
-        }
+
+    const res = getWinningTiles(customHand);
+    const resultDiv = document.getElementById('custom-result');
+    resultDiv.style.display = 'block';
+
+    if (res.waits.length === 0) {
+        resultDiv.className = 'result-message incorrect';
+        resultDiv.innerHTML = `❌ 입력하신 손패는 <b>텐파이 상태(노텐)가 아닙니다.</b> (대기패 0개)`;
+        return;
     }
 
-    // 기존 무늬와 다른 무늬를 랜덤으로 선택 (연속 테스트 시 무늬 전환)
-    let availableSuits = SUITS;
-    if (typeof currentSuitObj !== 'undefined' && currentSuitObj) {
-        availableSuits = SUITS.filter(s => s.code !== currentSuitObj.code);
+    resultDiv.className = 'result-message correct';
+    let html = `🎉 <b>분석 완료! Total ${res.waits.length}종류 대기패: [ ${res.waits.join(', ')} ]</b><br>`;
+
+    if (res.maxedOut.length > 0) {
+        html += `<span style="color:#e74c3c; font-size:14px;">(※ 손패에 이미 4장 소지하여 화료 불가한 패: ${res.maxedOut.join(', ')}번)</span><br>`;
     }
-    currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
 
-    // 손패 데이터 설정
-    currentHand = digits.sort((a, b) => a - b);
-    
-    // 텐파이 대기패 계산 및 결과 데이터 취득
-    const resultData = getWinningTiles(currentHand);
-    winningTiles = resultData.waits;
-    maxedOutWinningTiles = resultData.maxedOut;
-    winningDecompositions = resultData.decomps;
-    isChiitoiHand = resultData.isChiitoi;
-    isRyanpeikouHand = resultData.isRyanpeikou;
+    // 상세 분석 해설 생성 (기존 generateExplanationHtml 활용)
+    const expHtml = generateExplanationHtml(customHand, res.waits, res.decomps, res.isChiitoi, res.isRyanpeikou);
+    html += expHtml;
 
-    // 패 화면 렌더링
-    await renderHand();
-    
-    // UI 요소 정리 (난이도 표시 및 선택 버튼 영역 숨기기)
-    const quizArea = document.getElementById('quiz-area');
-    if (quizArea) quizArea.style.display = 'block';
-    
-    const difficultyElem = document.getElementById('difficulty-container') || document.getElementById('difficulty');
-    if (difficultyElem) difficultyElem.style.display = 'none';
-    
-    const selectionBtnParent = document.getElementById('selection-buttons')?.parentElement;
-    if (selectionBtnParent) selectionBtnParent.style.display = 'none';
-    
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) submitBtn.style.display = 'none';
-
-    // 결과 및 구조 분석 해설 영역 즉시 노출
-    const resultElem = document.getElementById('result');
-    resultElem.style.display = 'block';
-    
-    if (winningTiles.length === 0) {
-        resultElem.className = 'result-message incorrect';
-        resultElem.innerHTML = `⚠️ 입력하신 패는 <b>노텐(대기패 없음)</b> 상태이거나 완성할 수 없는 손패입니다.`;
-    } else {
-        resultElem.className = 'result-message correct';
-        const waitsStr = winningTiles.join(', ');
-        
-        // 기존 해설 생성 함수 호출
-        const explanationHtml = generateExplanationHtml();
-        
-        resultElem.innerHTML = `
-            <div style="font-size: 18px; margin-bottom: 12px;">
-                <b>💡 대기패(오름패):</b> <span style="font-size:24px; color:#c0392b; font-weight:bold;">${waitsStr}</span>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
-            ${explanationHtml}
-        `;
-    }
+    resultDiv.innerHTML = html;
 }
