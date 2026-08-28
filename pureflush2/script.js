@@ -921,3 +921,97 @@ function resetLeaderboard() {
 function escapeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
+
+
+// --- 히든 모드 관련 변수 및 클릭 카운터 ---
+let debugClickCount = 0;
+let debugClickTimer = null;
+
+function handleTitleClick() {
+    debugClickCount++;
+    clearTimeout(debugClickTimer);
+    
+    if (debugClickCount >= 5) {
+        debugClickCount = 0;
+        const debugCard = document.getElementById('debug-mode-card');
+        if (debugCard.style.display === 'none') {
+            debugCard.style.display = 'block';
+            alert('🕵️ 히든 테스트 모드가 활성화되었습니다!');
+        } else {
+            debugCard.style.display = 'none';
+        }
+    } else {
+        debugClickTimer = setTimeout(() => {
+            debugClickCount = 0;
+        }, 1500); // 1.5초 이내에 5번 연속 클릭해야 함
+    }
+}
+
+// --- 사용자 지정 패 생성 및 즉시 해설 표시 ---
+async function generateCustomHand() {
+    const inputElem = document.getElementById('debug-hand-input');
+    const rawVal = inputElem.value.trim();
+    
+    // 1~9 이외의 문자 제거
+    const digits = rawVal.replace(/[^1-9]/g, '').split('').map(Number);
+    
+    if (digits.length === 0) {
+        alert('올바른 숫자(1~9)를 입력해 주세요.');
+        return;
+    }
+    
+    // 각 숫자패는 최대 4장까지만 존재 가능
+    const counts = Array(10).fill(0);
+    digits.forEach(d => counts[d]++);
+    for (let i = 1; i <= 9; i++) {
+        if (counts[i] > 4) {
+            alert(`${i}번 패가 4장을 초과할 수 없습니다.`);
+            return;
+        }
+    }
+
+    // 기존 무늬와 다른 무늬를 랜덤으로 선택
+    let availableSuits = SUITS;
+    if (currentSuitObj) {
+        availableSuits = SUITS.filter(s => s.code !== currentSuitObj.code);
+    }
+    currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
+
+    // 손패 데이터 설정
+    currentHand = digits.sort((a, b) => a - b);
+    
+    // 텐파이 대기패 계산 및 결과 데이터 취득
+    const resultData = getWinningTiles(currentHand);
+    winningTiles = resultData.waits;
+    maxedOutWinningTiles = resultData.maxedOut;
+    winningDecompositions = resultData.decomps;
+    isChiitoiHand = resultData.isChiitoi;
+    isRyanpeikouHand = resultData.isRyanpeikou;
+
+    // 패 화면 렌더링
+    await renderHand();
+    
+    // 일반 퀴즈 제출 버튼 영역 숨김 및 정답 영역 노출
+    document.getElementById('quiz-area').style.display = 'block';
+    document.getElementById('selection-buttons').parentElement.style.display = 'none'; // 버튼 선택창 숨김
+    
+    const resultElem = document.getElementById('result');
+    resultElem.style.display = 'block';
+    
+    // 정답 및 대기패 분석 출력
+    if (winningTiles.length === 0) {
+        resultElem.className = 'result-message incorrect';
+        resultElem.innerHTML = `⚠️ 입력하신 패는 <b>노텐(대기패 없음)</b> 상태이거나 완성할 수 없는 손패입니다.`;
+    } else {
+        resultElem.className = 'result-message correct';
+        const waitsStr = winningTiles.join(', ');
+        
+        // 해설 생성 (기존 generateExplanationHtml 활용)
+        const explanationHtml = generateExplanationHtml();
+        
+        resultElem.innerHTML = `
+            <div><b>💡 대기패(오름패):</b> <span style="font-size:22px; color:#c0392b;">${waitsStr}</span></div>
+            ${explanationHtml}
+        `;
+    }
+}
