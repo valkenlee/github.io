@@ -230,12 +230,25 @@
         }
         .explanation-item {
             margin-bottom: 6px;
-            padding-left: 8px;
-            border-left: 3px solid #2980b9;
+            padding: 6px 10px;
+            border-left: 4px solid #2980b9;
             background-color: #f4f9fc;
-            padding: 4px 8px;
             border-radius: 0 4px 4px 0;
         }
+        .wait-type-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
+        }
+        .badge-ryanmen { background-color: #27ae60; }
+        .badge-tanki { background-color: #8e44ad; }
+        .badge-shanpon { background-color: #d35400; }
+        .badge-kanchan { background-color: #2980b9; }
+        .badge-penchan { background-color: #c0392b; }
 
         /* 치이토이츠 및 량페코 안내 태그 스타일 */
         .special-tag {
@@ -478,7 +491,7 @@
     let currentHand = [];
     let winningTiles = [];
     let maxedOutWinningTiles = [];
-    let winningDecompositions = {}; // 패 해석 데이터 (오름패별 분해 목록)
+    let winningDecompositions = {}; // 패 해석 데이터 (오름패별 분해 및 대기 유형 목록)
     let isChiitoiHand = false;     // 순수 치이토이츠 대기 플래그
     let isRyanpeikouHand = false; // 량페코 대기 플래그
     let selectedTiles = new Set();
@@ -492,9 +505,9 @@
     let pendingRecordStreak = 0;
 
     const MODE_DESCRIPTIONS = {
-        easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제입니다.<br>• 상단에 오름패가 몇 개인지 힌트로 알려주며 상세 분해 해설이 제공됩니다.`,
-        normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 커츠와 슌츠가 어떻게 분해되는지 상세 해설이 제공됩니다.`,
-        hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기(3~9면 대기) 문제입니다.<br>• 제출 후 다면대기의 다양한 형태별 분해 경우의 수를 모두 제공합니다.`,
+        easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제입니다.<br>• 상단에 힌트와 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
+        normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 멘츠/작두 분해 구조를 보여줍니다.`,
+        hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기(3~9면 대기) 문제입니다.<br>• 제출 후 다면대기가 만드는 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.`,
         streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 숙련자를 위한 모드로 <b>별도의 패 분해 해설이 제공되지 않고</b> 빠른 진행을 지원합니다.`
     };
 
@@ -691,24 +704,36 @@
         document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
-    /* 패 분해 형태 HTML 생성 함수 */
+    /* 대기 유형별 뱃지 HTML 생성 */
+    function getWaitTypeBadgeHtml(waitType) {
+        switch(waitType) {
+            case '양면': return `<span class="wait-type-badge badge-ryanmen">양면 대기</span>`;
+            case '단기': return `<span class="wait-type-badge badge-tanki">단기 대기</span>`;
+            case '샤보': return `<span class="wait-type-badge badge-shanpon">샤보 대기</span>`;
+            case '간짱': return `<span class="wait-type-badge badge-kanchan">간짱 대기</span>`;
+            case '변짱': return `<span class="wait-type-badge badge-penchan">변짱 대기</span>`;
+            default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
+        }
+    }
+
+    /* 패 분해 형태 HTML 생성 함수 (대기 유형 표시 포함) */
     function renderDecompositionExplanation() {
         if (currentMode === 'streak') return ''; // 연승 모드에서는 분해 해설을 생성하지 않음
 
         let html = `<div class="explanation-box">`;
-        html += `<h4>🔍 대기패별 손패 구조 및 분해 해설</h4>`;
+        html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
 
         const allWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
         
         allWaits.forEach(tile => {
             const isMaxed = maxedOutWinningTiles.includes(tile);
             const titleSuffix = isMaxed ? ' <small style="color:#e74c3c;">(4장 모두 보유 중)</small>' : '';
-            html += `<div style="margin-top: 8px;"><b>[ ${tile} ] 패 도착 시:${titleSuffix}</b></div>`;
+            html += `<div style="margin-top: 10px;"><b>[ ${tile} ] 패 도착 시:${titleSuffix}</b></div>`;
 
             const decomps = winningDecompositions[tile] || [];
             if (decomps.length === 0) {
                 if (isChiitoiHand) {
-                    html += `<div class="explanation-item">└ 치이토이츠(7쌍) 완성 형태 (단기대기)</div>`;
+                    html += `<div class="explanation-item">${getWaitTypeBadgeHtml('단기')} └ 치이토이츠(7쌍) 완성 형태 <b style="color:#e74c3c;">[${tile}] 단기대기</b></div>`;
                 }
             } else {
                 decomps.forEach(d => {
@@ -724,7 +749,19 @@
                         parts.push(`<span style="color:#2980b9;">[슌츠: ${s},${s+1},${s+2}]</span>`);
                     });
                     
-                    html += `<div class="explanation-item">└ ${parts.join(' ')} + <b style="color:#e74c3c;">[${tile}] 대기</b></div>`;
+                    const badge = getWaitTypeBadgeHtml(d.waitType);
+                    let targetDetail = '';
+                    if (d.waitType === '단기') {
+                        targetDetail = `<b style="color:#d35400;">[머리: ${tile}]</b> 완성`;
+                    } else if (d.waitType === '샤보') {
+                        targetDetail = `<b style="color:#27ae60;">[커츠: ${tile},${tile},${tile}]</b> 완성`;
+                    } else {
+                        // 슌츠 완성 (양면/간짱/변짱)
+                        const start = d.targetMeldStart;
+                        targetDetail = `<b style="color:#2980b9;">[슌츠: ${start},${start+1},${start+2}]</b> 완성`;
+                    }
+
+                    html += `<div class="explanation-item">${badge} └ ${parts.join(' ')} + <b style="color:#e74c3c;">[${tile}] 대기</b> → (${targetDetail})</div>`;
                 });
             }
         });
@@ -752,7 +789,6 @@
             baseText = `${tagNotice}오름패: [ ${actualStr} ]`;
         }
 
-        // 연승 모드가 아닌 경우 패 해석 분해 박스 추가
         if (currentMode !== 'streak') {
             baseText += renderDecompositionExplanation();
         }
@@ -788,7 +824,7 @@
         return hand.sort((a, b) => a - b);
     }
 
-    /* 대기패 판별 로직 및 분해 탐색 */
+    /* 대기패 판별 로직 및 대기 유형 분석 */
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
@@ -801,7 +837,7 @@
         for (let tile = 1; tile <= 9; tile++) {
             if (counts[tile] < 4) {
                 counts[tile]++;
-                const checkRes = checkCompleteHand(counts, tile);
+                const checkRes = checkCompleteHand(counts, tile, hand);
                 if (checkRes.complete) {
                     waits.push(tile);
                     decomps[tile] = checkRes.decompositions;
@@ -811,7 +847,7 @@
                 counts[tile]--;
             } else {
                 counts[tile]++;
-                const checkRes = checkCompleteHand(counts, tile);
+                const checkRes = checkCompleteHand(counts, tile, hand);
                 if (checkRes.complete) {
                     maxedOut.push(tile);
                     decomps[tile] = checkRes.decompositions;
@@ -829,10 +865,10 @@
         return { waits, maxedOut, decomps, isChiitoi, isRyanpeikou };
     }
 
-    /* 완성 및 분해 검증 함수 */
-    function checkCompleteHand(counts, addedTile) {
-        // 일반 형태 완성을 만족하는 모든 분해(커츠, 슌츠, 작두) 탐색
-        const decompositions = findAllDecompositions(counts);
+    /* 완성 및 대기 유형 판별 검증 함수 */
+    function checkCompleteHand(counts, addedTile, originalHand) {
+        // 14장 완성 상태에서의 모든 [머리1개 + 멘츠4개] 분해 조합을 구함
+        const decompositions = findAllDecompositions(counts, addedTile, originalHand);
         const isStandard = decompositions.length > 0;
 
         // 치이토이츠 검사
@@ -862,29 +898,86 @@
         return { complete: false, decompositions: [], isChiitoi: false, isRyanpeikou: false };
     }
 
-    /* 14장 손패를 가능한 모든 [머리1개 + 멘츠4개] 구조로 분해하여 반환하는 탐색 알고리즘 */
-    function findAllDecompositions(counts) {
+    /* 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 판별 알고리즘 */
+    function classifyWaitType(decomp, addedTile, originalHand) {
+        // 1. 단기대기: 완성된 머리의 숫자와 들어온 패가 일치할 때
+        if (decomp.pair === addedTile) {
+            return { waitType: '단기', targetMeldStart: null };
+        }
+
+        // 2. 샤보대기: 커츠 중 하나가 들어온 패와 일치하고 원래 손패에 해당 패가 2장(또이츠) 있었던 경우
+        let origCounts = Array(10).fill(0);
+        originalHand.forEach(n => origCounts[n]++);
+
+        if (decomp.triplets.includes(addedTile) && origCounts[addedTile] === 2) {
+            return { waitType: '샤보', targetMeldStart: null };
+        }
+
+        // 3. 슌츠 완성 대기 (양면, 간짱, 변짱)
+        // 슌츠 목록 중 들어온 패를 포함하는 슌츠 탐색
+        for (let s of decomp.sequences) {
+            if (addedTile >= s && addedTile <= s + 2) {
+                const pos = addedTile - s; // 0: 시작, 1: 중간, 2: 끝
+                if (pos === 1) {
+                    // 중간 패를 기다려 완성 -> 간짱 대기
+                    return { waitType: '간짱', targetMeldStart: s };
+                } else if (pos === 0) {
+                    // s..s+2 슌츠에서 s패(시작패)가 들어와 완성된 경우
+                    // s+1, s+2 패를 가지고 있었음
+                    if (s + 2 === 3) {
+                        // [1,2] 패를 가지고 3을 기다림 -> 변짱 대기
+                        return { waitType: '변짱', targetMeldStart: s };
+                    } else {
+                        // 양면 대기 (예: [4,5] 상태에서 3 대기)
+                        return { waitType: '양면', targetMeldStart: s };
+                    }
+                } else if (pos === 2) {
+                    // s..s+2 슌츠에서 s+2패(끝패)가 들어와 완성된 경우
+                    // s, s+1 패를 가지고 있었음
+                    if (s === 7) {
+                        // [8,9] 패를 가지고 7을 기다림 -> 변짱 대기
+                        return { waitType: '변짱', targetMeldStart: s };
+                    } else {
+                        // 양면 대기 (예: [4,5] 상태에서 6 대기)
+                        return { waitType: '양면', targetMeldStart: s };
+                    }
+                }
+            }
+        }
+
+        return { waitType: '양면', targetMeldStart: null };
+    }
+
+    /* 14장 손패를 가능한 모든 구조로 분해하고 각 대기 유형 판별 */
+    function findAllDecompositions(counts, addedTile, originalHand) {
         let results = [];
         let tempCounts = [...counts];
 
-        // 1. 머리(작두)가 될 2장 선택
         for (let pairVal = 1; pairVal <= 9; pairVal++) {
             if (tempCounts[pairVal] >= 2) {
                 tempCounts[pairVal] -= 2;
                 
-                // 2. 남은 12장을 커츠/슌츠로만 분해할 수 있는 경우의 수 모두 탐색
                 let meldResults = [];
                 findMeldsRecursive(tempCounts, [], meldResults);
 
                 meldResults.forEach(m => {
-                    // 중복 분해 형태 방지 (정렬 후 고유 키 확인)
                     const trips = [...m.triplets].sort((a,b)=>a-b);
                     const seqs = [...m.sequences].sort((a,b)=>a-b);
                     
+                    const decompCandidate = {
+                        pair: pairVal,
+                        triplets: trips,
+                        sequences: seqs
+                    };
+
+                    const waitInfo = classifyWaitType(decompCandidate, addedTile, originalHand);
+
                     results.push({
                         pair: pairVal,
                         triplets: trips,
                         sequences: seqs,
+                        waitType: waitInfo.waitType,
+                        targetMeldStart: waitInfo.targetMeldStart,
                         key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}`
                     });
                 });
@@ -906,7 +999,7 @@
         return uniqueResults;
     }
 
-    /* 멘츠(커츠/슌츠) 재귀 재조합 알고리즘 */
+    /* 멘츠 재귀 탐색 */
     function findMeldsRecursive(counts, currentMelds, results) {
         let first = 0;
         for (let i = 1; i <= 9; i++) {
@@ -914,7 +1007,6 @@
         }
 
         if (first === 0) {
-            // 모두 분해 완료
             let triplets = [];
             let sequences = [];
             currentMelds.forEach(m => {
@@ -925,7 +1017,6 @@
             return;
         }
 
-        // 커츠로 분해 시도
         if (counts[first] >= 3) {
             counts[first] -= 3;
             currentMelds.push({ type: 'triplet', val: first });
@@ -934,7 +1025,6 @@
             counts[first] += 3;
         }
 
-        // 슌츠로 분해 시도
         if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
             counts[first]--;
             counts[first + 1]--;
