@@ -6,15 +6,14 @@
 </head>
 <body>
   <script>
-    // 1. i2.html을 거쳐 진입했음을 알리는 전역 플래그 설정
-    window.__IS_WRAPPED__ = true;
-
-    // 2. index.html의 소스 코드를 불러와 현재 문서에 덮어씌움
     fetch('index.html')
       .then(response => response.text())
       .then(html => {
+        // index.html 소스 상단 <head> 바로 뒤에 플래그 변수 주입
+        const wrappedHtml = html.replace('<head>', '<head><script>window.__IS_WRAPPED__ = true;<\/script>');
+        
         document.open();
-        document.write(html);
+        document.write(wrappedHtml);
         document.close();
       });
   </script>
