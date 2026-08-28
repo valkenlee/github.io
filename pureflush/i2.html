@@ -203,7 +203,7 @@
             margin-top: 15px;
             padding: 12px;
             border-radius: 8px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -381,7 +381,7 @@
 </div>
 
 <div class="card" id="quiz-area" style="display: none;">
-    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
+    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요: <small style="font-size:12px; font-weight:normal; color:#666;">(단축키: 1~9, Enter)</small></h3>
     <div class="selection-grid" id="selection-buttons"></div>
     <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
@@ -391,7 +391,7 @@
         <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
         <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당에 등록할 이름을 입력해 주세요 (최대 20자).</p>
         <div class="name-input-box">
-            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)">
+            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)" onkeydown="if(event.key==='Enter') saveRecord()">
             <button onclick="saveRecord()">기록 등록</button>
         </div>
     </div>
@@ -455,6 +455,19 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
         loadLeaderboard();
+        
+        // 키보드 단축키 등록 (1~9: 패 선택, Enter: 제출/다음)
+        window.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT') return;
+            if (e.key >= '1' && e.key <= '9') {
+                const num = parseInt(e.key);
+                const btn = document.getElementById(`btn-num-${num}`);
+                if (btn) toggleSelect(num, btn);
+            } else if (e.key === 'Enter') {
+                handleSubmitOrNext();
+            }
+        });
+
         try {
             const response = await fetch('Regular.zip');
             if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
@@ -516,17 +529,14 @@
     }
 
     function updateModeUI() {
-        // 모든 버튼 활성화 강조 상태 초기화
         document.querySelectorAll('.btn-diff').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
         if (activeBtn) activeBtn.classList.add('active');
 
-        // 하단 안내 상자 출력
         const infoBox = document.getElementById('mode-info-box');
         infoBox.innerHTML = MODE_DESCRIPTIONS[currentMode] || '';
         infoBox.style.display = 'block';
 
-        // 연승 모드 테마 적용
         if (currentMode === 'streak') {
             infoBox.style.backgroundColor = '#f5ee2e15';
             infoBox.style.borderColor = '#8e44ad';
@@ -633,16 +643,24 @@
         document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
+    /* 정답 포맷팅 헬퍼 함수 */
+    function getAnswerString() {
+        const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
+        if (maxedOutWinningTiles.length > 0) {
+            const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+            return `실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+        } else {
+            return `오름패: [ ${actualStr} ]`;
+        }
+    }
+
     function handleTimeout() {
         isSubmitted = true;
         const resultDiv = document.getElementById('result');
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
 
-        let maxedInfo = maxedOutWinningTiles.length > 0 ? 
-            `<br><small style="color:#666;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
-
-        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다! 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
+        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>정답 👉 ${getAnswerString()}`;
 
         checkStreakRecordAndReset();
 
@@ -673,13 +691,13 @@
         for (let tile = 1; tile <= 9; tile++) {
             if (counts[tile] < 4) {
                 counts[tile]++;
-                if (canFormHand(counts, 14)) {
+                if (checkCompleteHand(counts)) {
                     waits.push(tile);
                 }
                 counts[tile]--;
             } else {
                 counts[tile]++;
-                if (canFormHand(counts, 14)) {
+                if (checkCompleteHand(counts)) {
                     maxedOut.push(tile);
                 }
                 counts[tile]--;
@@ -688,38 +706,55 @@
         return { waits, maxedOut };
     }
 
-    function canFormHand(counts, remaining) {
+    /* 치이토이츠(七対子) 및 일반 4멘츠 1작두 통합 검증 로직 */
+    function checkCompleteHand(counts) {
+        // 1. 치이토이츠 (7쌍) 검사
+        let pairCount = 0;
+        for (let i = 1; i <= 9; i++) {
+            if (counts[i] === 2) pairCount++;
+        }
+        if (pairCount === 7) return true;
+
+        // 2. 일반 4멘츠 1작두 검사
+        return canFormStandardHand(counts, 14);
+    }
+
+    function canFormStandardHand(counts, remaining) {
         if (remaining === 0) return true;
 
         let tempCounts = [...counts];
 
+        // 머리(작두)가 아직 결정되지 않은 상태 (남은 수가 14, 11, 8, 5, 2 등 3n+2 일 때)
         if (remaining % 3 === 2) {
             for (let i = 1; i <= 9; i++) {
                 if (tempCounts[i] >= 2) {
                     tempCounts[i] -= 2;
-                    if (canFormHand(tempCounts, remaining - 2)) return true;
+                    if (canFormStandardHand(tempCounts, remaining - 2)) return true;
                     tempCounts[i] += 2;
                 }
             }
             return false;
         }
 
+        // 몸통(멘츠) 구성
         let first = 0;
         for (let i = 1; i <= 9; i++) {
             if (tempCounts[i] > 0) { first = i; break; }
         }
 
+        // 안코 (동일한 패 3장)
         if (tempCounts[first] >= 3) {
             tempCounts[first] -= 3;
-            if (canFormHand(tempCounts, remaining - 3)) return true;
+            if (canFormStandardHand(tempCounts, remaining - 3)) return true;
             tempCounts[first] += 3;
         }
 
+        // 슈츠 (연속된 패 3장)
         if (first <= 7 && tempCounts[first + 1] > 0 && tempCounts[first + 2] > 0) {
             tempCounts[first]--;
             tempCounts[first + 1]--;
             tempCounts[first + 2]--;
-            if (canFormHand(tempCounts, remaining - 3)) return true;
+            if (canFormStandardHand(tempCounts, remaining - 3)) return true;
             tempCounts[first]++;
             tempCounts[first + 1]++;
             tempCounts[first + 2]++;
@@ -747,6 +782,7 @@
         for (let i = 1; i <= 9; i++) {
             const btn = document.createElement('button');
             btn.className = 'btn-number';
+            btn.id = `btn-num-${i}`;
             btn.innerText = `${i}`;
             btn.onclick = () => toggleSelect(i, btn);
             grid.appendChild(btn);
@@ -775,28 +811,37 @@
 
         clearInterval(timerInterval);
 
-        const userAnswers = Array.from(selectedTiles).filter(tile => !maxedOutWinningTiles.includes(tile)).sort((a, b) => a - b);
-        const isCorrect = userAnswers.length === winningTiles.length && 
-                          userAnswers.every((val, idx) => val === winningTiles[idx]);
+        const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
+        
+        // 1. 실제 오름패 기준 정답 검증 (4장 제외)
+        const isCorrectActual = userAnswers.length === winningTiles.length && 
+                                userAnswers.every((val, idx) => val === winningTiles[idx]);
+
+        // 2. 이론상 대기패 기준 정답 검증 (4장 포함)
+        const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+        const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
+                                    userAnswers.every((val, idx) => val === theoreticalList[idx]);
+
+        // 두 가지 경우 중 하나만 만족해도 정답으로 인정
+        const isCorrect = isCorrectActual || isCorrectTheoretical;
 
         const resultDiv = document.getElementById('result');
         resultDiv.style.display = 'block';
 
-        let maxedInfo = maxedOutWinningTiles.length > 0 ? 
-            `<br><small style="font-size:13px; opacity:0.85;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
+        const answerText = getAnswerString();
 
         if (isCorrect) {
             resultDiv.className = 'result-message correct';
             if (currentMode === 'streak') {
                 streakCount++;
                 document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
-                resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!) (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
+                resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!)<br>👉 ${answerText}`;
             } else {
-                resultDiv.innerHTML = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
+                resultDiv.innerHTML = `🎉 정답입니다!<br>👉 ${answerText}`;
             }
         } else {
             resultDiv.className = 'result-message incorrect';
-            resultDiv.innerHTML = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
+            resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
             if (currentMode === 'streak') {
                 checkStreakRecordAndReset();
             }
