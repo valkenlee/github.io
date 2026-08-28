@@ -170,17 +170,6 @@ function generateQuiz() {
 
     renderHand();
     renderButtons();
-
-    // generateQuiz() 내부 끝부분
-    const difficultyElem = document.getElementById('difficulty-container') || document.getElementById('difficulty');
-    if (difficultyElem) difficultyElem.style.display = 'block';
-    
-    const selectionBtnParent = document.getElementById('selection-buttons')?.parentElement;
-    if (selectionBtnParent) selectionBtnParent.style.display = 'block';
-    
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) submitBtn.style.display = 'inline-block';
-    
     
     const hintElem = document.getElementById('easy-hint');
     const streakElem = document.getElementById('streak-display');
