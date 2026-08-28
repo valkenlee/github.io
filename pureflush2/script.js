@@ -203,8 +203,6 @@ function generateQuiz() {
     document.getElementById('result').style.display = 'none';
     document.getElementById('name-input-container').style.display = 'none';
     selectedTiles.clear();
-
-
 }
 
 function startTimer() {
@@ -923,64 +921,3 @@ function resetLeaderboard() {
 function escapeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
-
-
-// [기존 변수 선언 영역 아래 추가]
-let titleClickCount = 0;
-let customHand = []; // 히든 분석기용 손패 배열 (최대 13장)
-
-window.addEventListener('DOMContentLoaded', async () => {
-    loadLeaderboard();
-    
-    // 🀄 제목 5회 클릭 시 히든 모드 토글 이벤트 등록
-    const titleElem = document.getElementById('main-title');
-    if (titleElem) {
-        titleElem.addEventListener('click', () => {
-            titleClickCount++;
-            if (titleClickCount === 5) {
-                const hiddenArea = document.getElementById('hidden-analyzer');
-                if (hiddenArea) {
-                    const isHidden = hiddenArea.style.display === 'none';
-                    hiddenArea.style.display = isHidden ? 'block' : 'none';
-                    alert(isHidden ? '🔓 히든 패 분석기가 활성화되었습니다!' : '🔒 히든 패 분석기가 비활성화되었습니다.');
-                    if (isHidden) renderCustomButtons();
-                }
-                titleClickCount = 0;
-            }
-        });
-    }
-
-    window.addEventListener('keydown', (e) => {
-        if (document.activeElement.tagName === 'INPUT') return;
-        if (e.key >= '1' && e.key <= '9') {
-            if (isSubmitted) return; 
-            const num = parseInt(e.key);
-            const btn = document.getElementById(`btn-num-${num}`);
-            if (btn) toggleSelect(num, btn);
-        } else if (e.key === 'Enter') {
-            if (document.getElementById('hidden-analyzer').style.display !== 'none' && customHand.length === 13) {
-                analyzeCustomHand();
-            } else {
-                handleSubmitOrNext();
-            }
-        }
-    });
-
-    try {
-        const response = await fetch('Regular.zip');
-        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
-        
-        const arrayBuffer = await response.arrayBuffer();
-        zipInstance = await JSZip.loadAsync(arrayBuffer);
-        
-        document.getElementById('status-msg').style.color = '#27ae60';
-        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
-        
-        document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
-    } catch (err) {
-        document.getElementById('status-msg').style.color = '#e74c3c';
-        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
-        console.error(err);
-    }
-});
-
