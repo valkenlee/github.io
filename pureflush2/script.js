@@ -1103,8 +1103,11 @@ function escapeHtml(text) {
 /* -------------------------------------------------------------
    🔒 히든 패 분석기 기능 함수 추가
 ------------------------------------------------------------- */
+/* -------------------------------------------------------------
+   🔒 히든 패 분석기 기능 함수
+------------------------------------------------------------- */
 
-// 현재 출제된 문제의 패를 히든 분석기로 복사하는 함수
+// 현재 출제된 문제의 패를 히든 분석기로 복사하고, 즉시 계산 후 정답 체크박스에 자동 반영하는 함수
 function copyCurrentQuizToCustom() {
     if (!currentHand || currentHand.length !== 13) {
         alert('현재 생성된 문제가 없습니다.');
@@ -1114,7 +1117,7 @@ function copyCurrentQuizToCustom() {
     // 1. 현재 퀴즈의 패 숫자를 히든 패 데이터에 복사
     customHand = [...currentHand];
     
-    // 2. 현재 퀴즈의 무늬(만자/통자/삭자)도 그대로 맞추어 이미지 매칭
+    // 2. 현재 퀴즈의 무늬(만자/통자/삭자)도 그대로 맞춰서 설정
     if (currentSuitObj && currentSuitObj.code) {
         customSuitCode = currentSuitObj.code;
     }
@@ -1127,4 +1130,31 @@ function copyCurrentQuizToCustom() {
 
     // 4. 히든 분석기 화면 업데이트
     updateCustomHandDisplay();
+
+    // 5. 자동으로 바로 '대기패 및 해설 계산하기' 실행
+    calculateCustomHandWaiting();
+
+    // 6. 계산된 실제 정답 대기패를 제출 및 정답 확인 선택지에 자동 체크
+    autoSelectQuizOptionCheckboxes();
+}
+
+// 계산 결과로 나온 대기패를 퀴즈 정답 선택지에 자동으로 입력(체크)해주는 함수
+function autoSelectQuizOptionCheckboxes() {
+    // 퀴즈 영역의 모든 정답 선택 체크박스 가져오기
+    const checkboxes = document.querySelectorAll('#options-container input[type="checkbox"]');
+    if (!checkboxes || checkboxes.length === 0) return;
+
+    // 기존 체크 해제
+    checkboxes.forEach(cb => { cb.checked = false; });
+
+    // 히든 분석기 결과인 customWaitings(실제 정답 대기패 배열, 예: [1, 2, 3]) 확인
+    if (!customWaitings || customWaitings.length === 0) return;
+
+    // 계산된 대기패 숫자에 해당하는 체크박스를 찾아 자동 체크
+    checkboxes.forEach(cb => {
+        const val = parseInt(cb.value, 10);
+        if (customWaitings.includes(val)) {
+            cb.checked = true;
+        }
+    });
 }
