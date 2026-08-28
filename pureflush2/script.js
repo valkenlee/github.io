@@ -336,7 +336,7 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
                 let noteStr = '';
                 if (st1Is4Count || st2Is4Count) {
                     const overTiles = [st1Is4Count ? st1 : null, st2Is4Count ? st2 : null].filter(Boolean);
-                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">(※ ${overTiles.join(', ')}번 패는 4장 이미 소지하여 화복 불가)</span>`;
+                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">(※ ${overTiles.join(', ')}번 패는 4장 이미 소지하여 화료 불가)</span>`;
                 }
 
                 const remainingTriplets = d.triplets.filter(tr => tr !== p && tr !== t).sort().join('_');
