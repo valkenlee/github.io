@@ -43,12 +43,22 @@
     </div>
 </div>
 
+<!-- 🔒 히든 계산기 / 패 분석기 영역 -->
 <div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; background: #faf5ff;">
     <h3 style="margin-top:0; color:#8e44ad; text-align:center;">🕵️‍♂️ 히든 패 분석기 (자유 패 입력)</h3>
-    <p style="text-align:center; font-size:13px; color:#666; margin-bottom:15px;">
-        숫자 패(1~9)를 선택하여 13장 손패를 맞춘 후 <b>[대기패 및 해설 계산하기]</b>를 누르세요.
-    </p>
+    
+    <!-- 1. 텍스트 직접 입력창 추가 -->
+    <div style="text-align: center; margin-bottom: 15px;">
+        <label for="custom-text-input" style="font-weight: bold; font-size: 14px;">⌨️ 숫자 직접 입력 (예: 1112345678999):</label><br>
+        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
+            <input type="text" id="custom-text-input" placeholder="숫자 13자리 입력" maxlength="13" 
+                   style="width: 200px; padding: 6px 10px; font-size: 15px; text-align: center; border: 1px solid #ccc; border-radius: 6px;"
+                   onkeydown="if(event.key==='Enter') applyCustomTextInput()">
+            <button class="btn-submit" style="background-color: #27ae60; padding: 6px 12px; margin:0;" onclick="applyCustomTextInput()">입력 반영</button>
+        </div>
+    </div>
 
+    <!-- 2. 수패 무늬 선택 (자동 랜덤 지정됨) -->
     <div style="text-align: center; margin-bottom: 12px;">
         <label><b>수패 선택: </b></label>
         <select id="custom-suit-select" onchange="updateCustomHandDisplay()" style="padding: 5px 10px; font-size:15px; border-radius: 6px;">
@@ -56,14 +66,17 @@
             <option value="Pin">통자패 (Pin)</option>
             <option value="Sou">삭자패 (Sou)</option>
         </select>
+        <button onclick="setRandomSuit()" style="padding: 4px 8px; font-size: 12px; margin-left: 6px; cursor: pointer;">🎲 무늬 랜덤 변경</button>
     </div>
 
+    <!-- 입력된 13장 패 시각화 -->
     <div class="hand-container-wrapper" style="background:#1b4332;">
         <div class="hand-display" id="custom-hand-container">
-            <span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 눌러 13장의 손패를 구성하세요.</span>
+            <span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.</span>
         </div>
     </div>
 
+    <!-- 1~9 패 선택 / 삭제 버튼 -->
     <div style="margin-top: 15px;">
         <div class="selection-grid" id="custom-tile-buttons"></div>
         <div style="display:flex; gap:10px;">
@@ -72,6 +85,7 @@
         </div>
     </div>
 
+    <!-- 히든 분석 결과 표시창 -->
     <div id="custom-result" class="result-message" style="display: none;"></div>
 </div>
 
@@ -114,6 +128,6 @@
     </div>
 </div>
 
-<script src="script.js?v=1.0.1"></script>
+<script src="script.js?v=1.0.2"></script>
 </body>
 </html>
