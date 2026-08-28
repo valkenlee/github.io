@@ -245,6 +245,7 @@ function renderDecompositionExplanation() {
     currentHand.forEach(n => origCounts[n]++);
 
     const validWaits = [...winningTiles].sort((a, b) => a - b);
+    const validWaitsSet = new Set(validWaits);
     let itemsList = [];
 
     if (isChiitoiHand) {
@@ -268,8 +269,10 @@ function renderDecompositionExplanation() {
                     const w1 = d.targetMeldStart - 1;
                     const w2 = d.targetMeldStart + 2;
                     
-                    const w1Valid = (w1 >= 1 && w1 <= 9 && origCounts[w1] < 4);
-                    const w2Valid = (w2 >= 1 && w2 <= 9 && origCounts[w2] < 4);
+                    const w1Valid = validWaitsSet.has(w1);
+                    const w2Valid = validWaitsSet.has(w2);
+
+                    if (!w1Valid && !w2Valid) return;
 
                     const w1Str = w1Valid ? `(${w1})` : '';
                     const w2Str = w2Valid ? `(${w2})` : '';
@@ -290,7 +293,7 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    const waitTiles = [w1, w2].filter(x => x >= 1 && x <= 9 && origCounts[x] < 4).sort((a,b)=>a-b);
+                    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a,b)=>a-b);
                     if (waitTiles.length > 0) {
                         const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
                         itemsList.push({
@@ -304,9 +307,9 @@ function renderDecompositionExplanation() {
 
                 } else if (waitType === '샤보') {
                     let shanponTiles = [];
-                    if (origCounts[d.pair] < 4) shanponTiles.push(d.pair);
+                    if (validWaitsSet.has(d.pair)) shanponTiles.push(d.pair);
                     d.triplets.forEach(t => {
-                        if (origCounts[t] < 4 && !shanponTiles.includes(t)) {
+                        if (validWaitsSet.has(t) && !shanponTiles.includes(t)) {
                             shanponTiles.push(t);
                         }
                     });
@@ -331,7 +334,7 @@ function renderDecompositionExplanation() {
                     }
 
                 } else {
-                    if (origCounts[tile] >= 4) return;
+                    if (!validWaitsSet.has(tile)) return;
 
                     if (waitType === '단기') {
                         parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
