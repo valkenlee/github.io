@@ -1101,7 +1101,7 @@ function escapeHtml(text) {
 }
 
 /* -------------------------------------------------------------
-   🔒 히든 패 분석기 기능 함수 (디버깅 강화 버전)
+   🔒 히든 패 분석기 기능 함수 (계산 함수 직접 호출 보완)
 ------------------------------------------------------------- */
 
 function copyCurrentQuizToCustom() {
@@ -1130,53 +1130,74 @@ function copyCurrentQuizToCustom() {
     if (typeof updateCustomHandDisplay === 'function') {
         updateCustomHandDisplay();
         console.log('[DEBUG] 2. 히든 패 화면 업데이트 완료');
-    } else {
-        console.error('[DEBUG] updateCustomHandDisplay 함수가 존재하지 않습니다.');
     }
 
-    // 5. 대기패 계산 함수 자동 실행
-    // ※ 기존 코드의 분석 버튼 onclick 함수명을 자동 호출합니다.
-    const calcBtn = document.querySelector('#hidden-analyzer button[onclick*="calculate"]');
-    if (calcBtn) {
-        console.log('[DEBUG] 3. 계산 버튼 클릭 트리거 실행');
-        calcBtn.click(); // '대기패 및 해설 계산하기' 버튼을 직접 클릭 이벤트 발생
-    } else if (typeof calculateCustomHandWaiting === 'function') {
+    // 5. 대기패 및 해설 계산 실행 (여러 함수명 패턴 대응)
+    let calculated = false;
+
+    // 방식 A: 전역 함수 호출 시도
+    if (typeof calculateCustomHandWaiting === 'function') {
         calculateCustomHandWaiting();
-    } else {
-        console.error('[DEBUG] 계산 함수/버튼을 찾을 수 없습니다.');
+        calculated = true;
+    } else if (typeof calculateCustomWaiting === 'function') {
+        calculateCustomWaiting();
+        calculated = true;
+    } else if (typeof calculateWaitings === 'function') {
+        calculateWaitings();
+        calculated = true;
     }
 
-    // 6. 계산된 정답을 퀴즈 체크박스에 자동 입력
+    // 방식 B: 전역 함수 호출 실패 시 히든 분석기 안의 모든 버튼 중 계산 관련 버튼 찾아서 클릭
+    if (!calculated) {
+        const analyzer = document.getElementById('hidden-analyzer');
+        if (analyzer) {
+            const buttons = analyzer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.innerText.includes('계산') || btn.innerText.includes('분석') || (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('calc'))) {
+                    console.log('[DEBUG] 3. 계산/분석 버튼 찾음 -> 자동 클릭 실행');
+                    btn.click();
+                    calculated = true;
+                }
+            });
+        }
+    }
+
+    if (!calculated) {
+        console.error('[DEBUG] ❌ 대기패 계산 함수나 버튼을 찾지 못했습니다.');
+    }
+
+    // 6. 계산 후 정답 체크박스에 자동 선택 (계산 파싱 시간을 위해 100ms 지연)
     setTimeout(() => {
         autoSelectQuizOptionCheckboxes();
-    }, 100); // 계산 완료 후 안정적으로 반영하기 위해 0.1초 지연
+    }, 100);
 }
 
 function autoSelectQuizOptionCheckboxes() {
     console.log('[DEBUG] 4. 체크박스 자동 선택 시작');
 
-    // 1) 히든 분석기 결과인 customWaitings 또는 correctWaitings 가져오기
-    const targetWaitings = (typeof customWaitings !== 'undefined' && customWaitings.length > 0) 
-        ? customWaitings 
-        : (typeof correctWaitings !== 'undefined' ? correctWaitings : []);
+    // 1) 히든 분석기 또는 퀴즈의 정답 배열 추출
+    let targetWaitings = [];
+    if (typeof customWaitings !== 'undefined' && customWaitings && customWaitings.length > 0) {
+        targetWaitings = customWaitings;
+    } else if (typeof correctWaitings !== 'undefined' && correctWaitings && correctWaitings.length > 0) {
+        targetWaitings = correctWaitings;
+    }
 
     console.log('[DEBUG] 추출된 정답 대기패 배열:', targetWaitings);
 
     if (!targetWaitings || targetWaitings.length === 0) {
-        console.log('[DEBUG] ⚠️ 대기패 결과가 없어 체크박스를 선택하지 못했습니다.');
+        console.log('[DEBUG] ⚠️ 대기패 결과가 존재하지 않거나 빈 배열입니다.');
         return;
     }
 
-    // 2) 퀴즈 영역 전체 체크박스 검색 (다양한 Selector 대응)
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    console.log(`[DEBUG] 전체 발견된 체크박스 개수: ${checkboxes.length}`);
-
+    // 2) 퀴즈의 선택지 체크박스 자동 선택
+    const checkboxes = document.querySelectorAll('#options-container input[type="checkbox"], .options-grid input[type="checkbox"], input[type="checkbox"]');
     let checkedCount = 0;
+
     checkboxes.forEach(cb => {
         const val = parseInt(cb.value, 10);
         if (targetWaitings.includes(val)) {
             cb.checked = true;
-            // change/input 이벤트 강제 발생 (UI 및 상태 업데이트)
             cb.dispatchEvent(new Event('change', { bubbles: true }));
             checkedCount++;
         } else {
