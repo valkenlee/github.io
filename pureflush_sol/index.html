@@ -41,17 +41,23 @@
             padding: 15px;
             background-color: #f9f9f9;
             border-left: 5px solid #4CAF50;
-            font-size: 18px;
+            font-size: 16px;
+            line-height: 1.6;
         }
         .error { border-left-color: #f44336; color: #f44336; }
+        .note {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #d9534f;
+        }
     </style>
 </head>
 <body>
 
     <h2>청일색 오름패 계산기</h2>
     <div class="input-group">
-        <label for="handInput">13자리 숫자 입력 (예: 1112345678999)</label>
-        <input type="text" id="handInput" maxlength="13" placeholder="예: 1112345678999">
+        <label for="handInput">13자리 숫자 입력 (예: 2222345778899)</label>
+        <input type="text" id="handInput" maxlength="13" placeholder="예: 2222345778899">
     </div>
     <button onclick="calculateWaits()">오름패 찾기</button>
 
@@ -76,7 +82,7 @@
                 counts[parseInt(char)]++;
             }
 
-            // 동일한 패가 5개 이상 들어갔는지 검사
+            // 동일한 패가 5개 이상 입력된 경우 예외 처리
             for (let i = 1; i <= 9; i++) {
                 if (counts[i] > 4) {
                     resultBox.className = "result error";
@@ -85,31 +91,41 @@
                 }
             }
 
-            const winningTiles = [];
+            const theoreticalWaits = []; // 이론적 대기패
+            const maxedOutTiles = [];    // 이미 4장을 들고 있어 실제로는 완성할 수 없는 패
 
-            // 1부터 9까지의 패를 하나씩 추가해보며 완벽한 형태(14장)가 되는지 확인
+            // 1부터 9까지의 패를 형태상으로만 1장 추가해보며 오름 형태가 되는지 확인
             for (let tile = 1; tile <= 9; tile++) {
-                if (counts[tile] < 4) {
-                    counts[tile]++;
-                    if (canWin(counts)) {
-                        winningTiles.push(tile);
+                counts[tile]++;
+                if (canWin(counts)) {
+                    theoreticalWaits.push(tile);
+                    // 만약 가상 추가 전 이미 4장을 갖고 있었다면 예외 목록에 기록
+                    if (counts[tile] - 1 === 4) {
+                        maxedOutTiles.push(tile);
                     }
-                    counts[tile]--;
                 }
+                counts[tile]--; // 원복
             }
 
             // 결과 출력
             resultBox.className = "result";
-            if (winningTiles.length > 0) {
-                resultBox.innerHTML = `<strong>오름패:</strong> ${winningTiles.join(', ')}`;
+            if (theoreticalWaits.length > 0) {
+                let html = `<strong>오름패:</strong> ${theoreticalWaits.join(', ')}`;
+                
+                // 4장을 이미 들고 있는 패가 존재할 경우 안내 문구 추가
+                if (maxedOutTiles.length > 0) {
+                    html += `<div class="note">※ 단, ${maxedOutTiles.join(', ')}번 패는 이미 손패에 4장을 들고 있어 실질적으로 오를 수 없습니다.</div>`;
+                }
+                
+                resultBox.innerHTML = html;
             } else {
                 resultBox.innerHTML = "오름패가 없습니다 (노텐).";
             }
         }
 
-        // 14장의 패가 완성형(노텐이 아닌 오름 형태)인지 확인
+        // 14장의 패가 완성형인지 확인
         function canWin(counts) {
-            // 1. 칠대자(치토이츠) 검사 (머리 7쌍)
+            // 1. 칠대자(치토이츠) 검사
             let pairs = 0;
             for (let i = 1; i <= 9; i++) {
                 if (counts[i] === 2) pairs++;
@@ -120,21 +136,20 @@
             const tempCounts = [...counts];
             for (let head = 1; head <= 9; head++) {
                 if (tempCounts[head] >= 2) {
-                    tempCounts[head] -= 2; // 머리 결정
+                    tempCounts[head] -= 2;
                     if (checkMentsu(tempCounts, 0)) {
                         return true;
                     }
-                    tempCounts[head] += 2; // 백트랙
+                    tempCounts[head] += 2;
                 }
             }
             return false;
         }
 
-        // 몸통(커즈 또는 슌즈) 4개를 완성할 수 있는지 재귀적으로 확인
+        // 몸통(커즈 또는 슌즈) 4개 완성 가능 여부 재귀 검사
         function checkMentsu(counts, depth) {
             if (depth === 4) return true;
 
-            // 가장 작은 숫자의 패 찾기
             let first = 0;
             for (let i = 1; i <= 9; i++) {
                 if (counts[i] > 0) {
