@@ -29,53 +29,33 @@
             margin-bottom: 20px;
         }
 
-        /* 난이도 버튼 카드 그룹 */
+        /* 난이도 버튼 그룹 */
         .difficulty-group {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-top: 10px;
         }
-        .diff-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
         .btn-diff {
             width: 100%;
-            padding: 12px 4px;
-            font-size: 15px;
+            padding: 14px 4px;
+            font-size: 16px;
             font-weight: bold;
             color: white;
             border: none;
-            border-radius: 8px 8px 0 0;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-diff:hover:not(:disabled) { filter: brightness(1.1); }
-        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; } 
+        .btn-diff:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; transform: none; } 
+        .btn-diff.active { outline: 3px solid #3498db; outline-offset: 2px; }
         
         .btn-easy { background-color: #27ae60; }
         .btn-normal { background-color: #e67e22; }
         .btn-hard { background-color: #c0392b; }
         .btn-streak { background-color: #8e44ad; }
-
-        .diff-desc {
-            width: 100%;
-            flex: 1;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            padding: 10px 8px;
-            font-size: 12px;
-            color: #555;
-            line-height: 1.4;
-            box-sizing: border-box;
-            text-align: center;
-            word-break: keep-all;
-        }
 
         .btn-submit {
             width: 100%;
@@ -134,15 +114,15 @@
             transition: width 1s linear;
         }
 
-        /* 연승 모드 안내 상자 */
-        .streak-info-box {
-            background-color: #f5ee2e15;
-            border: 1px solid #8e44ad;
+        /* 동적 모드 안내 상자 */
+        .mode-info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
             border-radius: 8px;
             padding: 12px 16px;
             margin-top: 15px;
             font-size: 14px;
-            color: #4a235a;
+            color: #2c3e50;
             line-height: 1.5;
         }
 
@@ -352,8 +332,7 @@
             body { padding: 10px; }
             .card { padding: 15px 10px; }
             .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .btn-diff { font-size: 13px; padding: 10px 2px; }
-            .diff-desc { font-size: 11px; padding: 8px 4px; }
+            .btn-diff { font-size: 14px; padding: 12px 2px; }
             .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
             .hand-display { gap: 2px; }
             .selection-grid { gap: 4px; }
@@ -371,33 +350,16 @@
         📦 Regular.zip 패키지를 읽어오는 중입니다...
     </div>
     
-    <!-- 난이도 선택 영역 및 설명 추가 -->
+    <!-- 난이도 선택 버튼 영역 -->
     <div class="difficulty-group">
-        <div class="diff-card">
-            <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
-            <div class="diff-desc">1~2개의 오름패만 존재하며, 오름패가 몇 개인지 힌트로 알려 줍니다.</div>
-        </div>
-        <div class="diff-card">
-            <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
-            <div class="diff-desc">일반적으로 2개의 오름패인 문제이지만, 이보다 오름패가 많은 경우도 있습니다.</div>
-        </div>
-        <div class="diff-card">
-            <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
-            <div class="diff-desc">기본적으로 여러 형태의 다면대기인 문제입니다. 생각보다 오름패의 개수가 많을 수 있습니다.</div>
-        </div>
-        <div class="diff-card">
-            <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 연승 모드</button>
-            <div class="diff-desc">어려움 레벨의 문제를 60초 시간제한 내 연속 정답을 도전합니다.</div>
-        </div>
+        <button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
+        <button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
+        <button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
+        <button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 연승 모드</button>
     </div>
 
-    <!-- 연승 모드 안내 상자 -->
-    <div id="streak-info-box" class="streak-info-box" style="display: none;">
-        📌 <b>어려움 연승 모드 규칙:</b><br>
-        • ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>
-        • 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>
-        • 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
-    </div>
+    <!-- 선택된 모드 설명 안내 상자 -->
+    <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
     <div class="status-bar" style="margin-top: 15px;">
         <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
@@ -410,7 +372,6 @@
     </div>
 
     <div style="text-align: center; margin-top: 10px;">
-        <span id="suit-name" style="font-weight: bold; font-size: 18px; color: #444;"></span>
         <div id="easy-hint" class="hint-badge" style="display: none;"></div>
     </div>
     
@@ -466,9 +427,9 @@
     const tileSvgCache = {};
 
     const SUITS = [
-        { code: 'Man', name: '만자패(萬)' },
-        { code: 'Pin', name: '통자패(筒)' },
-        { code: 'Sou', name: '삭자패(索)' }
+        { code: 'Man', name: '만자패' },
+        { code: 'Pin', name: '통자패' },
+        { code: 'Sou', name: '삭자패' }
     ];
     
     let currentSuitObj = null;
@@ -484,6 +445,13 @@
     let timerInterval = null;
     let timeLeft = 60;
     let pendingRecordStreak = 0;
+
+    const MODE_DESCRIPTIONS = {
+        easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제입니다.<br>• 상단에 오름패가 몇 개인지 힌트로 알려줍니다.`,
+        normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 때때로 3~4개의 오름패가 존재할 수 있습니다.`,
+        hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기(3~9면 대기) 문제입니다.<br>• 복잡한 모양이 출제되므로 주의 깊게 살펴봐야 합니다.`,
+        streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>• 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.`
+    };
 
     window.addEventListener('DOMContentLoaded', async () => {
         loadLeaderboard();
@@ -547,9 +515,34 @@
         generateQuiz();
     }
 
+    function updateModeUI() {
+        // 모든 버튼 활성화 강조 상태 초기화
+        document.querySelectorAll('.btn-diff').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // 하단 안내 상자 출력
+        const infoBox = document.getElementById('mode-info-box');
+        infoBox.innerHTML = MODE_DESCRIPTIONS[currentMode] || '';
+        infoBox.style.display = 'block';
+
+        // 연승 모드 테마 적용
+        if (currentMode === 'streak') {
+            infoBox.style.backgroundColor = '#f5ee2e15';
+            infoBox.style.borderColor = '#8e44ad';
+            infoBox.style.color = '#4a235a';
+        } else {
+            infoBox.style.backgroundColor = '#f8f9fa';
+            infoBox.style.borderColor = '#ced4da';
+            infoBox.style.color = '#2c3e50';
+        }
+    }
+
     function generateQuiz() {
         clearInterval(timerInterval);
         isSubmitted = false;
+
+        updateModeUI();
 
         let availableSuits = SUITS;
         if (currentSuitObj) {
@@ -587,13 +580,10 @@
         renderHand();
         renderButtons();
         
-        document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
-        
         const hintElem = document.getElementById('easy-hint');
         const streakElem = document.getElementById('streak-display');
         const timerElem = document.getElementById('timer-display');
         const timerGaugeContainer = document.getElementById('timer-gauge-container');
-        const streakInfoBox = document.getElementById('streak-info-box');
 
         if (currentMode === 'easy') {
             hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
@@ -607,13 +597,11 @@
             streakElem.style.display = 'inline-block';
             timerElem.style.display = 'inline-block';
             timerGaugeContainer.style.display = 'block';
-            streakInfoBox.style.display = 'block';
             startTimer();
         } else {
             streakElem.style.display = 'none';
             timerElem.style.display = 'none';
             timerGaugeContainer.style.display = 'none';
-            streakInfoBox.style.display = 'none';
         }
 
         const submitBtn = document.getElementById('btn-submit');
