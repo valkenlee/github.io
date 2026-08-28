@@ -6,18 +6,31 @@
 </head>
 <body>
   <script>
-    // 타임스탬프(?t=시간)로 캐시를 방지하여 최신 index.html을 가져옴
+    // 1. 최신 index.html 가져오기 (캐시 방지)
     fetch('index.html?t=' + new Date().getTime(), { cache: 'no-store' })
       .then(response => response.text())
       .then(html => {
-        // index.html 코드 내부의 <head> 바로 직후에 전역 플래그 변수를 주입
-        const wrappedHtml = html.replace('<head>', '<head><script>window.__IS_WRAPPED__ = true;<\/script>');
-        
-        document.open();
-        document.write(wrappedHtml);
-        document.close();
+        // 2. 받아온 HTML 문자열을 DOM 객체로 파싱
+        const parser = new DOMParser();
+        const newDoc = parser.parseFromString(html, 'text/html');
+
+        // 3. 플래그 변수 확실하게 선언
+        window.__IS_WRAPPED__ = true;
+
+        // 4. head 및 body 내용 교체
+        document.head.innerHTML = newDoc.head.innerHTML;
+        document.body.innerHTML = newDoc.body.innerHTML;
+
+        // 5. 동적 주입된 script 태그 재실행 (script.js 포함)
+        const scripts = newDoc.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement('script');
+          Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+          newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+          document.body.appendChild(newScript);
+        });
       })
-      .catch(err => console.error('index.html 로드 실패:', err));
+      .catch(err => console.error('index.html 로딩 실패:', err));
   </script>
 </body>
 </html>
