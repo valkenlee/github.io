@@ -250,11 +250,7 @@ function validateHandDecomposition(handCounts, decomp, addedTile, waitType, targ
         needed[s+2] += 1;
     });
 
-    if (waitType === '단기') {
-        needed[addedTile] -= 1;
-    } else if (waitType === '샤보') {
-        needed[addedTile] -= 1;
-    } else if (waitType === '양면' || waitType === '간짱' || waitType === '변짱') {
+    if (waitType === '단기' || waitType === '샤보' || waitType === '양면' || waitType === '간짱' || waitType === '변짱') {
         needed[addedTile] -= 1;
     }
 
@@ -305,7 +301,10 @@ function renderDecompositionExplanation() {
                     const w1Valid = validWaitsSet.has(w1);
                     const w2Valid = validWaitsSet.has(w2);
 
-                    if (!w1Valid && !w2Valid) return;
+                    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a,b)=>a-b);
+                    
+                    // 🔥 예외 처리: 양면 대기이지만 유효 대기패가 2개 미만(1개)인 경우 출력을 무조건 차단
+                    if (waitTiles.length < 2) return;
 
                     const w1Str = w1Valid ? `(${w1})` : '';
                     const w2Str = w2Valid ? `(${w2})` : '';
@@ -326,17 +325,14 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a,b)=>a-b);
-                    if (waitTiles.length > 0) {
-                        const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
-                        itemsList.push({
-                            waitType: '양면',
-                            sortOrder: 1,
-                            groupKey: groupKey,
-                            tiles: waitTiles,
-                            partsStr: parts.join(' ')
-                        });
-                    }
+                    const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                    itemsList.push({
+                        waitType: '양면',
+                        sortOrder: 1,
+                        groupKey: groupKey,
+                        tiles: waitTiles,
+                        partsStr: parts.join(' ')
+                    });
 
                 } else if (waitType === '샤보') {
                     let shanponTiles = [];
