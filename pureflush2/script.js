@@ -1105,7 +1105,6 @@ function escapeHtml(text) {
 ------------------------------------------------------------- */
 
 function copyCurrentQuizToCustom() {
-    console.log('[DEBUG] 1. 문제 복사 시작');
 
     if (!currentHand || currentHand.length !== 13) {
         alert('현재 생성된 문제가 없습니다.');
@@ -1129,7 +1128,6 @@ function copyCurrentQuizToCustom() {
     // 4. 히든 분석기 화면 업데이트
     if (typeof updateCustomHandDisplay === 'function') {
         updateCustomHandDisplay();
-        console.log('[DEBUG] 2. 히든 패 화면 업데이트 완료');
     }
 
     // 5. 대기패 및 해설 계산 실행 (여러 함수명 패턴 대응)
@@ -1154,7 +1152,6 @@ function copyCurrentQuizToCustom() {
             const buttons = analyzer.querySelectorAll('button');
             buttons.forEach(btn => {
                 if (btn.innerText.includes('계산') || btn.innerText.includes('분석') || (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('calc'))) {
-                    console.log('[DEBUG] 3. 계산/분석 버튼 찾음 -> 자동 클릭 실행');
                     btn.click();
                     calculated = true;
                 }
@@ -1173,7 +1170,6 @@ function copyCurrentQuizToCustom() {
 }
 
 function autoSelectQuizOptionCheckboxes() {
-    console.log('[DEBUG] 4. 체크박스 자동 선택 시작');
 
     // 1) 히든 분석기 또는 퀴즈의 정답 배열 추출
     let targetWaitings = [];
@@ -1182,8 +1178,6 @@ function autoSelectQuizOptionCheckboxes() {
     } else if (typeof correctWaitings !== 'undefined' && correctWaitings && correctWaitings.length > 0) {
         targetWaitings = correctWaitings;
     }
-
-    console.log('[DEBUG] 추출된 정답 대기패 배열:', targetWaitings);
 
     if (!targetWaitings || targetWaitings.length === 0) {
         console.log('[DEBUG] ⚠️ 대기패 결과가 존재하지 않거나 빈 배열입니다.');
@@ -1205,5 +1199,4 @@ function autoSelectQuizOptionCheckboxes() {
         }
     });
 
-    console.log(`[DEBUG] 5. 총 ${checkedCount}개 선택지 자동 체크 완료!`);
 }
