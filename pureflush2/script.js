@@ -1,584 +1,424 @@
-let svgCache = {}; // SVG 이미지 캐시 (Key: "man1" 등)
-let currentSuit = 'man'; // man, pin, sou 중 무작위
-let currentHand = []; // 13장 숫자 배열 [1, 1, 1, 2, 3, ...]
-let correctWaits = []; // 정답 대기패 배열 [1, 4]
-let selectedWaits = new Set(); // 사용자가 선택한 패
-let currentMode = 'easy';
-let currentDiscard = null; // 타패된 패 (null일 수 있음)
-let maxedOutWaits = []; // 손패에 이미 4장 있어 올 수 없는 대기패
+let zipInstance = null;
+const tileSvgCache = {};
 
-// 연승 모드 관련 변수
-let currentStreak = 0;
-let bestStreak = 0;
+const SUITS = [
+    { code: 'Man', name: '만자패(萬)' },
+    { code: 'Pin', name: '통자패(筒)' },
+    { code: 'Sou', name: '삭자패(索)' }
+];
+
+let currentSuitObj = null;
+let currentHand = [];
+let winningTiles = [];
+let maxedOutWinningTiles = []; // 4장 보유하여 실제로는 오를 수 없는 패 목록
+let selectedTiles = new Set();
+
+let currentMode = 'normal';
+let isSubmitted = false;
+
+let streakCount = 0;
 let timerInterval = null;
-let timeRemaining = 60;
-const STREAK_TIME_LIMIT = 60;
+let timeLeft = 60;
+let pendingRecordStreak = 0;
 
-const suitPrefixMap = {
-    man: 'Man',
-    pin: 'Pin',
-    sou: 'Sou'
-};
-
-// 페이지 로드 시 ZIP 파일 읽기 및 최고 기록 불러오기
-window.onload = async () => {
-    bestStreak = parseInt(localStorage.getItem('mahjong_best_streak') || '0', 10);
-    document.getElementById('best-streak').textContent = bestStreak;
-    updateHofUI();
-
+window.addEventListener('DOMContentLoaded', async () => {
+    loadLeaderboard();
     try {
         const response = await fetch('Regular.zip');
-        if (!response.ok) throw new Error('Zip 파일을 찾을 수 없습니다.');
-        const blob = await response.blob();
+        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
         
-        const zip = await JSZip.loadAsync(blob);
-        const promises = [];
-
-        zip.forEach((relativePath, file) => {
-            if (!file.dir && relativePath.endsWith('.svg')) {
-                const p = file.async('string').then(content => {
-                    const filename = relativePath.split('/').pop().replace('.svg', '');
-                    svgCache[filename] = 'data:image/svg+xml;utf8,' + encodeURIComponent(content);
-                });
-                promises.push(p);
-            }
-        });
-
-        await Promise.all(promises);
-
-        document.getElementById('loader').classList.add('hidden');
-        document.getElementById('game-container').classList.remove('hidden');
+        const arrayBuffer = await response.arrayBuffer();
+        zipInstance = await JSZip.loadAsync(arrayBuffer);
         
-        generateProblem();
-
-    } catch (error) {
-        console.error(error);
-        document.getElementById('loader-text').textContent = 
-            '이미지 로드 실패! Regular.zip 파일이 동일한 경로에 있는지 확인하세요.';
+        document.getElementById('status-msg').style.color = '#27ae60';
+        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
+        
+        document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
+    } catch (err) {
+        document.getElementById('status-msg').style.color = '#e74c3c';
+        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
+        console.error(err);
     }
-};
+});
 
-// 난이도 설정
-function setMode(mode) {
-    currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+async function getTileImageSrc(suitCode, num) {
+    const targetName = `${suitCode}${num}.svg`;
+    const cacheKey = `${suitCode}${num}`;
     
-    // 버튼 활성화 표시
-    const btnMap = { easy: 0, normal: 1, hard: 2, streak: 3 };
-    document.querySelectorAll('.mode-btn')[btnMap[mode]].classList.add('active');
+    if (tileSvgCache[cacheKey]) return tileSvgCache[cacheKey];
 
-    const streakInfo = document.getElementById('streak-info');
-    const timerContainer = document.getElementById('timer-bar-container');
-    const hofContainer = document.getElementById('hall-of-fame');
+    let targetFile = null;
+    zipInstance.forEach((relativePath, file) => {
+        if (relativePath.endsWith(targetName)) {
+            targetFile = file;
+        }
+    });
 
-    if (mode === 'streak') {
-        streakInfo.style.display = 'flex';
-        timerContainer.style.display = 'block';
-        hofContainer.classList.remove('hidden');
-        resetStreakGame();
+    if (targetFile) {
+        const text = await targetFile.async('string');
+        const blob = new Blob([text], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        tileSvgCache[cacheKey] = url;
+        return url;
+    }
+    return '';
+}
+
+function selectMode(mode) {
+    if (currentMode !== mode) {
+        streakCount = 0;
+    }
+    currentMode = mode;
+
+    if (mode === 'streak' && !sessionStorage.getItem('streak_notice_shown')) {
+        document.getElementById('streak-modal').style.display = 'flex';
     } else {
-        streakInfo.style.display = 'none';
-        timerContainer.style.display = 'none';
-        hofContainer.classList.add('hidden');
-        stopTimer();
-        generateProblem();
+        generateQuiz();
     }
 }
 
-function resetStreakGame() {
-    currentStreak = 0;
-    document.getElementById('current-streak').textContent = currentStreak;
-    startTimer();
-    generateProblem();
+function startStreakModeAfterNotice() {
+    sessionStorage.setItem('streak_notice_shown', 'true');
+    document.getElementById('streak-modal').style.display = 'none';
+    generateQuiz();
+}
+
+function generateQuiz() {
+    clearInterval(timerInterval);
+    isSubmitted = false;
+
+    let availableSuits = SUITS;
+    if (currentSuitObj) {
+        availableSuits = SUITS.filter(suit => suit.code !== currentSuitObj.code);
+    }
+    currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
+
+    let targetDifficulty = currentMode;
+    if (currentMode === 'streak') {
+        targetDifficulty = Math.random() < 0.2 ? 'normal' : 'hard';
+    }
+
+    let hand = [];
+    let resultData = { waits: [], maxedOut: [] };
+
+    while (true) {
+        hand = generateRandom13Tiles();
+        resultData = getWinningTiles(hand);
+        const count = resultData.waits.length;
+
+        if (targetDifficulty === 'easy') {
+            if (count >= 1 && count <= 2) break;
+        } else if (targetDifficulty === 'normal') {
+            if (count >= 2 && count <= 4) break;
+        } else if (targetDifficulty === 'hard') {
+            if (count >= 3 && count <= 9) break;
+            if (count === 2 && Math.random() < 0.05) break; 
+        }
+    }
+
+    currentHand = hand;
+    winningTiles = resultData.waits;
+    maxedOutWinningTiles = resultData.maxedOut;
+
+    renderHand();
+    renderButtons();
+    
+    document.getElementById('suit-name').innerText = `현재 무늬: [ ${currentSuitObj.name} ]`;
+    
+    const hintElem = document.getElementById('easy-hint');
+    const streakElem = document.getElementById('streak-display');
+    const timerElem = document.getElementById('timer-display');
+    const streakInfoBox = document.getElementById('streak-info-box');
+
+    if (currentMode === 'easy') {
+        hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
+        hintElem.style.display = 'inline-block';
+    } else {
+        hintElem.style.display = 'none';
+    }
+
+    if (currentMode === 'streak') {
+        streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
+        streakElem.style.display = 'inline-block';
+        timerElem.style.display = 'inline-block';
+        streakInfoBox.style.display = 'block';
+        startTimer();
+    } else {
+        streakElem.style.display = 'none';
+        timerElem.style.display = 'none';
+        streakInfoBox.style.display = 'none';
+    }
+
+    const submitBtn = document.getElementById('btn-submit');
+    submitBtn.innerText = '제출 및 정답 확인';
+    submitBtn.style.backgroundColor = '#2980b9';
+
+    document.getElementById('quiz-area').style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('name-input-container').style.display = 'none';
+    selectedTiles.clear();
 }
 
 function startTimer() {
-    stopTimer();
-    timeRemaining = STREAK_TIME_LIMIT;
-    updateTimerBar();
-
+    timeLeft = 60;
+    updateTimerDisplay();
     timerInterval = setInterval(() => {
-        timeRemaining -= 0.1;
-        if (timeRemaining <= 0) {
-            timeRemaining = 0;
-            updateTimerBar();
-            endStreakGame();
-        } else {
-            updateTimerBar();
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            handleTimeout();
         }
-    }, 100);
+    }, 1000);
 }
 
-function stopTimer() {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
+function updateTimerDisplay() {
+    document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
+}
+
+function handleTimeout() {
+    isSubmitted = true;
+    const resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'result-message incorrect';
+
+    let maxedInfo = maxedOutWinningTiles.length > 0 ? 
+        `<br><small style="color:#666;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
+
+    resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다! 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
+
+    checkStreakRecordAndReset();
+
+    const submitBtn = document.getElementById('btn-submit');
+    submitBtn.innerText = '새 문제 제출';
+    submitBtn.style.backgroundColor = '#8e44ad';
+}
+
+function generateRandom13Tiles() {
+    let counts = Array(10).fill(0);
+    let hand = [];
+    while (hand.length < 13) {
+        let num = Math.floor(Math.random() * 9) + 1;
+        if (counts[num] < 4) {
+            counts[num]++;
+            hand.push(num);
+        }
     }
+    return hand.sort((a, b) => a - b);
 }
 
-function updateTimerBar() {
-    const percentage = (timeRemaining / STREAK_TIME_LIMIT) * 100;
-    document.getElementById('timer-bar').style.width = `${percentage}%`;
+// 오름패 계산 및 4장 모두 보유한 형태상 오름패(maxedOut) 구분 기능 추가
+function getWinningTiles(hand) {
+    let waits = [];
+    let maxedOut = [];
+    let counts = Array(10).fill(0);
+    hand.forEach(num => counts[num]++);
+
+    for (let tile = 1; tile <= 9; tile++) {
+        if (counts[tile] < 4) {
+            counts[tile]++;
+            if (canFormHand(counts, 14)) {
+                waits.push(tile);
+            }
+            counts[tile]--;
+        } else {
+            // 4장을 이미 가졌을 때, 가상으로 완성되는지 판별
+            counts[tile]++;
+            if (canFormHand(counts, 14)) {
+                maxedOut.push(tile);
+            }
+            counts[tile]--;
+        }
+    }
+    return { waits, maxedOut };
 }
 
-function endStreakGame() {
-    stopTimer();
-    const resultEl = document.getElementById('result-message');
-    resultEl.className = 'result wrong';
-    
-    let isNewRecord = false;
-    if (currentStreak > bestStreak) {
-        bestStreak = currentStreak;
-        localStorage.setItem('mahjong_best_streak', bestStreak);
-        document.getElementById('best-streak').textContent = bestStreak;
-        isNewRecord = true;
+function canFormHand(counts, remaining) {
+    if (remaining === 0) return true;
+
+    let tempCounts = [...counts];
+
+    if (remaining % 3 === 2) {
+        for (let i = 1; i <= 9; i++) {
+            if (tempCounts[i] >= 2) {
+                tempCounts[i] -= 2;
+                if (canFormHand(tempCounts, remaining - 2)) return true;
+                tempCounts[i] += 2;
+            }
+        }
+        return false;
     }
 
-    // 명예의 전당 등록 체크
-    const addedToHof = checkAndSaveHof(currentStreak);
-
-    let msg = `⏰ 시간 종료! 최종 연승: ${currentStreak}회`;
-    if (isNewRecord) msg += ' (🎉 최고 기록 갱신!)';
-    if (addedToHof) msg += ' 🏆 명예의 전당 등록!';
-
-    resultEl.textContent = msg;
-
-    document.getElementById('submit-btn').classList.add('hidden');
-    document.getElementById('next-btn').classList.remove('hidden');
-    document.getElementById('next-btn').textContent = '다시 도전';
-}
-
-// -------------------------------------------------------------
-// 명예의 전당 (Top 10) 관련 로직
-// -------------------------------------------------------------
-function getHofData() {
-    const data = localStorage.getItem('mahjong_hof');
-    return data ? JSON.parse(data) : [];
-}
-
-function checkAndSaveHof(score) {
-    if (score <= 0) return false;
-
-    let hof = getHofData();
-    // 10개 미만이거나 10번째 점수보다 높으면 등록 대상
-    if (hof.length < 10 || score > hof[hof.length - 1].score) {
-        const name = prompt(`🏆 축하합니다! ${score}연승으로 명예의 전당에 등재되었습니다.\n이름을 입력하세요:`, '익명');
-        const finalName = (name && name.trim()) ? name.trim() : '익명';
-        
-        const now = new Date();
-        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-
-        hof.push({ name: finalName, score: score, date: dateStr });
-        // 점수 내림차순, 같은 점수면 정렬 유지
-        hof.sort((a, b) => b.score - a.score);
-        hof = hof.slice(0, 10); // 상위 10개만 유지
-
-        localStorage.setItem('mahjong_hof', JSON.stringify(hof));
-        updateHofUI();
-        return true;
+    let first = 0;
+    for (let i = 1; i <= 9; i++) {
+        if (tempCounts[i] > 0) { first = i; break; }
     }
+
+    if (tempCounts[first] >= 3) {
+        tempCounts[first] -= 3;
+        if (canFormHand(tempCounts, remaining - 3)) return true;
+        tempCounts[first] += 3;
+    }
+
+    if (first <= 7 && tempCounts[first + 1] > 0 && tempCounts[first + 2] > 0) {
+        tempCounts[first]--;
+        tempCounts[first + 1]--;
+        tempCounts[first + 2]--;
+        if (canFormHand(tempCounts, remaining - 3)) return true;
+        tempCounts[first]++;
+        tempCounts[first + 1]++;
+        tempCounts[first + 2]++;
+    }
+
     return false;
 }
 
-function updateHofUI() {
-    const hofList = document.getElementById('hof-list');
-    const hof = getHofData();
+async function renderHand() {
+    const container = document.getElementById('hand-container');
+    container.innerHTML = '';
+    
+    for (const num of currentHand) {
+        const img = document.createElement('img');
+        img.src = await getTileImageSrc(currentSuitObj.code, num);
+        img.className = 'tile-img';
+        img.alt = `${currentSuitObj.code}${num}`;
+        container.appendChild(img);
+    }
+}
 
-    if (hof.length === 0) {
-        hofList.innerHTML = '<li>기록이 없습니다.</li>';
+function renderButtons() {
+    const grid = document.getElementById('selection-buttons');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-number';
+        btn.innerText = `${i}`;
+        btn.onclick = () => toggleSelect(i, btn);
+        grid.appendChild(btn);
+    }
+}
+
+function toggleSelect(num, btn) {
+    if (isSubmitted) return;
+
+    if (selectedTiles.has(num)) {
+        selectedTiles.delete(num);
+        btn.classList.remove('selected');
+    } else {
+        selectedTiles.add(num);
+        btn.classList.add('selected');
+    }
+}
+
+function handleSubmitOrNext() {
+    if (isSubmitted) {
+        generateQuiz();
         return;
     }
 
-    hofList.innerHTML = hof.map(entry => 
-        `<li><strong>${entry.score}연승</strong> - ${escapeHtml(entry.name)} <small style="color:#888;">(${entry.date})</small></li>`
-    ).join('');
+    if (selectedTiles.size === 0) return;
+
+    clearInterval(timerInterval);
+
+    // 정답 검증 시 maxedOutWinningTiles 패는 선택 여부에 영향을 주지 않도록 제외 및 비교
+    const userAnswers = Array.from(selectedTiles).filter(tile => !maxedOutWinningTiles.includes(tile)).sort((a, b) => a - b);
+    const isCorrect = userAnswers.length === winningTiles.length && 
+                      userAnswers.every((val, idx) => val === winningTiles[idx]);
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+
+    let maxedInfo = maxedOutWinningTiles.length > 0 ? 
+        `<br><small style="font-size:13px; opacity:0.85;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
+
+    if (isCorrect) {
+        resultDiv.className = 'result-message correct';
+        if (currentMode === 'streak') {
+            streakCount++;
+            document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
+            resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!) (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
+        } else {
+            resultDiv.innerHTML = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
+        }
+    } else {
+        resultDiv.className = 'result-message incorrect';
+        resultDiv.innerHTML = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
+        if (currentMode === 'streak') {
+            checkStreakRecordAndReset();
+        }
+    }
+
+    isSubmitted = true;
+    const submitBtn = document.getElementById('btn-submit');
+    submitBtn.innerText = currentMode === 'streak' ? '다음 연승 문제로 이동' : '같은 난이도로 새 문제 제출';
+    submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
+}
+
+function checkStreakRecordAndReset() {
+    if (streakCount >= 10) {
+        pendingRecordStreak = streakCount;
+        document.getElementById('name-input-container').style.display = 'block';
+    }
+    streakCount = 0;
+}
+
+function saveRecord() {
+    const inputElem = document.getElementById('player-name-input');
+    const playerName = inputElem.value.trim() || '익명';
+    
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    const newRecord = {
+        name: playerName.substring(0, 20),
+        streak: pendingRecordStreak,
+        date: dateStr
+    };
+
+    let records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
+    records.push(newRecord);
+    records.sort((a, b) => b.streak - a.streak);
+    records = records.slice(0, 10);
+
+    localStorage.setItem('mahjong_streak_records', JSON.stringify(records));
+    
+    document.getElementById('name-input-container').style.display = 'none';
+    inputElem.value = '';
+    loadLeaderboard();
+}
+
+function loadLeaderboard() {
+    const records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
+    const ul = document.getElementById('record-list-ul');
+    ul.innerHTML = '';
+
+    if (records.length === 0) {
+        ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 10연승 이상 기록이 없습니다. 도전에 성공해 보세요!</li>';
+        return;
+    }
+
+    records.forEach((rec, idx) => {
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        li.innerHTML = `
+            <span class="record-rank">${idx + 1}위</span>
+            <span class="record-name">${escapeHtml(rec.name)}</span>
+            <span class="record-score">${rec.streak}연승</span>
+            <span class="record-date">${rec.date}</span>
+        `;
+        ul.appendChild(li);
+    });
+}
+
+function resetLeaderboard() {
+    const isConfirmed = confirm('정말로 저장된 모든 연승 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');
+    if (isConfirmed) {
+        localStorage.removeItem('mahjong_streak_records');
+        loadLeaderboard();
+        alert('연승 기록이 모두 삭제되었습니다.');
+    }
 }
 
 function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-// 문제 생성 로직
-function generateProblem() {
-    if (currentMode === 'streak' && timeRemaining <= 0) {
-        resetStreakGame();
-        return;
-    }
-
-    selectedWaits.clear();
-    document.getElementById('result-message').textContent = '';
-    document.getElementById('submit-btn').classList.remove('hidden');
-    document.getElementById('next-btn').classList.add('hidden');
-    document.getElementById('next-btn').textContent = '다음 문제';
-
-    // 무작위 수패 결정
-    const suits = ['man', 'pin', 'sou'];
-    currentSuit = suits[Math.floor(Math.random() * suits.length)];
-
-    // 조건에 맞는 대기패 문제가 나올 때까지 무한 생성
-    let hand = [];
-    let waits = [];
-    let maxedOut = [];
-    let discardTile = null;
-
-    while (true) {
-        let counts = Array(10).fill(0);
-        
-        // 14장 생성 (13장 패 + 1장 타패용)
-        let totalTiles = 0;
-        while (totalTiles < 14) {
-            let num = Math.floor(Math.random() * 9) + 1;
-            if (counts[num] < 4) {
-                counts[num]++;
-                totalTiles++;
-            }
-        }
-
-        // 14장 중 1장을 임의로 버려 13장 텐파이 상태 만들기
-        let availableNum = [];
-        for (let i = 1; i <= 9; i++) {
-            if (counts[i] > 0) availableNum.push(i);
-        }
-        discardTile = availableNum[Math.floor(Math.random() * availableNum.length)];
-        counts[discardTile]--; // 1장 버림
-
-        // 대기패 계산
-        let calculation = getWaitTilesDetails(counts);
-        waits = calculation.validWaits;
-        maxedOut = calculation.maxedOutWaits;
-
-        // 난이도 조건 검증
-        const waitCount = waits.length;
-        if (waitCount === 0) continue; // 텐파이가 아니면 재생성
-
-        if (currentMode === 'easy' && waitCount >= 1 && waitCount <= 2) break;
-        if (currentMode === 'normal' && waitCount >= 2 && waitCount <= 4) break;
-        if ((currentMode === 'hard' || currentMode === 'streak') && waitCount >= 3 && waitCount <= 9) break;
-    }
-
-    // counts 배열을 hand 배열(13장)로 변환
-    currentHand = [];
-    let countsCopy = Array(10).fill(0);
-    for (let i = 1; i <= 9; i++) {
-        for (let j = 0; j < 14; j++) {
-            // 원본에서 구현된 형태로 hand 조립
-        }
-    }
-    
-    // 다시 손패 생성 로직 (13장)
-    let tempHand = [];
-    for (let i = 1; i <= 9; i++) {
-        let cnt = 0;
-        // 실제 남은 개수만큼 추가
-    }
-    // 정확한 손패 조립
-    for (let i = 1; i <= 9; i++) {
-        // 백트래킹 검증 당시 썼던 counts와 맞춤
-    }
-
-    // 무작위 생성 시 사용했던 13장 조립
-    let currentCounts = Array(10).fill(0);
-    // 대기패 계산 시 사용했던 13장 패 복원
-    // 위 알고리즘에서 counts는 버린 후의 13장 상태임
-    for (let i = 1; i <= 9; i++) {
-        for (let c = 0; c < 13; c++) {
-            // 간결한 복원
-        }
-    }
-    
-    // 13장 배열 생성
-    let finalHand = [];
-    // 버려지고 남은 패들
-    // counts는 이미 discardTile이 차감된 13장 상태
-    // 그러나 counts 변수가 덮어씌워지지 않았으므로 재계산 대신 counts 기반으로 추출
-    // 상단 loop를 수정하여 깔끔히 복원
-    // -> getWaitTilesDetails에 넘긴 counts가 바로 13장 상태임.
-    
-    // 재구성
-    let hand13 = [];
-    // 위에서 counts는 13장 상태
-    // 하지만 while문 내부에서 counts가 변경되었을 수 있으므로 직접 핸들링
-    // 안전하게 다시 구성:
-    currentHand = [];
-    // 13장 패를 올바르게 채우기 위해 13장 counts를 재추출
-    // 이를 위해 루프 방식을 약간 정돈하여 적용:
-    
-    // [해결] counts는 13장 상태임.
-    for (let num = 1; num <= 9; num++) {
-        // 백트래킹 내부에서 counts를 수정하므로 백분율 복사본을 썼음.
-    }
-
-    // 실제 코드 수행
-    // (재해석: counts는 getWaitTilesDetails 호출 시점에 13장 가지고 있음)
-    // 안전하게 사용하기 위해 해당 시점의 counts를 핸드 배열로 직렬화
-    
-    // 루프 내부 변수를 정확히 연동하기 위해 재작성:
-    // ...
-}
-
-// generateProblem의 완벽한 내부 구현 (오류 방지)
-generateProblem = function() {
-    if (currentMode === 'streak' && timeRemaining <= 0) {
-        resetStreakGame();
-        return;
-    }
-
-    selectedWaits.clear();
-    document.getElementById('result-message').textContent = '';
-    document.getElementById('submit-btn').classList.remove('hidden');
-    document.getElementById('next-btn').classList.add('hidden');
-    document.getElementById('next-btn').textContent = '다음 문제';
-
-    const suits = ['man', 'pin', 'sou'];
-    currentSuit = suits[Math.floor(Math.random() * suits.length)];
-
-    let waits = [];
-    let maxedOut = [];
-    let discard = null;
-    let finalCounts = Array(10).fill(0);
-
-    while (true) {
-        let counts = Array(10).fill(0);
-        let totalTiles = 0;
-        while (totalTiles < 14) {
-            let num = Math.floor(Math.random() * 9) + 1;
-            if (counts[num] < 4) {
-                counts[num]++;
-                totalTiles++;
-            }
-        }
-
-        let availableNum = [];
-        for (let i = 1; i <= 9; i++) {
-            if (counts[i] > 0) availableNum.push(i);
-        }
-        discard = availableNum[Math.floor(Math.random() * availableNum.length)];
-        counts[discard]--; 
-
-        let calculation = getWaitTilesDetails(counts);
-        waits = calculation.validWaits;
-        maxedOut = calculation.maxedOutWaits;
-
-        const waitCount = waits.length;
-        if (waitCount === 0) continue; 
-
-        if (currentMode === 'easy' && waitCount >= 1 && waitCount <= 2) {
-            finalCounts = counts;
-            break;
-        }
-        if (currentMode === 'normal' && waitCount >= 2 && waitCount <= 4) {
-            finalCounts = counts;
-            break;
-        }
-        if ((currentMode === 'hard' || currentMode === 'streak') && waitCount >= 3 && waitCount <= 9) {
-            finalCounts = counts;
-            break;
-        }
-    }
-
-    currentHand = [];
-    for (let i = 1; i <= 9; i++) {
-        for (let j = 0; j < finalCounts[i]; j++) {
-            currentHand.push(i);
-        }
-    }
-
-    correctWaits = waits;
-    maxedOutWaits = maxedOut;
-    currentDiscard = discard;
-
-    renderGame();
-};
-
-// 화면 렌더링
-function renderGame() {
-    // 버린 패 표시
-    const discardContainer = document.getElementById('discard-info');
-    const discardTileBox = document.getElementById('discard-tile');
-    if (currentDiscard) {
-        discardContainer.classList.remove('hidden');
-        discardTileBox.innerHTML = '';
-        discardTileBox.appendChild(createTileElement(currentDiscard, false));
-    } else {
-        discardContainer.classList.add('hidden');
-    }
-
-    // 손패 렌더링
-    const handDisplay = document.getElementById('hand-display');
-    handDisplay.innerHTML = '';
-    currentHand.forEach(num => {
-        handDisplay.appendChild(createTileElement(num, false));
-    });
-
-    // 힌트 렌더링 (쉬움 모드)
-    const hintBox = document.getElementById('hint-box');
-    if (currentMode === 'easy') {
-        hintBox.textContent = `💡 힌트: 대기패가 ${correctWaits.length}개 있습니다.`;
-    } else {
-        hintBox.textContent = '';
-    }
-
-    // 대기패 선택기 (1~9) 렌더링
-    const waitSelector = document.getElementById('wait-selector');
-    waitSelector.innerHTML = '';
-    for (let i = 1; i <= 9; i++) {
-        const tileEl = createTileElement(i, true);
-        tileEl.onclick = () => toggleWaitSelection(i, tileEl);
-        waitSelector.appendChild(tileEl);
-    }
-}
-
-// 패 DOM 엘리먼트 생성
-function createTileElement(num, isSelectable) {
-    const div = document.createElement('div');
-    div.className = `tile ${isSelectable ? 'tile-selectable' : 'tile-static'}`;
-    
-    const prefix = suitPrefixMap[currentSuit];
-    const key = `${prefix}${num}`;
-
-    if (svgCache[key]) {
-        const img = document.createElement('img');
-        img.src = svgCache[key];
-        img.alt = `${currentSuit} ${num}`;
-        div.appendChild(img);
-    } else {
-        div.textContent = num; // 이미지 로드 실패 시 숫자 표시
-    }
-
-    return div;
-}
-
-// 대기패 선택/해제
-function toggleWaitSelection(num, element) {
-    if (document.getElementById('submit-btn').classList.contains('hidden')) {
-        return; // 정답 확인 후에는 클릭 불가
-    }
-
-    if (selectedWaits.has(num)) {
-        selectedWaits.delete(num);
-        element.classList.remove('selected');
-    } else {
-        selectedWaits.add(num);
-        element.classList.add('selected');
-    }
-}
-
-// 대기패 상세 계산 (실제 완성 가능 패 vs 4장 소지하여 불가한 패 구분)
-function getWaitTilesDetails(counts) {
-    let validWaits = [];
-    let maxedOutWaits = [];
-
-    for (let i = 1; i <= 9; i++) {
-        let tempCounts = [...counts];
-        tempCounts[i]++;
-        
-        if (canFormHand(tempCounts)) {
-            if (counts[i] === 4) {
-                maxedOutWaits.push(i); // 형태상 대기패이나 손패에 이미 4장 있음
-            } else {
-                validWaits.push(i); // 실제 가능한 대기패
-            }
-        }
-    }
-    return { validWaits, maxedOutWaits };
-}
-
-// 마작 완성형(4면체 1머리) 판정 알고리즘
-function canFormHand(counts) {
-    // 1. 국사무쌍/칠대쌍 예외는 청일색 대기패 계산 시 일반 4면체 1머리 및 치또이츠만 고려
-    // 칠대쌍(Chiitoitsu) 체크 (7쌍)
-    let pairCount = 0;
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] === 2) pairCount++;
-    }
-    if (pairCount === 7) return true;
-
-    // 2. 일반 형태 (4면체 1머리) 백트래킹 검증
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] >= 2) {
-            counts[i] -= 2; // 머리(J head) 지정
-            if (checkMentsu(counts, 0)) {
-                counts[i] += 2;
-                return true;
-            }
-            counts[i] += 2; // 복구
-        }
-    }
-    return false;
-}
-
-// 면체(Mentsu) 완성 가능 여부 재귀 함수
-function checkMentsu(counts, depth) {
-    if (depth === 4) return true; // 4면체 완성
-
-    // 첫 번째로 남아있는 패 찾기
-    let first = 0;
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] > 0) {
-            first = i;
-            break;
-        }
-    }
-
-    if (first === 0) return true; // 패가 남지 않음
-
-    // 1. 커츠(중순) 시도 (같은 패 3장)
-    if (counts[first] >= 3) {
-        counts[first] -= 3;
-        if (checkMentsu(counts, depth + 1)) {
-            counts[first] += 3;
-            return true;
-        }
-        counts[first] += 3;
-    }
-
-    // 2. 슌츠(연순) 시도 (연속된 패 3장: i, i+1, i+2)
-    if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
-        counts[first]--;
-        counts[first + 1]--;
-        counts[first + 2]--;
-        if (checkMentsu(counts, depth + 1)) {
-            counts[first]++;
-            counts[first + 1]++;
-            counts[first + 2]++;
-            return true;
-        }
-        counts[first]++;
-        counts[first + 1]++;
-        counts[first + 2]++;
-    }
-
-    return false;
-}
-
-// 정답 확인
-function checkAnswer() {
-    const userAns = Array.from(selectedWaits).sort((a, b) => a - b);
-    const resultEl = document.getElementById('result-message');
-
-    const isCorrect = userAns.length === correctWaits.length &&
-        userAns.every((val, index) => val === correctWaits[index]);
-
-    let maxedOutText = maxedOutWaits.length > 0 ? ` (※ ${maxedOutWaits.join(', ')}번 패는 손패에 이미 4장 있어 제외)` : '';
-
-    if (isCorrect) {
-        resultEl.className = 'result correct';
-        resultEl.textContent = `🎉 정답입니다! (대기패: ${correctWaits.join(', ')}번)${maxedOutText}`;
-        
-        if (currentMode === 'streak') {
-            currentStreak++;
-            document.getElementById('current-streak').textContent = currentStreak;
-        }
-    } else {
-        resultEl.className = 'result wrong';
-        resultEl.textContent = `❌ 오답입니다! 정답은 [ ${correctWaits.join(', ')} ] 입니다.${maxedOutText}`;
-        
-        if (currentMode === 'streak') {
-            endStreakGame();
-            return;
-        }
-    }
-
-    document.getElementById('submit-btn').classList.add('hidden');
-    document.getElementById('next-btn').classList.remove('hidden');
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
