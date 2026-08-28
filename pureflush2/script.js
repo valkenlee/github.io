@@ -308,9 +308,11 @@ function getRyanmenExplanationItems(d, validWaitsSet) {
 function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
     let items = [];
     const p = d.pair;
-    
+
+    // d.pair와 d.triplets 내의 앙코들을 조합하여 샤보 구조 확인
     d.triplets.forEach(t => {
-        if (t === tile) {
+        // tile이 p(머리)이거나 t(앙코)에 해당하는 경우 모두 샤보 쌍 후보 생성
+        if (t === tile || p === tile) {
             const shanponPair = [p, t].sort((a, b) => a - b);
             const st1 = shanponPair[0];
             const st2 = shanponPair[1];
@@ -318,6 +320,7 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
             const st1Is4Count = origCounts[st1] === 4;
             const st2Is4Count = origCounts[st2] === 4;
 
+            // 두 패 모두 원본 손패에 2장 이상 존재하면 샤보 구조로 인정
             if (origCounts[st1] >= 2 && origCounts[st2] >= 2) {
                 let parts = [];
                 parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st1}, ${st1}, <span class="filled-slot">(${st1})</span>]</span>`);
@@ -402,7 +405,6 @@ function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
     };
 }
 
-// 4. 메인 renderDecompositionExplanation 함수
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
@@ -427,10 +429,10 @@ function renderDecompositionExplanation() {
             });
         });
     } else {
-        // 4장 이미 사용 중이나 형태상 대기 조합 작성이 가능한 패 탐색
+        // 유효 대기패 및 4장 소지 무효 대기패 모두 포함하여 탐색
         const allWaitCandidates = new Set([...validWaits]);
         for (let t = 1; t <= 9; t++) {
-            if (origCounts[t] === 4 && winningDecompositions[t] && winningDecompositions[t].length > 0) {
+            if (origCounts[t] === 4) {
                 allWaitCandidates.add(t);
             }
         }
