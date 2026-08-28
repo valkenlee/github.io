@@ -557,7 +557,11 @@ function classifyWaitTypes(decomp, addedTile, originalHand) {
             } else if ((s === 1 && addedTile === 3) || (s === 7 && addedTile === 7)) {
                 results.push({ waitType: '변짱', targetMeldStart: s });
             } else if (pos === 0 || pos === 2) {
-                results.push({ waitType: '양면', targetMeldStart: s });
+                const oppositeTile = (pos === 0) ? (s + 2) : (s - 1);
+                
+                if (oppositeTile >= 1 && oppositeTile <= 9) {
+                    results.push({ waitType: '양면', targetMeldStart: s });
+                }
             }
         }
     }
