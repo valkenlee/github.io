@@ -1101,14 +1101,12 @@ function escapeHtml(text) {
 }
 
 /* -------------------------------------------------------------
-   🔒 히든 패 분석기 기능 함수 추가
-------------------------------------------------------------- */
-/* -------------------------------------------------------------
-   🔒 히든 패 분석기 기능 함수
+   🔒 히든 패 분석기 기능 함수 (디버깅 강화 버전)
 ------------------------------------------------------------- */
 
-// 현재 출제된 문제의 패를 히든 분석기로 복사하고, 즉시 계산 후 정답 체크박스에 자동 반영하는 함수
 function copyCurrentQuizToCustom() {
+    console.log('[DEBUG] 1. 문제 복사 시작');
+
     if (!currentHand || currentHand.length !== 13) {
         alert('현재 생성된 문제가 없습니다.');
         return;
@@ -1117,44 +1115,74 @@ function copyCurrentQuizToCustom() {
     // 1. 현재 퀴즈의 패 숫자를 히든 패 데이터에 복사
     customHand = [...currentHand];
     
-    // 2. 현재 퀴즈의 무늬(만자/통자/삭자)도 그대로 맞춰서 설정
-    if (currentSuitObj && currentSuitObj.code) {
+    // 2. 무늬 설정
+    if (typeof currentSuitObj !== 'undefined' && currentSuitObj && currentSuitObj.code) {
         customSuitCode = currentSuitObj.code;
     }
 
-    // 3. 텍스트 입력창에도 숫자 13자리 표시
+    // 3. 텍스트 입력창 업데이트
     const textInput = document.getElementById('custom-text-input');
     if (textInput) {
         textInput.value = customHand.join('');
     }
 
     // 4. 히든 분석기 화면 업데이트
-    updateCustomHandDisplay();
+    if (typeof updateCustomHandDisplay === 'function') {
+        updateCustomHandDisplay();
+        console.log('[DEBUG] 2. 히든 패 화면 업데이트 완료');
+    } else {
+        console.error('[DEBUG] updateCustomHandDisplay 함수가 존재하지 않습니다.');
+    }
 
-    // 5. 자동으로 바로 '대기패 및 해설 계산하기' 실행
-    calculateCustomHandWaiting();
+    // 5. 대기패 계산 함수 자동 실행
+    // ※ 기존 코드의 분석 버튼 onclick 함수명을 자동 호출합니다.
+    const calcBtn = document.querySelector('#hidden-analyzer button[onclick*="calculate"]');
+    if (calcBtn) {
+        console.log('[DEBUG] 3. 계산 버튼 클릭 트리거 실행');
+        calcBtn.click(); // '대기패 및 해설 계산하기' 버튼을 직접 클릭 이벤트 발생
+    } else if (typeof calculateCustomHandWaiting === 'function') {
+        calculateCustomHandWaiting();
+    } else {
+        console.error('[DEBUG] 계산 함수/버튼을 찾을 수 없습니다.');
+    }
 
-    // 6. 계산된 실제 정답 대기패를 제출 및 정답 확인 선택지에 자동 체크
-    autoSelectQuizOptionCheckboxes();
+    // 6. 계산된 정답을 퀴즈 체크박스에 자동 입력
+    setTimeout(() => {
+        autoSelectQuizOptionCheckboxes();
+    }, 100); // 계산 완료 후 안정적으로 반영하기 위해 0.1초 지연
 }
 
-// 계산 결과로 나온 대기패를 퀴즈 정답 선택지에 자동으로 입력(체크)해주는 함수
 function autoSelectQuizOptionCheckboxes() {
-    // 퀴즈 영역의 모든 정답 선택 체크박스 가져오기
-    const checkboxes = document.querySelectorAll('#options-container input[type="checkbox"]');
-    if (!checkboxes || checkboxes.length === 0) return;
+    console.log('[DEBUG] 4. 체크박스 자동 선택 시작');
 
-    // 기존 체크 해제
-    checkboxes.forEach(cb => { cb.checked = false; });
+    // 1) 히든 분석기 결과인 customWaitings 또는 correctWaitings 가져오기
+    const targetWaitings = (typeof customWaitings !== 'undefined' && customWaitings.length > 0) 
+        ? customWaitings 
+        : (typeof correctWaitings !== 'undefined' ? correctWaitings : []);
 
-    // 히든 분석기 결과인 customWaitings(실제 정답 대기패 배열, 예: [1, 2, 3]) 확인
-    if (!customWaitings || customWaitings.length === 0) return;
+    console.log('[DEBUG] 추출된 정답 대기패 배열:', targetWaitings);
 
-    // 계산된 대기패 숫자에 해당하는 체크박스를 찾아 자동 체크
+    if (!targetWaitings || targetWaitings.length === 0) {
+        console.log('[DEBUG] ⚠️ 대기패 결과가 없어 체크박스를 선택하지 못했습니다.');
+        return;
+    }
+
+    // 2) 퀴즈 영역 전체 체크박스 검색 (다양한 Selector 대응)
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    console.log(`[DEBUG] 전체 발견된 체크박스 개수: ${checkboxes.length}`);
+
+    let checkedCount = 0;
     checkboxes.forEach(cb => {
         const val = parseInt(cb.value, 10);
-        if (customWaitings.includes(val)) {
+        if (targetWaitings.includes(val)) {
             cb.checked = true;
+            // change/input 이벤트 강제 발생 (UI 및 상태 업데이트)
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+            checkedCount++;
+        } else {
+            cb.checked = false;
         }
     });
+
+    console.log(`[DEBUG] 5. 총 ${checkedCount}개 선택지 자동 체크 완료!`);
 }
