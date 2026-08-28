@@ -6,20 +6,18 @@
 </head>
 <body>
   <script>
-    // i2.html을 거쳐 진입했음을 알리는 전역 플래그 설정
-    window.__IS_WRAPPED__ = true;
-
-    // 타임스탬프(?t=시간)를 붙여 브라우저 캐시를 무효화하고 항상 최신 index.html 요청
+    // 타임스탬프(?t=시간)로 캐시를 방지하여 최신 index.html을 가져옴
     fetch('index.html?t=' + new Date().getTime(), { cache: 'no-store' })
       .then(response => response.text())
       .then(html => {
+        // index.html 코드 내부의 <head> 바로 직후에 전역 플래그 변수를 주입
+        const wrappedHtml = html.replace('<head>', '<head><script>window.__IS_WRAPPED__ = true;<\/script>');
+        
         document.open();
-        document.write(html);
+        document.write(wrappedHtml);
         document.close();
       })
-      .catch(err => {
-        console.error('index.html 로드 실패:', err);
-      });
+      .catch(err => console.error('index.html 로드 실패:', err));
   </script>
 </body>
 </html>
