@@ -83,6 +83,10 @@ function initTitleClickTrigger() {
         // 🔒 i2.html을 통해 진입했는지 확인 (URL 파라미터 또는 전역 변수 체크)
         const isWrapped = window.__IS_WRAPPED__ || window.location.href.includes('wrapped=true') || document.currentScript?.src.includes('wrapped=true');
 
+        console.log('[DEBUG] 클릭 이벤트 발생!');
+        console.log('[DEBUG] window.__IS_WRAPPED__:', window.__IS_WRAPPED__);
+        console.log('[DEBUG] 최종 판단 isWrapped 값:', isWrapped);
+        
         if (!isWrapped) {
             return; // 일반 index.html 진입 시 히든 모드 동작 안 함
         }
