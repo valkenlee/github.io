@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 텐파이 퀴즈 (연승 모드 포함)</title>
+    <title>마작 청일색 텐파이 대기패 퀴즈 (연승 모드 포함)</title>
     <!-- ZIP 파일 처리를 위한 JSZip 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -183,6 +183,7 @@
             margin-top: 15px;
             padding: 12px;
             border-radius: 8px;
+            line-height: 1.5;
         }
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -414,6 +415,7 @@
     let currentSuitObj = null;
     let currentHand = [];
     let winningTiles = [];
+    let maxedOutWinningTiles = []; // 4장 보유하여 실제로는 오를 수 없는 패 목록
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -502,12 +504,12 @@
         }
 
         let hand = [];
-        let waits = [];
+        let resultData = { waits: [], maxedOut: [] };
 
         while (true) {
             hand = generateRandom13Tiles();
-            waits = getWinningTiles(hand);
-            const count = waits.length;
+            resultData = getWinningTiles(hand);
+            const count = resultData.waits.length;
 
             if (targetDifficulty === 'easy') {
                 if (count >= 1 && count <= 2) break;
@@ -520,7 +522,8 @@
         }
 
         currentHand = hand;
-        winningTiles = waits;
+        winningTiles = resultData.waits;
+        maxedOutWinningTiles = resultData.maxedOut;
 
         renderHand();
         renderButtons();
@@ -543,7 +546,7 @@
             streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
             streakElem.style.display = 'inline-block';
             timerElem.style.display = 'inline-block';
-            streakInfoBox.style.display = 'block'; // 연승 모드 화면 안내 상자 표시
+            streakInfoBox.style.display = 'block';
             startTimer();
         } else {
             streakElem.style.display = 'none';
@@ -583,7 +586,11 @@
         const resultDiv = document.getElementById('result');
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
-        resultDiv.innerText = `⏰ 시간 초과로 실패했습니다! 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.`;
+
+        let maxedInfo = maxedOutWinningTiles.length > 0 ? 
+            `<br><small style="color:#666;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
+
+        resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다! 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
 
         checkStreakRecordAndReset();
 
@@ -605,8 +612,10 @@
         return hand.sort((a, b) => a - b);
     }
 
+    // 오름패 계산 및 4장 모두 보유한 형태상 오름패(maxedOut) 구분 기능 추가
     function getWinningTiles(hand) {
         let waits = [];
+        let maxedOut = [];
         let counts = Array(10).fill(0);
         hand.forEach(num => counts[num]++);
 
@@ -617,9 +626,16 @@
                     waits.push(tile);
                 }
                 counts[tile]--;
+            } else {
+                // 4장을 이미 가졌을 때, 가상으로 완성되는지 판별
+                counts[tile]++;
+                if (canFormHand(counts, 14)) {
+                    maxedOut.push(tile);
+                }
+                counts[tile]--;
             }
         }
-        return waits;
+        return { waits, maxedOut };
     }
 
     function canFormHand(counts, remaining) {
@@ -709,25 +725,29 @@
 
         clearInterval(timerInterval);
 
-        const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
+        // 정답 검증 시 maxedOutWinningTiles 패는 선택 여부에 영향을 주지 않도록 제외 및 비교
+        const userAnswers = Array.from(selectedTiles).filter(tile => !maxedOutWinningTiles.includes(tile)).sort((a, b) => a - b);
         const isCorrect = userAnswers.length === winningTiles.length && 
                           userAnswers.every((val, idx) => val === winningTiles[idx]);
 
         const resultDiv = document.getElementById('result');
         resultDiv.style.display = 'block';
 
+        let maxedInfo = maxedOutWinningTiles.length > 0 ? 
+            `<br><small style="font-size:13px; opacity:0.85;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>` : '';
+
         if (isCorrect) {
             resultDiv.className = 'result-message correct';
             if (currentMode === 'streak') {
                 streakCount++;
                 document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
-                resultDiv.innerText = `🎉 정답입니다! (${streakCount}연승 성공!) (오름패: ${winningTiles.join(', ')})`;
+                resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!) (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
             } else {
-                resultDiv.innerText = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})`;
+                resultDiv.innerHTML = `🎉 정답입니다! (오름패: ${winningTiles.join(', ')})${maxedInfo}`;
             }
         } else {
             resultDiv.className = 'result-message incorrect';
-            resultDiv.innerText = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.`;
+            resultDiv.innerHTML = `❌ 오답입니다. 정답 오름패는 [ ${winningTiles.join(', ')} ] 입니다.${maxedInfo}`;
             if (currentMode === 'streak') {
                 checkStreakRecordAndReset();
             }
