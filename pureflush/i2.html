@@ -185,6 +185,7 @@
         }
         .hall-of-fame h3 {
             margin-top: 0;
+            margin-bottom: 5px;
             color: #8e44ad;
             text-align: center;
         }
@@ -228,6 +229,20 @@
             cursor: pointer;
         }
 
+        .btn-reset-records {
+            display: block;
+            margin: 15px auto 0 auto;
+            padding: 6px 12px;
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-reset-records:hover { background-color: #c0392b; }
+
         /* 규칙 안내 모달 팝업 스타일 */
         .modal-overlay {
             display: none;
@@ -241,7 +256,7 @@
         .modal-content {
             background: #ffffff;
             width: 90%;
-            max-width: 420px;
+            max-width: 440px;
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -258,7 +273,7 @@
             padding: 15px;
             border-radius: 8px;
             margin: 15px 0;
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1.6;
         }
         .modal-btn {
@@ -303,9 +318,9 @@
     </div>
     
     <div class="difficulty-group">
-        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움 </button>
-        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통 </button>
-        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움 </button>
+        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
+        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
+        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
         <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
     </div>
 
@@ -344,9 +359,13 @@
 <!-- 명예의 전당 리더보드 -->
 <div class="card hall-of-fame">
     <h3>🏆 연승 모드 명예의 전당 (Top 10)</h3>
+    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;">
+        🔒 기록은 사용 중인 브라우저에만 저장되며, 타인에게는 보이지 않습니다.
+    </p>
     <div id="leaderboard-content">
         <ul class="record-list" id="record-list-ul"></ul>
     </div>
+    <button class="btn-reset-records" onclick="resetLeaderboard()">🗑️ 기록 전체 삭제</button>
 </div>
 
 <!-- 연승 모드 안내 팝업 모달 -->
@@ -355,7 +374,8 @@
         <h2>⚡ 어려움 연승 모드</h2>
         <div class="modal-body">
             ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br><br>
-            🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록한 경우 연승 수가 명예의 전당에 등재됩니다.<br><br>
+            🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br><br>
+            🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.<br><br>
             🎯 <b>출제 구성:</b> 보통 난이도(20%), 어려움 난이도(80%)로 출제됩니다.
         </div>
         <button class="modal-btn" onclick="startStreakModeAfterNotice()">도전 시작하기</button>
@@ -434,7 +454,6 @@
         }
         currentMode = mode;
 
-        // 연승 모드 첫 클릭 시 안내 팝업 출력
         if (mode === 'streak' && !sessionStorage.getItem('streak_notice_shown')) {
             document.getElementById('streak-modal').style.display = 'flex';
         } else {
@@ -752,6 +771,16 @@
             `;
             ul.appendChild(li);
         });
+    }
+
+    // 기록 리셋 (확인 과정 포함)
+    function resetLeaderboard() {
+        const isConfirmed = confirm('정말로 저장된 모든 연승 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');
+        if (isConfirmed) {
+            localStorage.removeItem('mahjong_streak_records');
+            loadLeaderboard();
+            alert('연승 기록이 모두 삭제되었습니다.');
+        }
     }
 
     function escapeHtml(text) {
