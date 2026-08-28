@@ -699,6 +699,7 @@
         return hand.sort((a, b) => a - b);
     }
 
+    /* 대기패 판별 로직 (checkCompleteHand에 2번째 파라미터 tile 전달하도록 수정) */
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
@@ -709,7 +710,7 @@
         for (let tile = 1; tile <= 9; tile++) {
             if (counts[tile] < 4) {
                 counts[tile]++;
-                const checkRes = checkCompleteHand(counts);
+                const checkRes = checkCompleteHand(counts, tile);
                 if (checkRes.complete) {
                     waits.push(tile);
                     if (checkRes.isChiitoi) isChiitoi = true;
@@ -717,7 +718,7 @@
                 counts[tile]--;
             } else {
                 counts[tile]++;
-                const checkRes = checkCompleteHand(counts);
+                const checkRes = checkCompleteHand(counts, tile);
                 if (checkRes.complete) {
                     maxedOut.push(tile);
                     if (checkRes.isChiitoi) isChiitoi = true;
@@ -728,14 +729,18 @@
         return { waits, maxedOut, isChiitoi };
     }
 
-    /* 치이토이츠(七対子) 및 일반 4멘츠 1작두 통합 검증 로직 */
-    function checkCompleteHand(counts) {
+    /* 치이토이츠(七対子) 및 일반 4멘츠 1작두 통합 검증 로직 (addedTile 파라미터 반영) */
+    function checkCompleteHand(counts, addedTile) {
         // 1. 치이토이츠 (7쌍) 검사
         let pairCount = 0;
         for (let i = 1; i <= 9; i++) {
             if (counts[i] === 2) pairCount++;
         }
-        if (pairCount === 7) return { complete: true, isChiitoi: true };
+        
+        // 치이토이츠는 '추가된 패(addedTile)'가 원래 1장 있어서 이번에 2장(쌍)이 된 경우만 인정
+        if (pairCount === 7 && counts[addedTile] === 2) {
+            return { complete: true, isChiitoi: true };
+        }
 
         // 2. 일반 4멘츠 1작두 검사
         const isStandard = canFormStandardHand(counts, 14);
