@@ -464,6 +464,7 @@ function renderDecompositionExplanation() {
     return html;
 }
 
+
 function getAnswerString() {
     let tagNotice = '';
     if (isRyanpeikouHand) {
