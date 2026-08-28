@@ -4,29 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마작 청일색 텐파이 대기패 퀴즈 (연승 모드 포함)</title>
-    <!-- ZIP 파일 처리를 위한 JSZip 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1 onclick="handleTitleClick()" style="cursor: pointer; user-select: none;">🀄 청일색 텐파이 대기패 퀴즈</h1>
-
-<div class="card" id="debug-mode-card" style="display: none; border: 2px dashed #8e44ad; background-color: #fcf8ff;">
-    <h3 style="margin-top: 0; color: #8e44ad; text-align: center;">🕵️ 테스트 전용 히든 모드</h3>
-    <p style="font-size: 13px; color: #666; text-align: center; margin-bottom: 15px;">
-        패의 숫자를 입력하세요 (예: 1112345678999). 무늬는 기존과 다른 무늬로 랜덤 변경되며 즉시 정답/해설이 표시됩니다.
-    </p>
-    <div style="display: flex; gap: 8px; justify-content: center; max-width: 500px; margin: 0 auto 15px auto;">
-        <input type="text" id="debug-hand-input" placeholder="숫자 입력 (예: 1112345678999)" 
-               style="flex: 1; padding: 10px; font-size: 16px; border: 2px solid #8e44ad; border-radius: 8px;"
-               onkeydown="if(event.key==='Enter') generateCustomHand()">
-        <button onclick="generateCustomHand()" 
-                style="padding: 10px 18px; font-size: 15px; font-weight: bold; background: #8e44ad; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            생성 및 분석
-        </button>
-    </div>
-</div>
+<h1 id="main-title" style="cursor: pointer; user-select: none;">🀄 청일색 텐파이 대기패 퀴즈</h1>
 
 <div class="card">
     <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
@@ -55,9 +38,41 @@
         <div id="easy-hint" class="hint-badge" style="display: none;"></div>
     </div>
     
-    <div class="hand-container-wrapper">
+    <div class="hand-container-wrapper" id="main-hand-wrapper">
         <div class="hand-display" id="hand-container"></div>
     </div>
+</div>
+
+<div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; background: #faf5ff;">
+    <h3 style="margin-top:0; color:#8e44ad; text-align:center;">🕵️‍♂️ 히든 패 분석기 (자유 패 입력)</h3>
+    <p style="text-align:center; font-size:13px; color:#666; margin-bottom:15px;">
+        숫자 패(1~9)를 선택하여 13장 손패를 맞춘 후 <b>[대기패 및 해설 계산하기]</b>를 누르세요.
+    </p>
+
+    <div style="text-align: center; margin-bottom: 12px;">
+        <label><b>수패 선택: </b></label>
+        <select id="custom-suit-select" onchange="updateCustomHandDisplay()" style="padding: 5px 10px; font-size:15px; border-radius: 6px;">
+            <option value="Man">만자패 (Man)</option>
+            <option value="Pin">통자패 (Pin)</option>
+            <option value="Sou">삭자패 (Sou)</option>
+        </select>
+    </div>
+
+    <div class="hand-container-wrapper" style="background:#1b4332;">
+        <div class="hand-display" id="custom-hand-container">
+            <span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 눌러 13장의 손패를 구성하세요.</span>
+        </div>
+    </div>
+
+    <div style="margin-top: 15px;">
+        <div class="selection-grid" id="custom-tile-buttons"></div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-submit" style="background-color: #e74c3c; flex: 1;" onclick="clearCustomHand()">전체 삭제</button>
+            <button class="btn-submit" style="background-color: #8e44ad; flex: 2;" onclick="analyzeCustomHand()">🔍 대기패 및 해설 계산하기</button>
+        </div>
+    </div>
+
+    <div id="custom-result" class="result-message" style="display: none;"></div>
 </div>
 
 <div class="card" id="quiz-area" style="display: none;">
@@ -99,6 +114,6 @@
     </div>
 </div>
 
-<script src="script.js?v=1.0.24"></script>
+<script src="script.js"></script>
 </body>
 </html>
