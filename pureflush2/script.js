@@ -985,7 +985,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 /* ===================================================
- * 🔒 히든 계산기 / 패 분석기 관련 함수 추가
+ * 🔒 히든 계산기 / 패 분석기 디버그 수정 코드
  * =================================================== */
 
 // 1. 히든 입력 버튼(1~9) 생성
@@ -1024,6 +1024,7 @@ function addTileToCustomHand(num) {
 async function updateCustomHandDisplay() {
     const display = document.getElementById('custom-hand-container');
     const suitCode = document.getElementById('custom-suit-select').value;
+    if (!display) return;
     display.innerHTML = '';
 
     if (customHand.length === 0) {
@@ -1037,7 +1038,14 @@ async function updateCustomHandDisplay() {
         img.className = 'tile-img';
         img.style.cursor = 'pointer';
         img.title = '클릭하면 이 패 삭제';
-        img.src = await getTileImageSrc(suitCode, num);
+        
+        // 이미지 경로 가져오기 예외 처리
+        try {
+            img.src = await getTileImageSrc(suitCode, num);
+        } catch (e) {
+            img.alt = `${num}`;
+        }
+        
         img.onclick = () => removeTileFromCustomHand(i);
         display.appendChild(img);
     }
@@ -1053,36 +1061,50 @@ function removeTileFromCustomHand(index) {
 function clearCustomHand() {
     customHand = [];
     updateCustomHandDisplay();
-    document.getElementById('custom-result').style.display = 'none';
+    const resultDiv = document.getElementById('custom-result');
+    if (resultDiv) resultDiv.style.display = 'none';
 }
 
-// 6. 13장 구성 패 분석 및 결과 출력
+// 6. 13장 구성 패 분석 및 결과 출력 (디버그 완료)
 function analyzeCustomHand() {
     if (customHand.length !== 13) {
         alert(`손패는 정확히 13장이어야 분석할 수 있습니다. (현재 ${customHand.length}장)`);
         return;
     }
 
-    const res = getWinningTiles(customHand);
+    // 알고리즘 호출
+    const res = checkTenpaiAndGetWaits(customHand);
     const resultDiv = document.getElementById('custom-result');
     resultDiv.style.display = 'block';
 
-    if (res.waits.length === 0) {
+    if (!res || !res.waits || res.waits.length === 0) {
         resultDiv.className = 'result-message incorrect';
         resultDiv.innerHTML = `❌ 입력하신 손패는 <b>텐파이 상태(노텐)가 아닙니다.</b> (대기패 0개)`;
         return;
     }
 
-    resultDiv.className = 'result-message correct';
-    let html = `🎉 <b>분석 완료! Total ${res.waits.length}종류 대기패: [ ${res.waits.join(', ')} ]</b><br>`;
+    // 손패 내 4장 소지 여부 확인
+    const counts = {};
+    customHand.forEach(num => counts[num] = (counts[num] || 0) + 1);
+    const validWaits = res.waits.filter(w => (counts[w] || 0) < 4);
+    const maxedOut = res.waits.filter(w => (counts[w] || 0) === 4);
 
-    if (res.maxedOut.length > 0) {
-        html += `<span style="color:#e74c3c; font-size:14px;">(※ 손패에 이미 4장 소지하여 화료 불가한 패: ${res.maxedOut.join(', ')}번)</span><br>`;
+    resultDiv.className = 'result-message correct';
+    let html = `🎉 <b>분석 완료! Total ${validWaits.length}종류 대기패: [ ${validWaits.join(', ')} ]</b><br>`;
+
+    if (maxedOut.length > 0) {
+        html += `<span style="color:#e74c3c; font-size:14px;">(※ 손패에 이미 4장 소지하여 화료 불가한 패: ${maxedOut.join(', ')}번)</span><br>`;
     }
 
-    // 상세 분석 해설 생성 (기존 generateExplanationHtml 활용)
-    const expHtml = generateExplanationHtml(customHand, res.waits, res.decomps, res.isChiitoi, res.isRyanpeikou);
-    html += expHtml;
+    // 기존 해설 생성 함수 안전 호출
+    if (typeof generateExplanationHtml === 'function') {
+        const problemObj = {
+            hand: customHand,
+            waits: validWaits,
+            decompositions: res.decompositions || []
+        };
+        html += generateExplanationHtml(problemObj);
+    }
 
     resultDiv.innerHTML = html;
 }
