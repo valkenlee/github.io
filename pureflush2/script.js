@@ -235,7 +235,7 @@ function getWaitTypeBadgeHtml(waitType) {
     }
 }
 
-/* 수정한 패 분해 구조 및 대기 형태 해설 렌더링 함수 */
+/* 안정화된 해설 렌더링 함수 */
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
@@ -245,12 +245,12 @@ function renderDecompositionExplanation() {
     const allWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
     let itemsList = [];
 
-    // 치또이츠 처리
     if (isChiitoiHand) {
         allWaits.forEach(tile => {
             itemsList.push({
                 waitType: '단기',
-                sortOrder: 3, // 단기
+                sortOrder: 3,
+                groupKey: `chiitoi_${tile}`,
                 tiles: [tile],
                 htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <b style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</b>`
             });
@@ -260,7 +260,6 @@ function renderDecompositionExplanation() {
             const decomps = winningDecompositions[tile] || [];
             decomps.forEach(d => {
                 let parts = [];
-                let groupKey = '';
                 let waitType = d.waitType;
 
                 if (waitType === '양면') {
@@ -286,41 +285,31 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    // 양면대기 고유 식별키
-                    groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                    const waitTiles = [w1, w2].filter(x => x >= 1 && x <= 9).sort((a,b)=>a-b);
+                    const groupKey = `ryanmen_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
 
                     itemsList.push({
                         waitType: '양면',
                         sortOrder: 1,
                         groupKey: groupKey,
-                        tiles: [w1, w2].filter(x => x >= 1 && x <= 9).sort((a,b)=>a-b),
+                        tiles: waitTiles,
                         partsStr: parts.join(' ')
                     });
 
                 } else if (waitType === '샤보') {
-                    // 샤보 대기는 머리(pair)와 triplet으로 지정된 두 패가 샤보 대상패가 됨
                     let shanponTiles = [d.pair];
-                    if (d.triplets.length > 0) {
-                        d.triplets.forEach(t => {
-                            if (!shanponTiles.includes(t)) shanponTiles.push(t);
-                        });
-                    }
+                    d.triplets.forEach(t => {
+                        if (!shanponTiles.includes(t)) shanponTiles.push(t);
+                    });
                     shanponTiles.sort((a, b) => a - b);
 
-                    // 두 샤보 패에 대한 강조 포맷팅: [1, 1, (1)] [4, 4, (4)]
                     shanponTiles.forEach(st => {
                         parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st}, ${st}, <span class="filled-slot">(${st})</span>]</span>`);
                     });
 
-                    // 그 외 remaining triplets 및 sequences 처리
-                    d.triplets.forEach(t => {
-                        if (!shanponTiles.includes(t)) {
-                            parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`);
-                        }
-                    });
                     d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
 
-                    groupKey = `shanpon_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}`;
+                    const groupKey = `shanpon_p${d.pair}_s${d.sequences.join(',')}`;
 
                     itemsList.push({
                         waitType: '샤보',
@@ -331,7 +320,6 @@ function renderDecompositionExplanation() {
                     });
 
                 } else {
-                    // 단기, 간짱, 변짱 대기 (단일 대기패)
                     if (waitType === '단기') {
                         parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
                     } else {
@@ -359,11 +347,11 @@ function renderDecompositionExplanation() {
                         }
                     });
 
-                    let sortOrder = 3; // 단기
+                    let sortOrder = 3; 
                     if (waitType === '간짱') sortOrder = 4;
                     if (waitType === '변짱') sortOrder = 5;
 
-                    groupKey = `${waitType}_tile${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
+                    const groupKey = `${waitType}_tile${tile}_p${d.pair}_t${d.triplets.join(',')}_s${d.sequences.join(',')}_m${d.targetMeldStart}`;
 
                     itemsList.push({
                         waitType: waitType,
@@ -377,7 +365,6 @@ function renderDecompositionExplanation() {
         });
     }
 
-    // 중복 제거
     let uniqueMap = new Map();
     itemsList.forEach(item => {
         if (!uniqueMap.has(item.groupKey)) {
@@ -387,15 +374,13 @@ function renderDecompositionExplanation() {
 
     let renderItems = Array.from(uniqueMap.values());
 
-    // 요청된 순서대로 정렬 (양면 -> 샤보 -> 단기 -> 간짱 -> 변짱)
     renderItems.sort((a, b) => {
         if (a.sortOrder !== b.sortOrder) {
             return a.sortOrder - b.sortOrder;
         }
-        return a.tiles[0] - b.tiles[0];
+        return (a.tiles[0] || 0) - (b.tiles[0] || 0);
     });
 
-    // HTML 생성
     renderItems.forEach(group => {
         const tileHeader = group.tiles.length > 1 ? `[ ${group.tiles.join(', ')} ]` : `[ ${group.tiles[0]} ]`;
         const badge = getWaitTypeBadgeHtml(group.waitType);
