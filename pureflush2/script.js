@@ -76,7 +76,7 @@ window.addEventListener('DOMContentLoaded', async () => {
    🔒 히든 패 분석기 트리거 및 로직
 ------------------------------------------------------------- */
 function initTitleClickTrigger() {
-    const mainTitle = document.getElementById('main-title');
+    const mainTitle = document.getElementById('title-icon');
     if (!mainTitle) return;
 
     mainTitle.addEventListener('click', () => {
