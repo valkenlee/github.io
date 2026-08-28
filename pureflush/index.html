@@ -1,105 +1,369 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 텐파이 대기패 퀴즈 (연승 모드 포함)</title>
-    <!-- ZIP 파일 처리를 위한 JSZip 라이브러리 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- 분리된 CSS 연결 -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #1e3f20;
+    color: #333;
+}
 
-<h1>🀄 청일색 텐파이 대기패 퀴즈</h1>
+h1 { 
+    text-align: center; 
+    color: #ffffff; 
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+    margin-bottom: 20px;
+}
 
-<div class="card">
-    <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
-        📦 Regular.zip 패키지를 읽어오는 중입니다...
-    </div>
-    
-    <div class="difficulty-group">
-        <button class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
-        <button class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
-        <button class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
-        <button class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 어려움 연승 모드</button>
-    </div>
+.card {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+}
 
-    <!-- 난이도 설명 안내 상자 -->
-    <div class="difficulty-desc-box">
-        <ul>
-            <li><b>🌱 쉬움:</b> 1~2개의 오름패만 존재하며, 오름패가 몇개인지 힌트로 알려 줍니다.</li>
-            <li><b>🌿 보통:</b> 일반적으로 2개의 오름패인 문제이지만, 이보다 오름패가 많은 경우도 있습니다.</li>
-            <li><b>🔥 어려움:</b> 기본적으로 여러 형태의 다면대기인 문제입니다. 생각보다 오름패의 개수가 많을 수 있습니다.</li>
-        </ul>
-    </div>
+/* 난이도 버튼 그룹 */
+.difficulty-group {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
 
-    <!-- 연승 모드 화면 내 상시 안내 상자 -->
-    <div id="streak-info-box" class="streak-info-box" style="display: none;">
-        📌 <b>어려움 연승 모드 규칙:</b><br>
-        • ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>
-        • 🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br>
-        • 🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
-    </div>
+.btn-diff {
+    padding: 12px 4px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
 
-    <div class="status-bar" style="margin-top: 15px;">
-        <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
-        <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
-    </div>
+.btn-diff:hover:not(:disabled) { 
+    transform: translateY(-2px); 
+}
 
-    <div style="text-align: center;">
-        <span id="suit-name" style="font-weight: bold; font-size: 18px; color: #444;"></span>
-        <div id="easy-hint" class="hint-badge" style="display: none;"></div>
-    </div>
-    
-    <div class="hand-container-wrapper">
-        <div class="hand-display" id="hand-container"></div>
-    </div>
-</div>
+.btn-diff:disabled { 
+    background-color: #95a5a6 !important; 
+    cursor: not-allowed; 
+    transform: none; 
+}
 
-<div class="card" id="quiz-area" style="display: none;">
-    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요:</h3>
-    <div class="selection-grid" id="selection-buttons"></div>
-    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
-    <div id="result" class="result-message" style="display: none;"></div>
-    
-    <!-- 10연승 이상 달성 시 이름 입력 양식 -->
-    <div id="name-input-container" style="display: none;" class="hall-of-fame">
-        <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
-        <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당에 등록할 이름을 입력해 주세요 (최대 20자).</p>
-        <div class="name-input-box">
-            <input type="text" id="player-name-input" maxlength="20" placeholder="이름 입력 (최대 20자)">
-            <button onclick="saveRecord()">기록 등록</button>
-        </div>
-    </div>
-</div>
+.btn-easy { background-color: #27ae60; }
+.btn-normal { background-color: #e67e22; }
+.btn-hard { background-color: #c0392b; }
+.btn-streak { background-color: #8e44ad; }
 
-<!-- 명예의 전당 리더보드 -->
-<div class="card hall-of-fame">
-    <h3>🏆 연승 모드 명예의 전당 (Top 10)</h3>
-    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;">
-        🔒 기록은 사용 중인 브라우저에만 저장되며, 타인에게는 보이지 않습니다.
-    </p>
-    <div id="leaderboard-content">
-        <ul class="record-list" id="record-list-ul"></ul>
-    </div>
-    <button class="btn-reset-records" onclick="resetLeaderboard()">🗑️ 기록 전체 삭제</button>
-</div>
+/* 난이도 설명 상자 */
+.difficulty-desc-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.6;
+}
 
-<!-- 연승 모드 안내 팝업 모달 -->
-<div class="modal-overlay" id="streak-modal">
-    <div class="modal-content">
-        <h2>⚡ 어려움 연승 모드</h2>
-        <div class="modal-body">
-            ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br><br>
-            🏆 <b>명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 기록이 저장됩니다.<br><br>
-            🔒 <b>개인 저장소 사용:</b> 연승 기록은 <b>본인의 웹브라우저에만 저장</b>되며, 다른 사람에게는 보이지 않습니다.
-        </div>
-        <button class="modal-btn" onclick="startStreakModeAfterNotice()">도전 시작하기</button>
-    </div>
-</div>
+.difficulty-desc-box ul {
+    margin: 0;
+    padding-left: 18px;
+}
 
-<!-- 분리된 자바스크립트 연결 -->
-<script src="script.js"></script>
-</body>
-</html>
+.difficulty-desc-box li {
+    margin-bottom: 4px;
+}
+
+.difficulty-desc-box li:last-child {
+    margin-bottom: 0;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-submit:hover { 
+    background-color: #2471a3; 
+}
+
+/* 상태바 및 타이머/연승 표시 */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.streak-badge {
+    background-color: #8e44ad;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+}
+
+.timer-badge {
+    background-color: #d35400;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+}
+
+/* 연승 모드 안내 상자 */
+.streak-info-box {
+    background-color: #f5ee2e15;
+    border: 1px solid #8e44ad;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #4a235a;
+    line-height: 1.5;
+}
+
+.hand-container-wrapper {
+    width: 100%;
+    padding: 12px 5px;
+    background: #2b542c;
+    border-radius: 8px;
+    margin-top: 15px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+}
+
+.hand-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    min-height: 50px;
+}
+
+/* 입체 마작패 스타일 */
+.tile-img {
+    width: 44px;
+    height: 60px;
+    background-color: #fdfbf7;
+    border: 1px solid #d1ccc0;
+    border-radius: 5px;
+    box-shadow: 
+        inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.15),
+        1px 2px 4px rgba(0, 0, 0, 0.3);
+    padding: 2px 1px;
+    box-sizing: border-box;
+    object-fit: contain;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.btn-number {
+    padding: 12px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #bdc3c7;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-number.selected {
+    background-color: #e74c3c;
+    color: white;
+    border-color: #c0392b;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.hint-badge {
+    display: inline-block;
+    background-color: #27ae60;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.result-message {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    line-height: 1.5;
+}
+
+.correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+/* 명예의 전당 리더보드 스타일 */
+.hall-of-fame {
+    margin-top: 15px;
+    background: #faf8f5;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0dcd3;
+}
+
+.hall-of-fame h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #8e44ad;
+    text-align: center;
+}
+
+.record-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.record-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.record-item:last-child { border-bottom: none; }
+.record-rank { font-weight: bold; color: #8e44ad; width: 30px; }
+.record-name { font-weight: bold; flex: 1; margin: 0 10px; word-break: break-all; }
+.record-score { font-weight: bold; color: #e74c3c; width: 60px; text-align: right; }
+.record-date { color: #7f8c8d; font-size: 12px; width: 130px; text-align: right; }
+
+.name-input-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.name-input-box input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #8e44ad;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.name-input-box button {
+    padding: 10px 15px;
+    background: #8e44ad;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-reset-records {
+    display: block;
+    margin: 15px auto 0 auto;
+    padding: 6px 12px;
+    background-color: #7f8c8d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-reset-records:hover { background-color: #c0392b; }
+
+/* 규칙 안내 모달 팝업 스타일 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 440px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    text-align: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #8e44ad;
+}
+
+.modal-body {
+    text-align: left;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-btn {
+    width: 100%;
+    padding: 12px;
+    background: #8e44ad;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.modal-btn:hover { background: #71368a; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* 모바일 대응 반응형 CSS */
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .card { padding: 15px 10px; }
+    .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .btn-diff { font-size: 13px; padding: 10px 2px; }
+    .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
+    .hand-display { gap: 2px; }
+    .selection-grid { gap: 4px; }
+    .btn-number { padding: 10px 0; font-size: 16px; }
+    .record-date { display: none; }
+}
