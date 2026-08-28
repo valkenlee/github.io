@@ -260,7 +260,7 @@ function validateHandDecomposition(handCounts, decomp, addedTile, waitType, targ
     return true;
 }
 
-
+// 1. 양면 대기 헬퍼 함수
 function getRyanmenExplanationItems(d, validWaitsSet) {
     const w1 = d.targetMeldStart - 1;
     const w2 = d.targetMeldStart + 2;
@@ -304,15 +304,19 @@ function getRyanmenExplanationItems(d, validWaitsSet) {
     };
 }
 
+// 2. 샤보 대기 헬퍼 함수 (4장 사용 무효패 예외 처리 포함)
 function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
     let items = [];
     const p = d.pair;
     
     d.triplets.forEach(t => {
-        if (t === tile && validWaitsSet.has(p)) {
+        if (t === tile) {
             const shanponPair = [p, t].sort((a, b) => a - b);
             const st1 = shanponPair[0];
             const st2 = shanponPair[1];
+
+            const st1Is4Count = origCounts[st1] === 4;
+            const st2Is4Count = origCounts[st2] === 4;
 
             if (origCounts[st1] >= 2 && origCounts[st2] >= 2) {
                 let parts = [];
@@ -326,6 +330,12 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
                 });
                 d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
 
+                let noteStr = '';
+                if (st1Is4Count || st2Is4Count) {
+                    const overTiles = [st1Is4Count ? st1 : null, st2Is4Count ? st2 : null].filter(Boolean);
+                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">(※ ${overTiles.join(', ')}번 패는 4장 이미 소지하여 화복 불가)</span>`;
+                }
+
                 const remainingTriplets = d.triplets.filter(tr => tr !== p && tr !== t).sort().join('_');
                 const sortedSeqs = d.sequences.slice().sort().join('_');
                 const groupKey = `shanpon_pair_${st1}_${st2}_remT_${remainingTriplets}_seqs_${sortedSeqs}`;
@@ -335,7 +345,7 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
                     sortOrder: 2,
                     groupKey: groupKey,
                     tiles: [st1, st2],
-                    partsStr: parts.join(' ')
+                    partsStr: parts.join(' ') + noteStr
                 });
             }
         }
@@ -344,6 +354,7 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
     return items;
 }
 
+// 3. 단기, 간짱, 변짱 대기 헬퍼 함수
 function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
     if (!validWaitsSet.has(tile)) return null;
 
@@ -391,6 +402,7 @@ function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
     };
 }
 
+// 4. 메인 renderDecompositionExplanation 함수
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
@@ -415,14 +427,19 @@ function renderDecompositionExplanation() {
             });
         });
     } else {
-        validWaits.forEach(tile => {
+        // 4장 이미 사용 중이나 형태상 대기 조합 작성이 가능한 패 탐색
+        const allWaitCandidates = new Set([...validWaits]);
+        for (let t = 1; t <= 9; t++) {
+            if (origCounts[t] === 4 && winningDecompositions[t] && winningDecompositions[t].length > 0) {
+                allWaitCandidates.add(t);
+            }
+        }
+        const candidateWaits = [...allWaitCandidates].sort((a, b) => a - b);
+
+        candidateWaits.forEach(tile => {
             const decomps = winningDecompositions[tile] || [];
             decomps.forEach(d => {
                 let waitType = d.waitType;
-
-                if (!validateHandDecomposition(origCounts, d, tile, waitType, d.targetMeldStart)) {
-                    return;
-                }
 
                 if (waitType === '양면') {
                     const item = getRyanmenExplanationItems(d, validWaitsSet);
@@ -470,7 +487,6 @@ function renderDecompositionExplanation() {
     html += `</div>`;
     return html;
 }
-
 
 function getAnswerString() {
     let tagNotice = '';
