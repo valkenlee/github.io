@@ -80,9 +80,11 @@ function initTitleClickTrigger() {
     if (!mainTitle) return;
 
     mainTitle.addEventListener('click', () => {
-        // 🔒 보안 체크: i2.html을 통해 진입(window.__IS_WRAPPED__가 true)한 경우에만 히든 페이지 오픈
-        if (!window.__IS_WRAPPED__) {
-            return; // 그냥 클릭 이벤트 무시
+        // 🔒 i2.html을 통해 진입했는지 확인 (URL 파라미터 또는 전역 변수 체크)
+        const isWrapped = window.__IS_WRAPPED__ || window.location.href.includes('wrapped=true') || document.currentScript?.src.includes('wrapped=true');
+
+        if (!isWrapped) {
+            return; // 일반 index.html 진입 시 히든 모드 동작 안 함
         }
 
         titleClickCount++;
