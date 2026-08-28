@@ -80,6 +80,11 @@ function initTitleClickTrigger() {
     if (!mainTitle) return;
 
     mainTitle.addEventListener('click', () => {
+        // 🔒 보안 체크: i2.html을 통해 진입(window.__IS_WRAPPED__가 true)한 경우에만 히든 페이지 오픈
+        if (!window.__IS_WRAPPED__) {
+            return; // 그냥 클릭 이벤트 무시
+        }
+
         titleClickCount++;
         clearTimeout(titleClickTimer);
 
@@ -89,7 +94,7 @@ function initTitleClickTrigger() {
             if (analyzer) {
                 if (analyzer.style.display === 'none' || analyzer.style.display === '') {
                     analyzer.style.display = 'block';
-                    pickRandomNextSuit(); // 히든 진입 시 이전과 다른 무늬로 랜덤 변경
+                    pickRandomNextSuit();
                     updateCustomHandDisplay();
                     alert('🔓 히든 패 분석기 모드가 활성화되었습니다!');
                 } else {
