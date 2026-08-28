@@ -81,7 +81,11 @@ function initTitleClickTrigger() {
 
     mainTitle.addEventListener('click', () => {
         // 🔒 i2.html을 통해 진입했는지 확인 (URL 파라미터 또는 전역 변수 체크)
-        const isWrapped = window.__IS_WRAPPED__ || window.location.href.includes('wrapped=true') || document.currentScript?.src.includes('wrapped=true');
+       const isWrapped = Boolean(
+            window.__IS_WRAPPED__ === true ||
+            window.location.href.includes('wrapped=true') ||
+            Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
+        );
 
         console.log('[DEBUG] 클릭 이벤트 발생!');
         console.log('[DEBUG] window.__IS_WRAPPED__:', window.__IS_WRAPPED__);
@@ -339,9 +343,7 @@ function updateModeUI() {
 }
 
 function generateQuiz() {
-    
-console.log('[DEBUG] generateQuiz! ');
-    
+     
     clearInterval(timerInterval);
     isSubmitted = false;
 
