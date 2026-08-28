@@ -86,11 +86,7 @@ function initTitleClickTrigger() {
             window.location.href.includes('wrapped=true') ||
             Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
         );
-
-        console.log('[DEBUG] 클릭 이벤트 발생!');
-        console.log('[DEBUG] window.__IS_WRAPPED__:', window.__IS_WRAPPED__);
-        console.log('[DEBUG] 최종 판단 isWrapped 값:', isWrapped);
-        
+      
         if (!isWrapped) {
             return; // 일반 index.html 진입 시 히든 모드 동작 안 함
         }
