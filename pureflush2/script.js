@@ -984,11 +984,78 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+
 /* ===================================================
- * 🔒 히든 계산기 / 패 분석기 디버그 수정 코드
+ * 🔒 히든 계산기 / 패 분석기 관련 함수 (디버그 및 신규 기능 반영)
  * =================================================== */
 
-// 1. 히든 입력 버튼(1~9) 생성
+// 수패 랜덤 선택 함수
+function setRandomSuit() {
+    const suits = ['Man', 'Pin', 'Sou'];
+    const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+    const selectElem = document.getElementById('custom-suit-select');
+    if (selectElem) {
+        selectElem.value = randomSuit;
+        updateCustomHandDisplay();
+    }
+}
+
+// 이스터에그 이벤트 등록 (h1 5회 클릭 시)
+let titleClickCount = 0;
+let customHand = [];
+
+// DOMContentLoaded 이벤트 내에 추가
+document.addEventListener('DOMContentLoaded', () => {
+    const titleElem = document.getElementById('main-title');
+    if (titleElem) {
+        titleElem.addEventListener('click', () => {
+            titleClickCount++;
+            if (titleClickCount === 5) {
+                const hiddenArea = document.getElementById('hidden-analyzer');
+                if (hiddenArea) {
+                    const isHidden = hiddenArea.style.display === 'none';
+                    hiddenArea.style.display = isHidden ? 'block' : 'none';
+                    if (isHidden) {
+                        setRandomSuit(); // 히든 모드 활성화 시 수패 무늬 자동/랜덤 지정
+                        renderCustomButtons();
+                        alert('🔓 히든 패 분석기가 활성화되었습니다!');
+                    }
+                }
+                titleClickCount = 0;
+            }
+        });
+    }
+});
+
+// 1. 숫자 직접 입력(예: 1112345678999) 처리 함수
+function applyCustomTextInput() {
+    const inputElem = document.getElementById('custom-text-input');
+    if (!inputElem) return;
+
+    const rawVal = inputElem.value.trim();
+    if (!/^[1-9]{13}$/.test(rawVal)) {
+        alert('1~9 사이의 숫자 13자리를 정확히 입력해 주세요. (예: 1112345678999)');
+        return;
+    }
+
+    const arr = rawVal.split('').map(Number);
+    
+    // 동일 패 4장 초과 검사
+    const counts = {};
+    for (const num of arr) {
+        counts[num] = (counts[num] || 0) + 1;
+        if (counts[num] > 4) {
+            alert(`숫자 ${num}이(가) 4장을 초과하여 입력되었습니다.`);
+            return;
+        }
+    }
+
+    customHand = arr.sort((a, b) => a - b);
+    updateCustomHandDisplay();
+    inputElem.value = '';
+}
+
+// 2. 히든 패 선택 버튼 렌더링
 function renderCustomButtons() {
     const btnContainer = document.getElementById('custom-tile-buttons');
     if (!btnContainer) return;
@@ -1004,7 +1071,7 @@ function renderCustomButtons() {
     updateCustomHandDisplay();
 }
 
-// 2. 패 추가 (동일 패 최대 4장 및 전체 13장 제한)
+// 3. 개별 패 추가
 function addTileToCustomHand(num) {
     if (customHand.length >= 13) {
         alert('손패는 최대 13장까지만 입력할 수 있습니다.');
@@ -1020,15 +1087,17 @@ function addTileToCustomHand(num) {
     updateCustomHandDisplay();
 }
 
-// 3. 입력된 손패 시각화 화면 렌더링
+// 4. 입력된 손패 시각화
 async function updateCustomHandDisplay() {
     const display = document.getElementById('custom-hand-container');
-    const suitCode = document.getElementById('custom-suit-select').value;
-    if (!display) return;
+    const suitElem = document.getElementById('custom-suit-select');
+    if (!display || !suitElem) return;
+
+    const suitCode = suitElem.value;
     display.innerHTML = '';
 
     if (customHand.length === 0) {
-        display.innerHTML = '<span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 눌러 13장의 손패를 구성하세요.</span>';
+        display.innerHTML = '<span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.</span>';
         return;
     }
 
@@ -1039,7 +1108,6 @@ async function updateCustomHandDisplay() {
         img.style.cursor = 'pointer';
         img.title = '클릭하면 이 패 삭제';
         
-        // 이미지 경로 가져오기 예외 처리
         try {
             img.src = await getTileImageSrc(suitCode, num);
         } catch (e) {
@@ -1051,13 +1119,13 @@ async function updateCustomHandDisplay() {
     }
 }
 
-// 4. 개별 패 클릭 시 삭제
+// 5. 개별 패 삭제
 function removeTileFromCustomHand(index) {
     customHand.splice(index, 1);
     updateCustomHandDisplay();
 }
 
-// 5. 패 전체 초기화
+// 6. 전체 초기화
 function clearCustomHand() {
     customHand = [];
     updateCustomHandDisplay();
@@ -1065,14 +1133,14 @@ function clearCustomHand() {
     if (resultDiv) resultDiv.style.display = 'none';
 }
 
-// 6. 13장 구성 패 분석 및 결과 출력 (디버그 완료)
+// 7. 대기패 분석 계산 및 결과 출력 (디버그 완료)
 function analyzeCustomHand() {
     if (customHand.length !== 13) {
         alert(`손패는 정확히 13장이어야 분석할 수 있습니다. (현재 ${customHand.length}장)`);
         return;
     }
 
-    // 알고리즘 호출
+    // 텐파이 검사 및 대기패 도출
     const res = checkTenpaiAndGetWaits(customHand);
     const resultDiv = document.getElementById('custom-result');
     resultDiv.style.display = 'block';
@@ -1083,7 +1151,7 @@ function analyzeCustomHand() {
         return;
     }
 
-    // 손패 내 4장 소지 여부 확인
+    // 손패 내 4장 존재 여부 확인
     const counts = {};
     customHand.forEach(num => counts[num] = (counts[num] || 0) + 1);
     const validWaits = res.waits.filter(w => (counts[w] || 0) < 4);
@@ -1096,7 +1164,7 @@ function analyzeCustomHand() {
         html += `<span style="color:#e74c3c; font-size:14px;">(※ 손패에 이미 4장 소지하여 화료 불가한 패: ${maxedOut.join(', ')}번)</span><br>`;
     }
 
-    // 기존 해설 생성 함수 안전 호출
+    // 세부 해설 생성 함수 연동
     if (typeof generateExplanationHtml === 'function') {
         const problemObj = {
             hand: customHand,
