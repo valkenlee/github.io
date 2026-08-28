@@ -10,7 +10,23 @@
 </head>
 <body>
 
-<h1>🀄 청일색 텐파이 대기패 퀴즈</h1>
+<h1 onclick="handleTitleClick()" style="cursor: pointer; user-select: none;">🀄 청일색 텐파이 대기패 퀴즈</h1>
+
+<div class="card" id="debug-mode-card" style="display: none; border: 2px dashed #8e44ad; background-color: #fcf8ff;">
+    <h3 style="margin-top: 0; color: #8e44ad; text-align: center;">🕵️ 테스트 전용 히든 모드</h3>
+    <p style="font-size: 13px; color: #666; text-align: center; margin-bottom: 15px;">
+        패의 숫자를 입력하세요 (예: 1112345678999). 무늬는 기존과 다른 무늬로 랜덤 변경되며 즉시 정답/해설이 표시됩니다.
+    </p>
+    <div style="display: flex; gap: 8px; justify-content: center; max-width: 500px; margin: 0 auto 15px auto;">
+        <input type="text" id="debug-hand-input" placeholder="숫자 입력 (예: 1112345678999)" 
+               style="flex: 1; padding: 10px; font-size: 16px; border: 2px solid #8e44ad; border-radius: 8px;"
+               onkeydown="if(event.key==='Enter') generateCustomHand()">
+        <button onclick="generateCustomHand()" 
+                style="padding: 10px 18px; font-size: 15px; font-weight: bold; background: #8e44ad; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            생성 및 분석
+        </button>
+    </div>
+</div>
 
 <div class="card">
     <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
@@ -83,6 +99,6 @@
     </div>
 </div>
 
-<script src="script.js?v=1.0.20"></script>
+<script src="script.js?v=1.0.21"></script>
 </body>
 </html>
