@@ -48,7 +48,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn-diff:hover:not(:disabled) { transform: translateY(-2px); }
-        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; transform: none; }
+        .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; transform: none; } 
         
         .btn-easy { background-color: #27ae60; }
         .btn-normal { background-color: #e67e22; }
@@ -92,6 +92,24 @@
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 16px;
+        }
+
+        /* 타이머 게이지 바 스타일 추가 */
+        .timer-gauge-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .timer-gauge-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #d35400, #e67e22);
+            border-radius: 5px;
+            transition: width 1s linear;
         }
 
         /* 연승 모드 안내 상자 (화면용) */
@@ -350,7 +368,12 @@
         <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
     </div>
 
-    <div style="text-align: center;">
+    <!-- 타이머 게이지 바 영역 -->
+    <div id="timer-gauge-container" class="timer-gauge-container" style="display: none;">
+        <div id="timer-gauge-bar" class="timer-gauge-bar"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
         <span id="suit-name" style="font-weight: bold; font-size: 18px; color: #444;"></span>
         <div id="easy-hint" class="hint-badge" style="display: none;"></div>
     </div>
@@ -533,6 +556,7 @@
         const hintElem = document.getElementById('easy-hint');
         const streakElem = document.getElementById('streak-display');
         const timerElem = document.getElementById('timer-display');
+        const timerGaugeContainer = document.getElementById('timer-gauge-container');
         const streakInfoBox = document.getElementById('streak-info-box');
 
         if (currentMode === 'easy') {
@@ -546,11 +570,13 @@
             streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
             streakElem.style.display = 'inline-block';
             timerElem.style.display = 'inline-block';
+            timerGaugeContainer.style.display = 'block';
             streakInfoBox.style.display = 'block';
             startTimer();
         } else {
             streakElem.style.display = 'none';
             timerElem.style.display = 'none';
+            timerGaugeContainer.style.display = 'none';
             streakInfoBox.style.display = 'none';
         }
 
@@ -579,6 +605,9 @@
 
     function updateTimerDisplay() {
         document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
+        // 게이지 바 비율 계산 (60초 기준)
+        const percentage = Math.max(0, (timeLeft / 60) * 100);
+        document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
     function handleTimeout() {
