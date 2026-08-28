@@ -235,6 +235,35 @@ function getWaitTypeBadgeHtml(waitType) {
     }
 }
 
+function validateHandDecomposition(handCounts, decomp, addedTile, waitType, targetMeldStart) {
+    let needed = Array(10).fill(0);
+    
+    needed[decomp.pair] += 2;
+    
+    decomp.triplets.forEach(t => {
+        needed[t] += 3;
+    });
+
+    decomp.sequences.forEach(s => {
+        needed[s] += 1;
+        needed[s+1] += 1;
+        needed[s+2] += 1;
+    });
+
+    if (waitType === '단기') {
+        needed[addedTile] -= 1;
+    } else if (waitType === '샤보') {
+        needed[addedTile] -= 1;
+    } else if (waitType === '양면' || waitType === '간짱' || waitType === '변짱') {
+        needed[addedTile] -= 1;
+    }
+
+    for (let i = 1; i <= 9; i++) {
+        if (needed[i] > handCounts[i]) return false;
+    }
+    return true;
+}
+
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
@@ -264,6 +293,10 @@ function renderDecompositionExplanation() {
             decomps.forEach(d => {
                 let parts = [];
                 let waitType = d.waitType;
+
+                if (!validateHandDecomposition(origCounts, d, tile, waitType, d.targetMeldStart)) {
+                    return;
+                }
 
                 if (waitType === '양면') {
                     const w1 = d.targetMeldStart - 1;
