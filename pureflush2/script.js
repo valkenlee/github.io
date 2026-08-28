@@ -1092,3 +1092,32 @@ function resetLeaderboard() {
 function escapeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
+
+/* -------------------------------------------------------------
+   🔒 히든 패 분석기 기능 함수 추가
+------------------------------------------------------------- */
+
+// 현재 출제된 문제의 패를 히든 분석기로 복사하는 함수
+function copyCurrentQuizToCustom() {
+    if (!currentHand || currentHand.length !== 13) {
+        alert('현재 생성된 문제가 없습니다.');
+        return;
+    }
+
+    // 1. 현재 퀴즈의 패 숫자를 히든 패 데이터에 복사
+    customHand = [...currentHand];
+    
+    // 2. 현재 퀴즈의 무늬(만자/통자/삭자)도 그대로 맞추어 이미지 매칭
+    if (currentSuitObj && currentSuitObj.code) {
+        customSuitCode = currentSuitObj.code;
+    }
+
+    // 3. 텍스트 입력창에도 숫자 13자리 표시
+    const textInput = document.getElementById('custom-text-input');
+    if (textInput) {
+        textInput.value = customHand.join('');
+    }
+
+    // 4. 히든 분석기 화면 업데이트
+    updateCustomHandDisplay();
+}
