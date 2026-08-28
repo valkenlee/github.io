@@ -208,10 +208,9 @@
         .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        /* 치이토이츠 안내 태그 스타일 */
-        .chiitoi-tag {
+        /* 치이토이츠 및 량페코 안내 태그 스타일 */
+        .special-tag {
             display: inline-block;
-            background-color: #8e44ad;
             color: #ffffff;
             font-size: 14px;
             padding: 4px 10px;
@@ -219,6 +218,8 @@
             margin-bottom: 8px;
             font-weight: bold;
         }
+        .chiitoi-tag { background-color: #8e44ad; }
+        .ryanpeikou-tag { background-color: #d35400; }
 
         /* 명예의 전당 리더보드 스타일 */
         .hall-of-fame {
@@ -448,7 +449,8 @@
     let currentHand = [];
     let winningTiles = [];
     let maxedOutWinningTiles = [];
-    let isChiitoiHand = false; // 치이토이츠 대기 포함 여부 플래그
+    let isChiitoiHand = false;     // 순수 치이토이츠 대기 플래그
+    let isRyanpeikouHand = false; // 량페코 대기 플래그
     let selectedTiles = new Set();
     
     let currentMode = 'normal';
@@ -469,7 +471,6 @@
     window.addEventListener('DOMContentLoaded', async () => {
         loadLeaderboard();
         
-        // 키보드 단축키 등록 (1~9: 패 선택, Enter: 제출/다음)
         window.addEventListener('keydown', (e) => {
             if (document.activeElement.tagName === 'INPUT') return;
             if (e.key >= '1' && e.key <= '9') {
@@ -579,7 +580,7 @@
         }
 
         let hand = [];
-        let resultData = { waits: [], maxedOut: [], isChiitoi: false };
+        let resultData = { waits: [], maxedOut: [], isChiitoi: false, isRyanpeikou: false };
 
         while (true) {
             hand = generateRandom13Tiles();
@@ -600,6 +601,7 @@
         winningTiles = resultData.waits;
         maxedOutWinningTiles = resultData.maxedOut;
         isChiitoiHand = resultData.isChiitoi;
+        isRyanpeikouHand = resultData.isRyanpeikou;
 
         renderHand();
         renderButtons();
@@ -657,17 +659,21 @@
         document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
     }
 
-    /* 정답 포맷팅 헬퍼 함수 */
+    /* 정답 포맷팅 헬퍼 함수 (량페코 / 치토이즈 태그 구분) */
     function getAnswerString() {
-        let chiitoiNotice = isChiitoiHand ? 
-            `<div class="chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 특수 형태 문제입니다.</div><br>` : '';
+        let tagNotice = '';
+        if (isRyanpeikouHand) {
+            tagNotice = `<div class="special-tag ryanpeikou-tag">💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다. (치토이즈 상위 역)</div><br>`;
+        } else if (isChiitoiHand) {
+            tagNotice = `<div class="special-tag chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 단기대기 문제입니다.</div><br>`;
+        }
 
         const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
         if (maxedOutWinningTiles.length > 0) {
             const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-            return `${chiitoiNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+            return `${tagNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
         } else {
-            return `${chiitoiNotice}오름패: [ ${actualStr} ]`;
+            return `${tagNotice}오름패: [ ${actualStr} ]`;
         }
     }
 
@@ -699,11 +705,12 @@
         return hand.sort((a, b) => a - b);
     }
 
-    /* 대기패 판별 로직 (checkCompleteHand에 2번째 파라미터 tile 전달하도록 수정) */
+    /* 대기패 판별 로직 (량페코 / 치토이즈 구별) */
     function getWinningTiles(hand) {
         let waits = [];
         let maxedOut = [];
         let isChiitoi = false;
+        let isRyanpeikou = false;
         let counts = Array(10).fill(0);
         hand.forEach(num => counts[num]++);
 
@@ -713,7 +720,8 @@
                 const checkRes = checkCompleteHand(counts, tile);
                 if (checkRes.complete) {
                     waits.push(tile);
-                    if (checkRes.isChiitoi) isChiitoi = true;
+                    if (checkRes.isRyanpeikou) isRyanpeikou = true;
+                    else if (checkRes.isChiitoi) isChiitoi = true;
                 }
                 counts[tile]--;
             } else {
@@ -721,30 +729,84 @@
                 const checkRes = checkCompleteHand(counts, tile);
                 if (checkRes.complete) {
                     maxedOut.push(tile);
-                    if (checkRes.isChiitoi) isChiitoi = true;
+                    if (checkRes.isRyanpeikou) isRyanpeikou = true;
+                    else if (checkRes.isChiitoi) isChiitoi = true;
                 }
                 counts[tile]--;
             }
         }
-        return { waits, maxedOut, isChiitoi };
+
+        // 량페코가 성립하는 손패는 상위 역 우선 원칙에 의해 치토이즈 플래그를 해제합니다.
+        if (isRyanpeikou) {
+            isChiitoi = false;
+        }
+
+        return { waits, maxedOut, isChiitoi, isRyanpeikou };
     }
 
-    /* 치이토이츠(七対子) 및 일반 4멘츠 1작두 통합 검증 로직 (addedTile 파라미터 반영) */
+    /* 완성 및 량페코/치토이즈 검증 함수 */
     function checkCompleteHand(counts, addedTile) {
-        // 1. 치이토이츠 (7쌍) 검사
+        // 1. 일반 4멘츠 1작두 형태 완성 여부 검사
+        const isStandard = canFormStandardHand(counts, 14);
+
+        // 2. 7쌍(또이츠 7개) 구조 여부 검사
         let pairCount = 0;
         for (let i = 1; i <= 9; i++) {
             if (counts[i] === 2) pairCount++;
         }
-        
-        // 치이토이츠는 '추가된 패(addedTile)'가 원래 1장 있어서 이번에 2장(쌍)이 된 경우만 인정
-        if (pairCount === 7 && counts[addedTile] === 2) {
-            return { complete: true, isChiitoi: true };
+        const is7Pairs = (pairCount === 7 && counts[addedTile] === 2);
+
+        // 3. 량페코 검사: 일반 형태(4멘츠 1작두)로 완성이 되면서 동시에 동일 슌츠 2쌍(총 량페코)을 이루는지 검증
+        if (isStandard && is7Pairs) {
+            if (checkRyanpeikouForm(counts)) {
+                return { complete: true, isChiitoi: false, isRyanpeikou: true };
+            }
         }
 
-        // 2. 일반 4멘츠 1작두 검사
-        const isStandard = canFormStandardHand(counts, 14);
-        return { complete: isStandard, isChiitoi: false };
+        // 4. 일반 형태 완성 시
+        if (isStandard) {
+            return { complete: true, isChiitoi: false, isRyanpeikou: false };
+        }
+
+        // 5. 순수 치이토이츠(단기대기) 완성 시
+        if (is7Pairs) {
+            return { complete: true, isChiitoi: true, isRyanpeikou: false };
+        }
+
+        return { complete: false, isChiitoi: false, isRyanpeikou: false };
+    }
+
+    /* 량페코(동일한 슌츠 2개씩 2쌍) 구조 확인 헬퍼 */
+    function checkRyanpeikouForm(counts) {
+        let tempCounts = [...counts];
+        let pairFound = false;
+
+        for (let i = 1; i <= 9; i++) {
+            if (tempCounts[i] >= 2) {
+                tempCounts[i] -= 2;
+                if (canFormTwoIdenticalChowPairs(tempCounts)) {
+                    return true;
+                }
+                tempCounts[i] += 2;
+            }
+        }
+        return false;
+    }
+
+    /* 12장의 패가 동일 슌츠 2쌍(4개 슌츠)으로 분해 가능한지 확인 */
+    function canFormTwoIdenticalChowPairs(counts) {
+        let tempCounts = [...counts];
+        let doubleChowCount = 0;
+
+        for (let i = 1; i <= 7; i++) {
+            while (tempCounts[i] >= 2 && tempCounts[i+1] >= 2 && tempCounts[i+2] >= 2) {
+                tempCounts[i] -= 2;
+                tempCounts[i+1] -= 2;
+                tempCounts[i+2] -= 2;
+                doubleChowCount++;
+            }
+        }
+        return doubleChowCount === 2;
     }
 
     function canFormStandardHand(counts, remaining) {
@@ -837,16 +899,13 @@
 
         const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
         
-        // 1. 실제 오름패 기준 정답 검증 (4장 제외)
         const isCorrectActual = userAnswers.length === winningTiles.length && 
                                 userAnswers.every((val, idx) => val === winningTiles[idx]);
 
-        // 2. 이론상 대기패 기준 정답 검증 (4장 포함)
         const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
         const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
                                     userAnswers.every((val, idx) => val === theoreticalList[idx]);
 
-        // 두 가지 경우 중 하나만 만족해도 정답 인정
         const isCorrect = isCorrectActual || isCorrectTheoretical;
 
         const resultDiv = document.getElementById('result');
