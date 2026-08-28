@@ -985,11 +985,16 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 
+
+
 /* ===================================================
- * 🔒 히든 계산기 / 패 분석기 관련 함수 (디버그 및 신규 기능 반영)
+ * 🔒 히든 계산기 / 패 분석기 관련 함수 (디버그 완결판)
  * =================================================== */
 
-// 수패 랜덤 선택 함수
+let titleClickCount = 0;
+let customHand = [];
+
+// 수패 무늬 랜덤 선택
 function setRandomSuit() {
     const suits = ['Man', 'Pin', 'Sou'];
     const randomSuit = suits[Math.floor(Math.random() * suits.length)];
@@ -1000,12 +1005,8 @@ function setRandomSuit() {
     }
 }
 
-// 이스터에그 이벤트 등록 (h1 5회 클릭 시)
-let titleClickCount = 0;
-let customHand = [];
-
-// DOMContentLoaded 이벤트 내에 추가
-document.addEventListener('DOMContentLoaded', () => {
+// 제목(h1) 5회 클릭 이스터에그 토글
+window.addEventListener('DOMContentLoaded', () => {
     const titleElem = document.getElementById('main-title');
     if (titleElem) {
         titleElem.addEventListener('click', () => {
@@ -1016,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isHidden = hiddenArea.style.display === 'none';
                     hiddenArea.style.display = isHidden ? 'block' : 'none';
                     if (isHidden) {
-                        setRandomSuit(); // 히든 모드 활성화 시 수패 무늬 자동/랜덤 지정
+                        setRandomSuit();
                         renderCustomButtons();
                         alert('🔓 히든 패 분석기가 활성화되었습니다!');
                     }
@@ -1027,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 1. 숫자 직접 입력(예: 1112345678999) 처리 함수
+// 1. 키보드 텍스트 직접 입력 (예: 1112345678999)
 function applyCustomTextInput() {
     const inputElem = document.getElementById('custom-text-input');
     if (!inputElem) return;
@@ -1039,8 +1040,6 @@ function applyCustomTextInput() {
     }
 
     const arr = rawVal.split('').map(Number);
-    
-    // 동일 패 4장 초과 검사
     const counts = {};
     for (const num of arr) {
         counts[num] = (counts[num] || 0) + 1;
@@ -1055,7 +1054,7 @@ function applyCustomTextInput() {
     inputElem.value = '';
 }
 
-// 2. 히든 패 선택 버튼 렌더링
+// 2. 패 선택 버튼(1~9) 렌더링
 function renderCustomButtons() {
     const btnContainer = document.getElementById('custom-tile-buttons');
     if (!btnContainer) return;
@@ -1071,7 +1070,7 @@ function renderCustomButtons() {
     updateCustomHandDisplay();
 }
 
-// 3. 개별 패 추가
+// 3. 패 클릭으로 추가
 function addTileToCustomHand(num) {
     if (customHand.length >= 13) {
         alert('손패는 최대 13장까지만 입력할 수 있습니다.');
@@ -1119,13 +1118,12 @@ async function updateCustomHandDisplay() {
     }
 }
 
-// 5. 개별 패 삭제
+// 5. 개별 패 삭제 및 전체 초기화
 function removeTileFromCustomHand(index) {
     customHand.splice(index, 1);
     updateCustomHandDisplay();
 }
 
-// 6. 전체 초기화
 function clearCustomHand() {
     customHand = [];
     updateCustomHandDisplay();
@@ -1133,29 +1131,30 @@ function clearCustomHand() {
     if (resultDiv) resultDiv.style.display = 'none';
 }
 
-// 7. 대기패 분석 계산 및 결과 출력 (디버그 완료)
+// 6. 대기패 분석 및 해설 계산 (디버그 완결)
 function analyzeCustomHand() {
     if (customHand.length !== 13) {
         alert(`손패는 정확히 13장이어야 분석할 수 있습니다. (현재 ${customHand.length}장)`);
         return;
     }
 
-    // 텐파이 검사 및 대기패 도출
-    const res = checkTenpaiAndGetWaits(customHand);
+    // 알고리즘 호출
+    const res = getWinningTiles(customHand);
     const resultDiv = document.getElementById('custom-result');
     resultDiv.style.display = 'block';
 
-    if (!res || !res.waits || res.waits.length === 0) {
+    const waits = res.waits || [];
+    if (waits.length === 0) {
         resultDiv.className = 'result-message incorrect';
         resultDiv.innerHTML = `❌ 입력하신 손패는 <b>텐파이 상태(노텐)가 아닙니다.</b> (대기패 0개)`;
         return;
     }
 
-    // 손패 내 4장 존재 여부 확인
+    // 손패 내 4장 존재 시 화료 불가 처리
     const counts = {};
     customHand.forEach(num => counts[num] = (counts[num] || 0) + 1);
-    const validWaits = res.waits.filter(w => (counts[w] || 0) < 4);
-    const maxedOut = res.waits.filter(w => (counts[w] || 0) === 4);
+    const validWaits = waits.filter(w => (counts[w] || 0) < 4);
+    const maxedOut = waits.filter(w => (counts[w] || 0) === 4);
 
     resultDiv.className = 'result-message correct';
     let html = `🎉 <b>분석 완료! Total ${validWaits.length}종류 대기패: [ ${validWaits.join(', ')} ]</b><br>`;
@@ -1164,12 +1163,14 @@ function analyzeCustomHand() {
         html += `<span style="color:#e74c3c; font-size:14px;">(※ 손패에 이미 4장 소지하여 화료 불가한 패: ${maxedOut.join(', ')}번)</span><br>`;
     }
 
-    // 세부 해설 생성 함수 연동
+    // 기존 해설 생성 함수 연동 디버깅
     if (typeof generateExplanationHtml === 'function') {
         const problemObj = {
             hand: customHand,
             waits: validWaits,
-            decompositions: res.decompositions || []
+            decompositions: res.decompositions || res.decomps || [],
+            isChiitoi: res.isChiitoi,
+            isRyanpeikou: res.isRyanpeikou
         };
         html += generateExplanationHtml(problemObj);
     }
