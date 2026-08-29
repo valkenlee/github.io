@@ -24,6 +24,12 @@ let timerInterval = null;
 let timeLeft = 60;
 let pendingRecordStreak = 0;
 
+// 🔒 히든 분석기 전용 변수
+let titleClickCount = 0;
+let titleClickTimer = null;
+let customHand = [];
+let customSuitCode = 'Man'; // 히든 패 분석기 현재 무늬
+
 const MODE_DESCRIPTIONS = {
     easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
     normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공줍니다.`,
@@ -33,6 +39,8 @@ const MODE_DESCRIPTIONS = {
 
 window.addEventListener('DOMContentLoaded', async () => {
     loadLeaderboard();
+    initTitleClickTrigger();
+    renderCustomButtons();
     
     window.addEventListener('keydown', (e) => {
         if (document.activeElement.tagName === 'INPUT') return;
@@ -64,6 +72,210 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+/* -------------------------------------------------------------
+   🔒 히든 패 분석기 트리거 및 로직
+------------------------------------------------------------- */
+function initTitleClickTrigger() {
+    const mainTitle = document.getElementById('title-icon');
+    if (!mainTitle) return;
+
+    mainTitle.addEventListener('click', () => {
+        // 🔒 i2.html을 통해 진입했는지 확인 (URL 파라미터 또는 전역 변수 체크)
+       const isWrapped = Boolean(
+            window.__IS_WRAPPED__ === true ||
+            window.location.href.includes('wrapped=true') ||
+            Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
+        );
+      
+        if (!isWrapped) {
+            return; // 일반 index.html 진입 시 히든 모드 동작 안 함
+        }
+
+        titleClickCount++;
+        clearTimeout(titleClickTimer);
+
+        if (titleClickCount >= 5) {
+            titleClickCount = 0;
+            const analyzer = document.getElementById('hidden-analyzer');
+            if (analyzer) {
+                if (analyzer.style.display === 'none' || analyzer.style.display === '') {
+                    analyzer.style.display = 'block';
+                    pickRandomNextSuit();
+                    updateCustomHandDisplay();
+                    alert('🔓 히든 패 분석기 모드가 활성화되었습니다!');
+                } else {
+                    analyzer.style.display = 'none';
+                }
+            }
+        } else {
+            titleClickTimer = setTimeout(() => {
+                titleClickCount = 0;
+            }, 2000);
+        }
+    });
+}
+
+// 이전 무늬와 겹치지 않게 새로운 무늬 선택하는 함수
+function pickRandomNextSuit() {
+    const available = SUITS.filter(s => s.code !== customSuitCode);
+    const chosen = available[Math.floor(Math.random() * available.length)];
+    customSuitCode = chosen.code;
+}
+
+function renderCustomButtons() {
+    const grid = document.getElementById('custom-tile-buttons');
+    if (!grid) return;
+    grid.innerHTML = '';
+    for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-number';
+        btn.innerText = `${i}`;
+        btn.onclick = () => addCustomTile(i);
+        grid.appendChild(btn);
+    }
+}
+
+function addCustomTile(num) {
+    if (customHand.length >= 13) {
+        alert('패는 최대 13장까지 선택할 수 있습니다.');
+        return;
+    }
+    const count = customHand.filter(x => x === num).length;
+    if (count >= 4) {
+        alert(`동일한 패(${num})는 최대 4장까지만 추가할 수 있습니다.`);
+        return;
+    }
+
+    customHand.push(num);
+    customHand.sort((a, b) => a - b);
+    updateCustomHandDisplay();
+}
+
+function applyCustomTextInput() {
+    const input = document.getElementById('custom-text-input').value.trim();
+    if (!/^[1-9]{1,13}$/.test(input)) {
+        alert('1~9 범위의 숫자만 최대 13자리 입력해 주세요.');
+        return;
+    }
+
+    let counts = Array(10).fill(0);
+    let newHand = [];
+    for (let char of input) {
+        let n = parseInt(char);
+        counts[n]++;
+        if (counts[n] > 4) {
+            alert(`동일한 숫자(${n})가 4장을 초과할 수 없습니다.`);
+            return;
+        }
+        newHand.push(n);
+    }
+
+    // 입력 반영 시 이전과 다른 무늬로 무늬 변경
+    pickRandomNextSuit();
+
+    customHand = newHand.sort((a, b) => a - b);
+    updateCustomHandDisplay();
+}
+
+async function updateCustomHandDisplay() {
+    const container = document.getElementById('custom-hand-container');
+    container.innerHTML = '';
+
+    if (customHand.length === 0) {
+        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.</span>`;
+        return;
+    }
+
+    for (let i = 0; i < customHand.length; i++) {
+        const num = customHand[i];
+        const img = document.createElement('img');
+        img.src = await getTileImageSrc(customSuitCode, num);
+        img.className = 'tile-img';
+        img.style.cursor = 'pointer';
+        img.title = '클릭하면 삭제됩니다';
+        img.onclick = () => removeCustomTile(i);
+        container.appendChild(img);
+    }
+}
+
+function removeCustomTile(index) {
+    customHand.splice(index, 1);
+    updateCustomHandDisplay();
+}
+
+function clearCustomHand() {
+    customHand = [];
+    document.getElementById('custom-text-input').value = '';
+    document.getElementById('custom-result').style.display = 'none';
+    
+    // 전체 삭제 시 이전과 다른 무늬로 무늬 변경
+    pickRandomNextSuit();
+    updateCustomHandDisplay();
+}
+
+function analyzeCustomHand() {
+    if (customHand.length !== 13) {
+        alert(`패는 정확히 13장이어야 계산이 가능합니다. (현재: ${customHand.length}장)`);
+        return;
+    }
+
+    const resultData = getWinningTiles(customHand);
+    const resultDiv = document.getElementById('custom-result');
+    resultDiv.style.display = 'block';
+
+    const savedHand = [...currentHand];
+    const savedWaits = [...winningTiles];
+    const savedMaxed = [...maxedOutWinningTiles];
+    const savedDecomps = { ...winningDecompositions };
+    const savedChiitoi = isChiitoiHand;
+    const savedRyan = isRyanpeikouHand;
+    const savedMode = currentMode;
+
+    currentHand = [...customHand];
+    winningTiles = resultData.waits;
+    maxedOutWinningTiles = resultData.maxedOut;
+    winningDecompositions = resultData.decomps;
+    isChiitoiHand = resultData.isChiitoi;
+    isRyanpeikouHand = resultData.isRyanpeikou;
+    currentMode = 'hard'; 
+
+    let actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '노텐 (대기패 없음)';
+    let tagNotice = '';
+    if (isRyanpeikouHand) {
+        tagNotice = `<div class="special-tag ryanpeikou-tag">💡 량페코(兩盃口) 형태가 포함된 손패입니다.</div><br>`;
+    } else if (isChiitoiHand) {
+        tagNotice = `<div class="special-tag chiitoi-tag">💡 치또이즈(七対子) 형태의 단기대기 손패입니다.</div><br>`;
+    }
+
+    let htmlStr = '';
+    if (maxedOutWinningTiles.length > 0) {
+        const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+        htmlStr = `${tagNotice}<b>실제 대기패:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>이론상 대기패:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 4장 사용 중으로 화료 불가)</small>`;
+    } else {
+        htmlStr = `${tagNotice}<b>실제 대기패:</b> [ ${actualStr} ]`;
+    }
+
+    if (winningTiles.length > 0 || maxedOutWinningTiles.length > 0) {
+        htmlStr += renderDecompositionExplanation();
+        resultDiv.className = 'result-message correct';
+    } else {
+        resultDiv.className = 'result-message incorrect';
+    }
+
+    resultDiv.innerHTML = htmlStr;
+
+    currentHand = savedHand;
+    winningTiles = savedWaits;
+    maxedOutWinningTiles = savedMaxed;
+    winningDecompositions = savedDecomps;
+    isChiitoiHand = savedChiitoi;
+    isRyanpeikouHand = savedRyan;
+    currentMode = savedMode;
+}
+
+/* -------------------------------------------------------------
+   기존 게임 기능 로직
+------------------------------------------------------------- */
 async function getTileImageSrc(suitCode, num) {
     const targetName = `${suitCode}${num}.svg`;
     const cacheKey = `${suitCode}${num}`;
@@ -127,6 +339,7 @@ function updateModeUI() {
 }
 
 function generateQuiz() {
+     
     clearInterval(timerInterval);
     isSubmitted = false;
 
@@ -235,32 +448,6 @@ function getWaitTypeBadgeHtml(waitType) {
     }
 }
 
-function validateHandDecomposition(handCounts, decomp, addedTile, waitType, targetMeldStart) {
-    let needed = Array(10).fill(0);
-    
-    needed[decomp.pair] += 2;
-    
-    decomp.triplets.forEach(t => {
-        needed[t] += 3;
-    });
-
-    decomp.sequences.forEach(s => {
-        needed[s] += 1;
-        needed[s+1] += 1;
-        needed[s+2] += 1;
-    });
-
-    if (waitType === '단기' || waitType === '샤보' || waitType === '양면' || waitType === '간짱' || waitType === '변짱') {
-        needed[addedTile] -= 1;
-    }
-
-    for (let i = 1; i <= 9; i++) {
-        if (needed[i] > handCounts[i]) return false;
-    }
-    return true;
-}
-
-// 1. 양면 대기 헬퍼 함수
 function getRyanmenExplanationItems(d, validWaitsSet) {
     const w1 = d.targetMeldStart - 1;
     const w2 = d.targetMeldStart + 2;
@@ -304,14 +491,11 @@ function getRyanmenExplanationItems(d, validWaitsSet) {
     };
 }
 
-// 2. 샤보 대기 헬퍼 함수 (4장 사용 무효패 예외 처리 포함)
 function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
     let items = [];
     const p = d.pair;
 
-    // d.pair와 d.triplets 내의 앙코들을 조합하여 샤보 구조 확인
     d.triplets.forEach(t => {
-        // tile이 p(머리)이거나 t(앙코)에 해당하는 경우 모두 샤보 쌍 후보 생성
         if (t === tile || p === tile) {
             const shanponPair = [p, t].sort((a, b) => a - b);
             const st1 = shanponPair[0];
@@ -320,7 +504,6 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
             const st1Is4Count = origCounts[st1] === 4;
             const st2Is4Count = origCounts[st2] === 4;
 
-            // 두 패 모두 원본 손패에 2장 이상 존재하면 샤보 구조로 인정
             if (origCounts[st1] >= 2 && origCounts[st2] >= 2) {
                 let parts = [];
                 parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st1}, ${st1}, <span class="filled-slot">(${st1})</span>]</span>`);
@@ -357,7 +540,6 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
     return items;
 }
 
-// 3. 단기, 간짱, 변짱 대기 헬퍼 함수
 function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
     if (!validWaitsSet.has(tile)) return null;
 
@@ -429,7 +611,6 @@ function renderDecompositionExplanation() {
             });
         });
     } else {
-        // 유효 대기패 및 4장 소지 무효 대기패 모두 포함하여 탐색
         const allWaitCandidates = new Set([...validWaits]);
         for (let t = 1; t <= 9; t++) {
             if (origCounts[t] === 4) {
@@ -457,7 +638,6 @@ function renderDecompositionExplanation() {
         });
     }
 
-    // 중복 제거
     let uniqueMap = new Map();
     itemsList.forEach(item => {
         if (!uniqueMap.has(item.groupKey)) {
@@ -467,7 +647,6 @@ function renderDecompositionExplanation() {
 
     let renderItems = Array.from(uniqueMap.values());
 
-    // 1. 양면 -> 2. 샤보 -> 3. 단기 -> 4. 간짱 -> 5. 변짱 순서 정렬
     renderItems.sort((a, b) => {
         if (a.sortOrder !== b.sortOrder) {
             return a.sortOrder - b.sortOrder;
@@ -489,7 +668,6 @@ function renderDecompositionExplanation() {
     html += `</div>`;
     return html;
 }
-
 
 function getAnswerString() {
     let tagNotice = '';
@@ -920,4 +1098,105 @@ function resetLeaderboard() {
 
 function escapeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+/* -------------------------------------------------------------
+   🔒 히든 패 분석기 기능 함수 (계산 함수 직접 호출 보완)
+------------------------------------------------------------- */
+
+function copyCurrentQuizToCustom() {
+
+    if (!currentHand || currentHand.length !== 13) {
+        alert('현재 생성된 문제가 없습니다.');
+        return;
+    }
+
+    // 1. 현재 퀴즈의 패 숫자를 히든 패 데이터에 복사
+    customHand = [...currentHand];
+    
+    // 2. 무늬 설정
+    if (typeof currentSuitObj !== 'undefined' && currentSuitObj && currentSuitObj.code) {
+        customSuitCode = currentSuitObj.code;
+    }
+
+    // 3. 텍스트 입력창 업데이트
+    const textInput = document.getElementById('custom-text-input');
+    if (textInput) {
+        textInput.value = customHand.join('');
+    }
+
+    // 4. 히든 분석기 화면 업데이트
+    if (typeof updateCustomHandDisplay === 'function') {
+        updateCustomHandDisplay();
+    }
+
+    // 5. 대기패 및 해설 계산 실행 (여러 함수명 패턴 대응)
+    let calculated = false;
+
+    // 방식 A: 전역 함수 호출 시도
+    if (typeof calculateCustomHandWaiting === 'function') {
+        calculateCustomHandWaiting();
+        calculated = true;
+    } else if (typeof calculateCustomWaiting === 'function') {
+        calculateCustomWaiting();
+        calculated = true;
+    } else if (typeof calculateWaitings === 'function') {
+        calculateWaitings();
+        calculated = true;
+    }
+
+    // 방식 B: 전역 함수 호출 실패 시 히든 분석기 안의 모든 버튼 중 계산 관련 버튼 찾아서 클릭
+    if (!calculated) {
+        const analyzer = document.getElementById('hidden-analyzer');
+        if (analyzer) {
+            const buttons = analyzer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.innerText.includes('계산') || btn.innerText.includes('분석') || (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('calc'))) {
+                    btn.click();
+                    calculated = true;
+                }
+            });
+        }
+    }
+
+    if (!calculated) {
+        console.error('[DEBUG] ❌ 대기패 계산 함수나 버튼을 찾지 못했습니다.');
+    }
+
+    // 6. 계산 후 정답 체크박스에 자동 선택 (계산 파싱 시간을 위해 100ms 지연)
+    setTimeout(() => {
+        autoSelectQuizOptionCheckboxes();
+    }, 100);
+}
+
+function autoSelectQuizOptionCheckboxes() {
+
+    // 1) 히든 분석기 또는 퀴즈의 정답 배열 추출
+    let targetWaitings = [];
+    if (typeof customWaitings !== 'undefined' && customWaitings && customWaitings.length > 0) {
+        targetWaitings = customWaitings;
+    } else if (typeof correctWaitings !== 'undefined' && correctWaitings && correctWaitings.length > 0) {
+        targetWaitings = correctWaitings;
+    }
+
+    if (!targetWaitings || targetWaitings.length === 0) {
+        console.log('[DEBUG] ⚠️ 대기패 결과가 존재하지 않거나 빈 배열입니다.');
+        return;
+    }
+
+    // 2) 퀴즈의 선택지 체크박스 자동 선택
+    const checkboxes = document.querySelectorAll('#options-container input[type="checkbox"], .options-grid input[type="checkbox"], input[type="checkbox"]');
+    let checkedCount = 0;
+
+    checkboxes.forEach(cb => {
+        const val = parseInt(cb.value, 10);
+        if (targetWaitings.includes(val)) {
+            cb.checked = true;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+            checkedCount++;
+        } else {
+            cb.checked = false;
+        }
+    });
+
 }
