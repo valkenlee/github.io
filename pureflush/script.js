@@ -32,7 +32,7 @@ let customSuitCode = 'Man'; // 히든 패 분석기 현재 무늬
 
 const MODE_DESCRIPTIONS = {
     easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
-    normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공줍니다.`,
+    normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공해 줍니다.`,
     hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다면대기가 만드는 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.`,
     streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 숙련자를 위한 모드로 <b>별도의 패 분해 해설이 제공되지 않고</b> 빠른 진행을 지원합니다.`
 };
@@ -62,12 +62,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         zipInstance = await JSZip.loadAsync(arrayBuffer);
         
         document.getElementById('status-msg').style.color = '#27ae60';
-        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
+        document.getElementById('status-msg').innerText = '✅ 원하시는 모드를 선택하세요.';
         
         document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
     } catch (err) {
         document.getElementById('status-msg').style.color = '#e74c3c';
-        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
+        document.getElementById('status-msg').innerText = '❌ 마작패 로딩 실패!';
         console.error(err);
     }
 });
