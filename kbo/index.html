@@ -12,7 +12,11 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
     
-      gtag('config', 'G-PXBMWZV3Q0');
+    // screen_class와 page_title을 수동 지정
+      gtag('config', 'G-PXBMWZV3Q0', {
+        'screen_class': 'KBO_Standings_Chart',
+        'page_title': '2026 KBO 팀별 승차 그래프'
+      });
     </script>
   
   <!-- Chart.js 및 PapaParse CDN -->
