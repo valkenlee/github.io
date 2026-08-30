@@ -214,6 +214,7 @@ function loadLeaderboard() {
     });
 }
 
+
 function formatTimestamp(rawStr) {
     if (!rawStr) return '-';
 
