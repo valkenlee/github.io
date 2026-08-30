@@ -177,10 +177,10 @@ function loadLeaderboard() {
                 let name = 'Anonymous';
                 let streak = 0;
 
-                // 1. "YYYY-MM-DD HH:mm:ss" 형식 매칭 (새로운 Apps Script 방식)
+                // 1. "YYYY-MM-DD HH:mm:ss" 형식 매칭
                 const isoTimeMatch = rawLine.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/);
 
-                // 2. "YYYY. M. D. 오전/오후 H:mm:ss" 형식 매칭 (기존 방식)
+                // 2. "YYYY. M. D. 오전/오후 H:mm:ss" 기존 형식 매칭
                 const legacyTimeMatch = rawLine.match(/^(\d{4}[\s.-]+\d{1,2}[\s.-]+\d{1,2}\s*(?:오전|오후)?\s*\d{1,2}:\d{1,2}(?::\d{1,2})?)/);
 
                 const timeMatch = isoTimeMatch || legacyTimeMatch;
@@ -188,19 +188,27 @@ function loadLeaderboard() {
                 if (timeMatch) {
                     rawTimestamp = timeMatch[1].trim();
                     
-                    // 타임스탬프 이후의 남은 텍스트 (Name + Streak)
+                    // 타임스탬프 이후 남은 문자열
                     let remainStr = rawLine.substring(timeMatch[0].length).trim();
 
-                    // 끝에 붙은 숫자를 Streak(연승수)로 추출
-                    const streakMatch = remainStr.match(/(\d+)$/);
-                    if (streakMatch) {
-                        streak = parseInt(streakMatch[1], 10);
-                        name = remainStr.substring(0, streakMatch.index).trim() || 'Anonymous';
+                    // 💡 공백으로 구분된 맨 마지막 단어가 숫자(Streak)인 경우 (e.g. "Valken test2   998")
+                    const spaceStreakMatch = remainStr.match(/^(.*?)\s+(\d+)$/);
+                    
+                    if (spaceStreakMatch) {
+                        name = spaceStreakMatch[1].trim() || 'Anonymous';
+                        streak = parseInt(spaceStreakMatch[2], 10);
                     } else {
-                        name = remainStr || 'Anonymous';
+                        // 공백이 없어 붙어 나오는 경우에 대한 Fallback
+                        const tightStreakMatch = remainStr.match(/^(.*?)(\d+)$/);
+                        if (tightStreakMatch) {
+                            name = tightStreakMatch[1].trim() || 'Anonymous';
+                            streak = parseInt(tightStreakMatch[2], 10);
+                        } else {
+                            name = remainStr || 'Anonymous';
+                        }
                     }
                 } else if (row.length >= 3) {
-                    // 표준 3개 컬럼으로 분리되어 들어온 경우
+                    // CSV 셀 단위로 분리되어 넘어온 경우
                     rawTimestamp = row[0];
                     name = row[1] || 'Anonymous';
                     streak = parseInt(row[2]) || 0;
@@ -244,6 +252,8 @@ function loadLeaderboard() {
         }
     });
 }
+
+
 
 
 function formatTimestamp(rawStr) {
