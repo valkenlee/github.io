@@ -1,15 +1,3 @@
-// ==========================================
-// 🔗 Google Sheets / Forms 연동 설정
-// ==========================================
-const GOOGLE_FORM_CONFIG = {
-    // 1. 구글 폼 제출 URL ( 끝부분이 /formResponse 로 끝남 )
-    formUrl: "https://docs.google.com/forms/u/0/d/e/1FAIpQLScI54nE9jz9EXlJdnqyp_ErJEqhdicinLjd7ERXgJL7xxevpQ/formResponse",
-    // 2. 구글 폼 각 필드 entry ID
-    entryName: "entry.1988718928",   // Name 항목 entry
-    entryStreak: "entry.1310476677", // Streak 항목 entry
-    // 3. 구글 시트 웹 게시 CSV URL
-    csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnJU4yDCDyeZZCmpkbogFP62WF_AcmsitYv6YBufHxY2qafrzmqXjvOHUrAsGp0sjeK-FBAptasrpq/pub?gid=1559316332&single=true&output=csv"
-};
 
 let zipInstance = null;
 const tileSvgCache = {};
@@ -85,8 +73,21 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+
+// ==========================================
+// 🔗 Google Apps Script API 설정
+// ==========================================
+const GAS_CONFIG = {
+    // 1. 배포된 Google Apps Script Web App URL
+    apiUrl: "https://script.google.com/macros/s/YOUR_GAS_DEPLOYMENT_ID/exec",
+    // 2. Apps Script의 SECRET_KEY와 반드시 동일하게 설정
+    secretKey: "Mahjong_Quiz_Secret_Key_2026",
+    // 3. 구글 시트 웹 게시 CSV URL (읽기용)
+    csvUrl: "https://docs.google.com/spreadsheets/d/e/YOUR_SHEET_ID/pub?gid=0&single=true&output=csv"
+};
+
 /* -------------------------------------------------------------
-   📊 구글 시트 연동 리더보드 (Read / Write)
+   📊 HMAC 서명 생성 및 Apps Script 기록 저장 (Write)
 ------------------------------------------------------------- */
 function saveRecord() {
     const inputElem = document.getElementById('player-name-input');
@@ -98,46 +99,64 @@ function saveRecord() {
     }
 
     saveBtn.disabled = true;
-    saveBtn.innerText = '등록 중...';
+    saveBtn.innerText = '검증 및 등록 중...';
 
-    // 구글 폼으로 전송할 FormData 준비
-    const formData = new FormData();
-    formData.append(GOOGLE_FORM_CONFIG.entryName, playerName.substring(0, 20));
-    formData.append(GOOGLE_FORM_CONFIG.entryStreak, pendingRecordStreak);
+    const timestamp = Date.now();
+    const streak = pendingRecordStreak;
 
-    // CORS 우회를 위해 no-cors 모드로 fetch 전송
-    fetch(GOOGLE_FORM_CONFIG.formUrl, {
+    // HMAC 서명 검증 키 생성: Name_Streak_Timestamp
+    const rawMessage = `${playerName}_${streak}_${timestamp}`;
+    const signature = CryptoJS.HmacSHA256(rawMessage, GAS_CONFIG.secretKey).toString(CryptoJS.enc.Hex);
+
+    const payload = {
+        name: playerName,
+        streak: streak,
+        timestamp: timestamp,
+        signature: signature
+    };
+
+    // Google Apps Script Web App으로 JSON 데이터 전송
+    fetch(GAS_CONFIG.apiUrl, {
         method: 'POST',
-        mode: 'no-cors',
-        body: formData
-    }).then(() => {
-        alert(`🎉 ${playerName} 님의 ${pendingRecordStreak}연승 기록이 명예의 전당에 제출되었습니다!`);
-        document.getElementById('name-input-container').style.display = 'none';
-        inputElem.value = '';
-        saveBtn.disabled = false;
-        saveBtn.innerText = '기록 등록';
-
-        // 2초 뒤 시트 동기화 완료 후 리더보드 갱신
-        setTimeout(loadLeaderboard, 2000);
-    }).catch(err => {
-        alert('기록 저장 중 오류가 발생했습니다.');
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8' // GAS CORS 회피 표준 설정
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.result === 'success') {
+            alert(`🎉 ${playerName} 님의 ${streak}연승 기록이 검증을 통과하여 명예의 전당에 등록되었습니다!`);
+            document.getElementById('name-input-container').style.display = 'none';
+            inputElem.value = '';
+            setTimeout(loadLeaderboard, 1500);
+        } else {
+            alert(`⚠️ 등록 실패: ${data.message || '인증 오류가 발생했습니다.'}`);
+        }
+    })
+    .catch(err => {
+        alert('기록 저장 도중 네트워크 오류가 발생했습니다.');
         console.error(err);
+    })
+    .finally(() => {
         saveBtn.disabled = false;
         saveBtn.innerText = '기록 등록';
     });
 }
 
-
+/* -------------------------------------------------------------
+   📊 구글 시트 실시간 리더보드 조회 (Read)
+------------------------------------------------------------- */
 function loadLeaderboard() {
-    if (!GOOGLE_FORM_CONFIG.csvUrl || GOOGLE_FORM_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
+    if (!GAS_CONFIG.csvUrl || GAS_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
         document.getElementById('record-list-ul').innerHTML = 
             '<li style="text-align:center; padding:10px; color:#e74c3c;">구글 시트 CSV URL 설정이 필요합니다.</li>';
         return;
     }
 
-    const fetchUrl = `${GOOGLE_FORM_CONFIG.csvUrl}&t=${Date.now()}`;
+    const fetchUrl = `${GAS_CONFIG.csvUrl}&t=${Date.now()}`;
 
-    // PapaParse 호출 시 header: false로 설정하여 컬럼 합침 이슈 완벽 방지
     Papa.parse(fetchUrl, {
         download: true,
         header: false,
@@ -146,56 +165,27 @@ function loadLeaderboard() {
             const rows = results.data;
             let parsedRecords = [];
 
-            // 첫 번째 행이 헤더일 수 있으므로 순회 시작
-            rows.forEach((row, index) => {
-                // 한 셀에 데이터가 합쳐져서 들어온 경우(e.g., "2026. 8. 30 오후 2:40:16test10") 대비
+            rows.forEach((row) => {
                 let rawLine = row.join('');
 
-                // 헤더 행 제외
+                // 헤더 생략
                 if (rawLine.includes('타임스탬프') || rawLine.includes('Streak') || rawLine.includes('Name')) {
                     return;
                 }
 
-                let rawTimestamp = '';
-                let name = 'Anonymous';
-                let streak = 0;
+                let rawTimestamp = row[0] || '';
+                let name = row[1] || 'Anonymous';
+                let streak = parseInt(row[2]) || 0;
 
-                // 정규식으로 "YYYY. M. D. 오전/오후 H:mm:ss" 또는 "YYYY-MM-DD HH:mm:ss" 타임스탬프 추출
-                const timeMatch = rawLine.match(/(\d{4}[\s.-]+\d{1,2}[\s.-]+\d{1,2}\s*(?:오전|오후)?\s*\d{1,2}:\d{1,2}(?::\d{1,2})?)/);
-
-                if (timeMatch) {
-                    rawTimestamp = timeMatch[1].trim();
-                    // 타임스탬프 이후의 남은 텍스트 (Name + Streak)
-                    let remainStr = rawLine.replace(timeMatch[0], '').trim();
-
-                    // 끝에 있는 숫자를 Streak(연승수)로 추출
-                    const streakMatch = remainStr.match(/(\d+)$/);
-                    if (streakMatch) {
-                        streak = parseInt(streakMatch[1], 10);
-                        name = remainStr.substring(0, streakMatch.index).trim() || 'Anonymous';
-                    } else {
-                        name = remainStr || 'Anonymous';
-                    }
-                } else if (row.length >= 3) {
-                    // 표준 3개 컬럼으로 정상 분리되어 들어온 경우
-                    rawTimestamp = row[0];
-                    name = row[1] || 'Anonymous';
-                    streak = parseInt(row[2]) || 0;
-                }
-
-                const formattedDate = formatTimestamp(rawTimestamp);
-
-                if (streak > 0) {
-                    parsedRecords.push({ name, streak, date: formattedDate });
+                if (streak >= 10) {
+                    parsedRecords.push({ name, streak, date: rawTimestamp });
                 }
             });
 
-            // 연승수 기준 내림차순 정렬
+            // 내림차순 정렬 (연승수 기준)
             parsedRecords.sort((a, b) => b.streak - a.streak);
 
-            // 상위 10개 추출
             const top10 = parsedRecords.slice(0, 10);
-
             const ul = document.getElementById('record-list-ul');
             ul.innerHTML = '';
 
