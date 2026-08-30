@@ -1,3 +1,9 @@
+/* =============================================================
+   📌 (Last Updated: 2026-08-30)
+   ============================================================= */
+const APP_VERSION = "0.3.4";
+console.log(`[App Initialized] Version: ${APP_VERSION}`);
+
 let zipInstance = null;
 const tileSvgCache = {};
 
@@ -24,21 +30,21 @@ let timerInterval = null;
 let timeLeft = 60;
 let pendingRecordStreak = 0;
 
-// 🔒 히든 분석기 전용 변수
+// 🔒 히든 모드 변수
 let titleClickCount = 0;
 let titleClickTimer = null;
 let customHand = [];
-let customSuitCode = 'Man'; // 히든 패 분석기 현재 무늬
+let customSuitCode = 'Man';
 
 const MODE_DESCRIPTIONS = {
     easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
-    normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공해 줍니다.`,
+    normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공줍니다.`,
     hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다면대기가 만드는 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.`,
     streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 숙련자를 위한 모드로 <b>별도의 패 분해 해설이 제공되지 않고</b> 빠른 진행을 지원합니다.`
 };
 
 window.addEventListener('DOMContentLoaded', async () => {
-    loadLeaderboard();
+    loadLeaderboard(); 
     initTitleClickTrigger();
     renderCustomButtons();
     
@@ -62,34 +68,238 @@ window.addEventListener('DOMContentLoaded', async () => {
         zipInstance = await JSZip.loadAsync(arrayBuffer);
         
         document.getElementById('status-msg').style.color = '#27ae60';
-        document.getElementById('status-msg').innerText = '✅ 원하시는 모드를 선택하세요.';
+        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
         
         document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
     } catch (err) {
         document.getElementById('status-msg').style.color = '#e74c3c';
-        document.getElementById('status-msg').innerText = '❌ 마작패 로딩 실패!';
+        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
         console.error(err);
     }
 });
 
+
+// ==========================================
+// Google Apps Script API 설정
+// ==========================================
+const GAS_CONFIG = {
+    // 1. 배포된 Google Apps Script Web App URL
+    apiUrl: "https://script.google.com/macros/s/AKfycbwsEG416KzPEf7ReF_7G5eGzce3x7OvYwePke91Vd4POR2svkdgvzEoCQFtg3HWzVJ1EQ/exec",
+    // 2. Apps Script의 SECRET_KEY와 동일하게 유지
+    secretKey: "Mahjong_Quiz_Secret_Key_2026",
+    // 3. 구글 시트 웹 게시 CSV URL
+    csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnJU4yDCDyeZZCmpkbogFP62WF_AcmsitYv6YBufHxY2qafrzmqXjvOHUrAsGp0sjeK-FBAptasrpq/pub?gid=1559316332&single=true&output=csv"
+};
+
 /* -------------------------------------------------------------
-   🔒 히든 패 분석기 트리거 및 로직
+   📊 HMAC 서명 생성 및 Apps Script 기록 저장 (Write)
 ------------------------------------------------------------- */
+function saveRecord() {
+    const inputElem = document.getElementById('player-name-input');
+    const saveBtn = document.getElementById('btn-save-record');
+    let playerName = inputElem.value.trim();
+    
+    if (!playerName) {
+        playerName = 'Anonymous';
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.innerText = '검증 및 등록 중...';
+
+    const timestamp = Date.now();
+    const streak = pendingRecordStreak;
+
+    // HMAC 서명 검증 키 생성: Name_Streak_Timestamp
+    const rawMessage = `${playerName}_${streak}_${timestamp}`;
+    const signature = CryptoJS.HmacSHA256(rawMessage, GAS_CONFIG.secretKey).toString(CryptoJS.enc.Hex);
+
+    const payload = {
+        name: playerName,
+        streak: streak,
+        timestamp: timestamp,
+        signature: signature
+    };
+
+    // Google Apps Script Web App으로 JSON 데이터 전송
+    fetch(GAS_CONFIG.apiUrl, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8' // GAS CORS 회피 표준 설정
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.result === 'success') {
+            alert(`🎉 ${playerName} 님의 ${streak}연승 기록이 검증을 통과하여 명예의 전당에 등록되었습니다!`);
+            document.getElementById('name-input-container').style.display = 'none';
+            inputElem.value = '';
+            setTimeout(loadLeaderboard, 1500);
+        } else {
+            alert(`⚠️ 등록 실패: ${data.message || '인증 오류가 발생했습니다.'}`);
+        }
+    })
+    .catch(err => {
+        alert('기록 저장 도중 네트워크 오류가 발생했습니다.');
+        console.error(err);
+    })
+    .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.innerText = '기록 등록';
+    });
+}
+
+/* -------------------------------------------------------------
+   📊 구글 시트 실시간 리더보드 조회 (Read)
+------------------------------------------------------------- */
+function loadLeaderboard() {
+    if (!GAS_CONFIG.csvUrl || GAS_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
+        document.getElementById('record-list-ul').innerHTML = 
+            '<li style="text-align:center; padding:10px; color:#e74c3c;">구글 시트 CSV URL 설정이 필요합니다.</li>';
+        return;
+    }
+
+    const fetchUrl = `${GAS_CONFIG.csvUrl}&t=${Date.now()}`;
+
+    Papa.parse(fetchUrl, {
+        download: true,
+        header: false,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const rows = results.data;
+            console.log("📌 CSV 파싱 원본 데이터:", rows); // 디버깅용 로그
+            
+            // 동일 사용자/날짜의 최고 기록만 저장할 Map
+            const userRecordsMap = new Map();
+
+            rows.forEach((row, index) => {
+                // 데이터 유효성 검사 (최소 3개 컬럼 필요)
+                if (!row || row.length < 3) return;
+
+                let rawTimestamp = String(row[0] || '').trim();
+                let name = String(row[1] || '').trim();
+                let streak = parseInt(row[2], 10);
+
+                // 헤더 행 및 잘못된 데이터 필터링
+                if (
+                    rawTimestamp.includes('타임스탬프') || 
+                    rawTimestamp.includes('Timestamp') || 
+                    name.includes('Name') || 
+                    isNaN(streak)
+                ) {
+                    return;
+                }
+
+                // 이름 기본값 처리
+                if (!name) name = 'Anonymous';
+
+                // 10연승 이상인 기록만 처리
+                if (streak >= 10) {
+                    const formattedDate = formatTimestamp(rawTimestamp);
+                    
+                    // 💡 중복 제거용 날짜 키 추출 (YYYY-MM-DD 부분만 잘라내어 같은 날짜 중복 방지)
+                    const dateOnly = formattedDate.split(' ')[0] || formattedDate;
+                    const uniqueKey = `${name}_${dateOnly}`;
+                    
+                    // 해당 날짜에 동일 인물의 더 높은 연승 기록이 있을 때만 갱신
+                    if (userRecordsMap.has(uniqueKey)) {
+                        if (streak > userRecordsMap.get(uniqueKey).streak) {
+                            userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
+                        }
+                    } else {
+                        userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
+                    }
+                }
+            });
+
+            // Map을 배열로 변환 후 연승 수 기준 내림차순 정렬
+            let parsedRecords = Array.from(userRecordsMap.values());
+            parsedRecords.sort((a, b) => b.streak - a.streak);
+
+            console.log("📌 정제 및 중복 제거 완료된 기록:", parsedRecords); // 디버깅용 로그
+
+            const top10 = parsedRecords.slice(0, 10);
+            const ul = document.getElementById('record-list-ul');
+            ul.innerHTML = '';
+
+            if (top10.length === 0) {
+                ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 기록이 없습니다. 10연승에 도전해보세요!</li>';
+                return;
+            }
+
+            top10.forEach((rec, idx) => {
+                const li = document.createElement('li');
+                li.className = 'record-item';
+                li.innerHTML = `
+                    <span class="record-rank">${idx + 1}위</span>
+                    <span class="record-name">${escapeHtml(rec.name)}</span>
+                    <span class="record-score">${rec.streak}연승</span>
+                    <span class="record-date" style="font-size: 11px; color: #888; white-space: nowrap;">${rec.date}</span>
+                `;
+                ul.appendChild(li);
+            });
+        },
+        error: function(err) {
+            console.error("리더보드 불러오기 오류:", err);
+            document.getElementById('record-list-ul').innerHTML = 
+                '<li style="text-align:center; padding: 10px; color:#7f8c8d;">리더보드를 불러오는 데 실패했습니다.</li>';
+        }
+    });
+}
+
+
+
+function formatTimestamp(rawStr) {
+    if (!rawStr) return '-';
+
+    let str = String(rawStr).trim();
+
+    try {
+        let isPM = str.includes('오후');
+        let cleaned = str.replace(/(오전|오후)/g, '').trim();
+        let parts = cleaned.split(/[\s.:-]+/).filter(Boolean);
+
+        if (parts.length >= 3) {
+            let year = parts[0];
+            let month = String(parts[1]).padStart(2, '0');
+            let day = String(parts[2]).padStart(2, '0');
+            let hour = parseInt(parts[3] || '0', 10);
+            let min = String(parts[4] || '0').padStart(2, '0');
+            let sec = String(parts[5] || '0').padStart(2, '0');
+
+            if (isPM && hour < 12) hour += 12;
+            if (!isPM && hour === 12) hour = 0;
+
+            let hourStr = String(hour).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hourStr}:${min}:${sec}`;
+        }
+    } catch (e) {
+        console.warn("Timestamp parsing error:", e);
+    }
+
+    return str;
+}
+
+
+/* -------------------------------------------------------------
+   🔒 히든 패 분석기 트리거
+------------------------------------------------------------- */
+function isWrappedEnvironment() {
+    return Boolean(
+        window.__IS_WRAPPED__ === true ||
+        window.location.href.includes('wrapped=true') ||
+        Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
+    );
+}
+
 function initTitleClickTrigger() {
     const mainTitle = document.getElementById('title-icon');
     if (!mainTitle) return;
 
     mainTitle.addEventListener('click', () => {
-        // 🔒 i2.html을 통해 진입했는지 확인 (URL 파라미터 또는 전역 변수 체크)
-       const isWrapped = Boolean(
-            window.__IS_WRAPPED__ === true ||
-            window.location.href.includes('wrapped=true') ||
-            Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
-        );
-      
-        if (!isWrapped) {
-            return; // 일반 index.html 진입 시 히든 모드 동작 안 함
-        }
+        if (!isWrappedEnvironment()) return;
 
         titleClickCount++;
         clearTimeout(titleClickTimer);
@@ -108,14 +318,14 @@ function initTitleClickTrigger() {
                 }
             }
         } else {
-            titleClickTimer = setTimeout(() => {
-                titleClickCount = 0;
-            }, 2000);
+            titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 2000);
         }
     });
 }
 
-// 이전 무늬와 겹치지 않게 새로운 무늬 선택하는 함수
+/* -------------------------------------------------------------
+   히든 분석기 및 퀴즈 로직 (이전 버전 동일)
+------------------------------------------------------------- */
 function pickRandomNextSuit() {
     const available = SUITS.filter(s => s.code !== customSuitCode);
     const chosen = available[Math.floor(Math.random() * available.length)];
@@ -170,9 +380,7 @@ function applyCustomTextInput() {
         newHand.push(n);
     }
 
-    // 입력 반영 시 이전과 다른 무늬로 무늬 변경
     pickRandomNextSuit();
-
     customHand = newHand.sort((a, b) => a - b);
     updateCustomHandDisplay();
 }
@@ -207,8 +415,6 @@ function clearCustomHand() {
     customHand = [];
     document.getElementById('custom-text-input').value = '';
     document.getElementById('custom-result').style.display = 'none';
-    
-    // 전체 삭제 시 이전과 다른 무늬로 무늬 변경
     pickRandomNextSuit();
     updateCustomHandDisplay();
 }
@@ -273,20 +479,14 @@ function analyzeCustomHand() {
     currentMode = savedMode;
 }
 
-/* -------------------------------------------------------------
-   기존 게임 기능 로직
-------------------------------------------------------------- */
 async function getTileImageSrc(suitCode, num) {
     const targetName = `${suitCode}${num}.svg`;
     const cacheKey = `${suitCode}${num}`;
-    
     if (tileSvgCache[cacheKey]) return tileSvgCache[cacheKey];
 
     let targetFile = null;
     zipInstance.forEach((relativePath, file) => {
-        if (relativePath.endsWith(targetName)) {
-            targetFile = file;
-        }
+        if (relativePath.endsWith(targetName)) targetFile = file;
     });
 
     if (targetFile) {
@@ -300,9 +500,7 @@ async function getTileImageSrc(suitCode, num) {
 }
 
 function selectMode(mode) {
-    if (currentMode !== mode) {
-        streakCount = 0;
-    }
+    if (currentMode !== mode) streakCount = 0;
     currentMode = mode;
 
     if (mode === 'streak' && !sessionStorage.getItem('streak_notice_shown')) {
@@ -339,7 +537,6 @@ function updateModeUI() {
 }
 
 function generateQuiz() {
-     
     clearInterval(timerInterval);
     isSubmitted = false;
 
@@ -451,7 +648,6 @@ function getWaitTypeBadgeHtml(waitType) {
 function getRyanmenExplanationItems(d, validWaitsSet) {
     const w1 = d.targetMeldStart - 1;
     const w2 = d.targetMeldStart + 2;
-    
     const w1Valid = validWaitsSet.has(w1);
     const w2Valid = validWaitsSet.has(w2);
 
@@ -544,7 +740,6 @@ function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
     if (!validWaitsSet.has(tile)) return null;
 
     let parts = [];
-
     if (waitType === '단기') {
         parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
     } else {
@@ -613,9 +808,7 @@ function renderDecompositionExplanation() {
     } else {
         const allWaitCandidates = new Set([...validWaits]);
         for (let t = 1; t <= 9; t++) {
-            if (origCounts[t] === 4) {
-                allWaitCandidates.add(t);
-            }
+            if (origCounts[t] === 4) allWaitCandidates.add(t);
         }
         const candidateWaits = [...allWaitCandidates].sort((a, b) => a - b);
 
@@ -623,7 +816,6 @@ function renderDecompositionExplanation() {
             const decomps = winningDecompositions[tile] || [];
             decomps.forEach(d => {
                 let waitType = d.waitType;
-
                 if (waitType === '양면') {
                     const item = getRyanmenExplanationItems(d, validWaitsSet);
                     if (item) itemsList.push(item);
@@ -640,19 +832,11 @@ function renderDecompositionExplanation() {
 
     let uniqueMap = new Map();
     itemsList.forEach(item => {
-        if (!uniqueMap.has(item.groupKey)) {
-            uniqueMap.set(item.groupKey, item);
-        }
+        if (!uniqueMap.has(item.groupKey)) uniqueMap.set(item.groupKey, item);
     });
 
     let renderItems = Array.from(uniqueMap.values());
-
-    renderItems.sort((a, b) => {
-        if (a.sortOrder !== b.sortOrder) {
-            return a.sortOrder - b.sortOrder;
-        }
-        return (a.tiles[0] || 0) - (b.tiles[0] || 0);
-    });
+    renderItems.sort((a, b) => (a.sortOrder !== b.sortOrder) ? a.sortOrder - b.sortOrder : (a.tiles[0] || 0) - (b.tiles[0] || 0));
 
     renderItems.forEach(group => {
         const tileHeader = group.tiles.length > 1 ? `[ ${group.tiles.join(', ')} ]` : `[ ${group.tiles[0]} ]`;
@@ -699,7 +883,6 @@ function handleTimeout() {
     const resultDiv = document.getElementById('result');
     resultDiv.style.display = 'block';
     resultDiv.className = 'result-message incorrect';
-
     resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>👉 ${getAnswerString()}`;
 
     checkStreakRecordAndReset();
@@ -723,42 +906,29 @@ function generateRandom13Tiles() {
 }
 
 function getWinningTiles(hand) {
-    let waits = [];
-    let maxedOut = [];
-    let decomps = {};
-    let isChiitoi = false;
-    let isRyanpeikou = false;
+    let waits = [], maxedOut = [], decomps = {};
+    let isChiitoi = false, isRyanpeikou = false;
     let counts = Array(10).fill(0);
     hand.forEach(num => counts[num]++);
 
     for (let tile = 1; tile <= 9; tile++) {
-        if (counts[tile] < 4) {
+        const checkTile = (isMaxed) => {
             counts[tile]++;
             const checkRes = checkCompleteHand(counts, tile, hand);
             if (checkRes.complete) {
-                waits.push(tile);
+                if (isMaxed) maxedOut.push(tile); else waits.push(tile);
                 decomps[tile] = checkRes.decompositions;
                 if (checkRes.isRyanpeikou) isRyanpeikou = true;
                 else if (checkRes.isChiitoi) isChiitoi = true;
             }
             counts[tile]--;
-        } else {
-            counts[tile]++;
-            const checkRes = checkCompleteHand(counts, tile, hand);
-            if (checkRes.complete) {
-                maxedOut.push(tile);
-                decomps[tile] = checkRes.decompositions;
-                if (checkRes.isRyanpeikou) isRyanpeikou = true;
-                else if (checkRes.isChiitoi) isChiitoi = true;
-            }
-            counts[tile]--;
-        }
+        };
+
+        if (counts[tile] < 4) checkTile(false);
+        else checkTile(true);
     }
 
-    if (isRyanpeikou) {
-        isChiitoi = false;
-    }
-
+    if (isRyanpeikou) isChiitoi = false;
     return { waits, maxedOut, decomps, isChiitoi, isRyanpeikou };
 }
 
@@ -766,63 +936,41 @@ function checkCompleteHand(counts, addedTile, originalHand) {
     const decompositions = findAllDecompositions(counts, addedTile, originalHand);
     const isStandard = decompositions.length > 0;
 
-    let pairCount = 0;
-    let hasQuad = false;
+    let pairCount = 0, hasQuad = false;
     for (let i = 1; i <= 9; i++) {
         if (counts[i] === 2) pairCount++;
         if (counts[i] === 4) hasQuad = true;
     }
     const is7Pairs = (pairCount === 7 && !hasQuad);
 
-    if (isStandard && is7Pairs) {
-        if (checkRyanpeikouForm(counts)) {
-            return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: true };
-        }
+    if (isStandard && is7Pairs && checkRyanpeikouForm(counts)) {
+        return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: true };
     }
-
-    if (isStandard) {
-        return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: false };
-    }
-
-    if (is7Pairs) {
-        return { complete: true, decompositions: [], isChiitoi: true, isRyanpeikou: false };
-    }
+    if (isStandard) return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: false };
+    if (is7Pairs) return { complete: true, decompositions: [], isChiitoi: true, isRyanpeikou: false };
 
     return { complete: false, decompositions: [], isChiitoi: false, isRyanpeikou: false };
 }
 
 function classifyWaitTypes(decomp, addedTile, originalHand) {
     let results = [];
-
     let origCounts = Array(10).fill(0);
     originalHand.forEach(n => origCounts[n]++);
 
-    if (decomp.pair === addedTile) {
-        results.push({ waitType: '단기', targetMeldStart: null });
-    }
-
-    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] === 2) {
-        results.push({ waitType: '샤보', targetMeldStart: null });
-    }
+    if (decomp.pair === addedTile) results.push({ waitType: '단기', targetMeldStart: null });
+    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] === 2) results.push({ waitType: '샤보', targetMeldStart: null });
 
     for (let s of decomp.sequences) {
         if (addedTile >= s && addedTile <= s + 2) {
             const pos = addedTile - s;
-
-            if (pos === 1) {
-                results.push({ waitType: '간짱', targetMeldStart: s });
-            } else if ((s === 1 && addedTile === 3) || (s === 7 && addedTile === 7)) {
-                results.push({ waitType: '변짱', targetMeldStart: s });
-            } else if (pos === 0 || pos === 2) {
+            if (pos === 1) results.push({ waitType: '간짱', targetMeldStart: s });
+            else if ((s === 1 && addedTile === 3) || (s === 7 && addedTile === 7)) results.push({ waitType: '변짱', targetMeldStart: s });
+            else if (pos === 0 || pos === 2) {
                 const oppositeTile = (pos === 0) ? (s + 2) : (s - 1);
-                
-                if (oppositeTile >= 1 && oppositeTile <= 9) {
-                    results.push({ waitType: '양면', targetMeldStart: s });
-                }
+                if (oppositeTile >= 1 && oppositeTile <= 9) results.push({ waitType: '양면', targetMeldStart: s });
             }
         }
     }
-
     return results;
 }
 
@@ -833,34 +981,23 @@ function findAllDecompositions(counts, addedTile, originalHand) {
     for (let pairVal = 1; pairVal <= 9; pairVal++) {
         if (tempCounts[pairVal] >= 2) {
             tempCounts[pairVal] -= 2;
-            
             let meldResults = [];
             findMeldsRecursive(tempCounts, [], meldResults);
 
             meldResults.forEach(m => {
                 const trips = [...m.triplets].sort((a,b)=>a-b);
                 const seqs = [...m.sequences].sort((a,b)=>a-b);
-                
-                const decompCandidate = {
-                    pair: pairVal,
-                    triplets: trips,
-                    sequences: seqs
-                };
-
+                const decompCandidate = { pair: pairVal, triplets: trips, sequences: seqs };
                 const waitInfos = classifyWaitTypes(decompCandidate, addedTile, originalHand);
 
                 waitInfos.forEach(waitInfo => {
                     results.push({
-                        pair: pairVal,
-                        triplets: trips,
-                        sequences: seqs,
-                        waitType: waitInfo.waitType,
-                        targetMeldStart: waitInfo.targetMeldStart,
+                        pair: pairVal, triplets: trips, sequences: seqs,
+                        waitType: waitInfo.waitType, targetMeldStart: waitInfo.targetMeldStart,
                         key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}|W:${waitInfo.waitType}|M:${waitInfo.targetMeldStart}`
                     });
                 });
             });
-
             tempCounts[pairVal] += 2;
         }
     }
@@ -884,8 +1021,7 @@ function findMeldsRecursive(counts, currentMelds, results) {
     }
 
     if (first === 0) {
-        let triplets = [];
-        let sequences = [];
+        let triplets = [], sequences = [];
         currentMelds.forEach(m => {
             if (m.type === 'triplet') triplets.push(m.val);
             else if (m.type === 'sequence') sequences.push(m.val);
@@ -903,15 +1039,11 @@ function findMeldsRecursive(counts, currentMelds, results) {
     }
 
     if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
-        counts[first]--;
-        counts[first + 1]--;
-        counts[first + 2]--;
+        counts[first]--; counts[first + 1]--; counts[first + 2]--;
         currentMelds.push({ type: 'sequence', val: first });
         findMeldsRecursive(counts, currentMelds, results);
         currentMelds.pop();
-        counts[first]++;
-        counts[first + 1]++;
-        counts[first + 2]++;
+        counts[first]++; counts[first + 1]++; counts[first + 2]++;
     }
 }
 
@@ -920,9 +1052,7 @@ function checkRyanpeikouForm(counts) {
     for (let i = 1; i <= 9; i++) {
         if (tempCounts[i] >= 2) {
             tempCounts[i] -= 2;
-            if (canFormTwoIdenticalChowPairs(tempCounts)) {
-                return true;
-            }
+            if (canFormTwoIdenticalChowPairs(tempCounts)) return true;
             tempCounts[i] += 2;
         }
     }
@@ -932,12 +1062,9 @@ function checkRyanpeikouForm(counts) {
 function canFormTwoIdenticalChowPairs(counts) {
     let tempCounts = [...counts];
     let doubleChowCount = 0;
-
     for (let i = 1; i <= 7; i++) {
         while (tempCounts[i] >= 2 && tempCounts[i+1] >= 2 && tempCounts[i+2] >= 2) {
-            tempCounts[i] -= 2;
-            tempCounts[i+1] -= 2;
-            tempCounts[i+2] -= 2;
+            tempCounts[i] -= 2; tempCounts[i+1] -= 2; tempCounts[i+2] -= 2;
             doubleChowCount++;
         }
     }
@@ -947,7 +1074,6 @@ function canFormTwoIdenticalChowPairs(counts) {
 async function renderHand() {
     const container = document.getElementById('hand-container');
     container.innerHTML = '';
-    
     for (const num of currentHand) {
         const img = document.createElement('img');
         img.src = await getTileImageSrc(currentSuitObj.code, num);
@@ -972,7 +1098,6 @@ function renderButtons() {
 
 function toggleSelect(num, btn) {
     if (isSubmitted) return;
-
     if (selectedTiles.has(num)) {
         selectedTiles.delete(num);
         btn.classList.remove('selected');
@@ -983,15 +1108,10 @@ function toggleSelect(num, btn) {
 }
 
 function handleSubmitOrNext() {
-    if (isSubmitted) {
-        generateQuiz();
-        return;
-    }
-
+    if (isSubmitted) { generateQuiz(); return; }
     if (selectedTiles.size === 0) return;
 
     clearInterval(timerInterval);
-
     const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
     
     const isCorrectActual = userAnswers.length === winningTiles.length && 
@@ -1002,7 +1122,6 @@ function handleSubmitOrNext() {
                                 userAnswers.every((val, idx) => val === theoreticalList[idx]);
 
     const isCorrect = isCorrectActual || isCorrectTheoretical;
-
     const resultDiv = document.getElementById('result');
     resultDiv.style.display = 'block';
 
@@ -1020,9 +1139,7 @@ function handleSubmitOrNext() {
     } else {
         resultDiv.className = 'result-message incorrect';
         resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
-        if (currentMode === 'streak') {
-            checkStreakRecordAndReset();
-        }
+        if (currentMode === 'streak') checkStreakRecordAndReset();
     }
 
     isSubmitted = true;
@@ -1039,164 +1156,22 @@ function checkStreakRecordAndReset() {
     streakCount = 0;
 }
 
-function saveRecord() {
-    const inputElem = document.getElementById('player-name-input');
-    const playerName = inputElem.value.trim() || '익명';
-    
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-    const newRecord = {
-        name: playerName.substring(0, 20),
-        streak: pendingRecordStreak,
-        date: dateStr
-    };
-
-    let records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
-    records.push(newRecord);
-    records.sort((a, b) => b.streak - a.streak);
-    records = records.slice(0, 10);
-
-    localStorage.setItem('mahjong_streak_records', JSON.stringify(records));
-    
-    document.getElementById('name-input-container').style.display = 'none';
-    inputElem.value = '';
-    loadLeaderboard();
-}
-
-function loadLeaderboard() {
-    const records = JSON.parse(localStorage.getItem('mahjong_streak_records') || '[]');
-    const ul = document.getElementById('record-list-ul');
-    ul.innerHTML = '';
-
-    if (records.length === 0) {
-        ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 10연승 이상 기록이 없습니다. 도전에 성공해 보세요!</li>';
-        return;
-    }
-
-    records.forEach((rec, idx) => {
-        const li = document.createElement('li');
-        li.className = 'record-item';
-        li.innerHTML = `
-            <span class="record-rank">${idx + 1}위</span>
-            <span class="record-name">${escapeHtml(rec.name)}</span>
-            <span class="record-score">${rec.streak}연승</span>
-            <span class="record-date">${rec.date}</span>
-        `;
-        ul.appendChild(li);
-    });
-}
-
-function resetLeaderboard() {
-    const isConfirmed = confirm('정말로 저장된 모든 연승 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');
-    if (isConfirmed) {
-        localStorage.removeItem('mahjong_streak_records');
-        loadLeaderboard();
-        alert('연승 기록이 모두 삭제되었습니다.');
-    }
-}
-
 function escapeHtml(text) {
+    if (!text) return '';
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-/* -------------------------------------------------------------
-   🔒 히든 패 분석기 기능 함수 (계산 함수 직접 호출 보완)
-------------------------------------------------------------- */
-
 function copyCurrentQuizToCustom() {
-
     if (!currentHand || currentHand.length !== 13) {
         alert('현재 생성된 문제가 없습니다.');
         return;
     }
-
-    // 1. 현재 퀴즈의 패 숫자를 히든 패 데이터에 복사
     customHand = [...currentHand];
-    
-    // 2. 무늬 설정
     if (typeof currentSuitObj !== 'undefined' && currentSuitObj && currentSuitObj.code) {
         customSuitCode = currentSuitObj.code;
     }
-
-    // 3. 텍스트 입력창 업데이트
     const textInput = document.getElementById('custom-text-input');
-    if (textInput) {
-        textInput.value = customHand.join('');
-    }
+    if (textInput) textInput.value = customHand.join('');
 
-    // 4. 히든 분석기 화면 업데이트
-    if (typeof updateCustomHandDisplay === 'function') {
-        updateCustomHandDisplay();
-    }
-
-    // 5. 대기패 및 해설 계산 실행 (여러 함수명 패턴 대응)
-    let calculated = false;
-
-    // 방식 A: 전역 함수 호출 시도
-    if (typeof calculateCustomHandWaiting === 'function') {
-        calculateCustomHandWaiting();
-        calculated = true;
-    } else if (typeof calculateCustomWaiting === 'function') {
-        calculateCustomWaiting();
-        calculated = true;
-    } else if (typeof calculateWaitings === 'function') {
-        calculateWaitings();
-        calculated = true;
-    }
-
-    // 방식 B: 전역 함수 호출 실패 시 히든 분석기 안의 모든 버튼 중 계산 관련 버튼 찾아서 클릭
-    if (!calculated) {
-        const analyzer = document.getElementById('hidden-analyzer');
-        if (analyzer) {
-            const buttons = analyzer.querySelectorAll('button');
-            buttons.forEach(btn => {
-                if (btn.innerText.includes('계산') || btn.innerText.includes('분석') || (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('calc'))) {
-                    btn.click();
-                    calculated = true;
-                }
-            });
-        }
-    }
-
-    if (!calculated) {
-        console.error('[DEBUG] ❌ 대기패 계산 함수나 버튼을 찾지 못했습니다.');
-    }
-
-    // 6. 계산 후 정답 체크박스에 자동 선택 (계산 파싱 시간을 위해 100ms 지연)
-    setTimeout(() => {
-        autoSelectQuizOptionCheckboxes();
-    }, 100);
-}
-
-function autoSelectQuizOptionCheckboxes() {
-
-    // 1) 히든 분석기 또는 퀴즈의 정답 배열 추출
-    let targetWaitings = [];
-    if (typeof customWaitings !== 'undefined' && customWaitings && customWaitings.length > 0) {
-        targetWaitings = customWaitings;
-    } else if (typeof correctWaitings !== 'undefined' && correctWaitings && correctWaitings.length > 0) {
-        targetWaitings = correctWaitings;
-    }
-
-    if (!targetWaitings || targetWaitings.length === 0) {
-        console.log('[DEBUG] ⚠️ 대기패 결과가 존재하지 않거나 빈 배열입니다.');
-        return;
-    }
-
-    // 2) 퀴즈의 선택지 체크박스 자동 선택
-    const checkboxes = document.querySelectorAll('#options-container input[type="checkbox"], .options-grid input[type="checkbox"], input[type="checkbox"]');
-    let checkedCount = 0;
-
-    checkboxes.forEach(cb => {
-        const val = parseInt(cb.value, 10);
-        if (targetWaitings.includes(val)) {
-            cb.checked = true;
-            cb.dispatchEvent(new Event('change', { bubbles: true }));
-            checkedCount++;
-        } else {
-            cb.checked = false;
-        }
-    });
-
+    updateCustomHandDisplay();
 }
