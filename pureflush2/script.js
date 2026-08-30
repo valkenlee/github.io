@@ -3,12 +3,12 @@
 // ==========================================
 const GOOGLE_FORM_CONFIG = {
     // 1. 구글 폼 제출 URL ( 끝부분이 /formResponse 로 끝남 )
-    formUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse",
+    formUrl: "https://docs.google.com/forms/u/0/d/e/1FAIpQLScI54nE9jz9EXlJdnqyp_ErJEqhdicinLjd7ERXgJL7xxevpQ/formResponse",
     // 2. 구글 폼 각 필드 entry ID
-    entryName: "entry.123456789",   // Name 항목 entry
-    entryStreak: "entry.987654321", // Streak 항목 entry
+    entryName: "entry.1988718928",   // Name 항목 entry
+    entryStreak: "entry.1310476677", // Streak 항목 entry
     // 3. 구글 시트 웹 게시 CSV URL
-    csvUrl: "https://docs.google.com/spreadsheets/d/e/YOUR_SHEET_ID/pub?gid=0&single=true&output=csv"
+    csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnJU4yDCDyeZZCmpkbogFP62WF_AcmsitYv6YBufHxY2qafrzmqXjvOHUrAsGp0sjeK-FBAptasrpq/pub?gid=1559316332&single=true&output=csv"
 };
 
 let zipInstance = null;
