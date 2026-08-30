@@ -84,7 +84,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ==========================================
 const GAS_CONFIG = {
     // 1. 배포된 Google Apps Script Web App URL
-    apiUrl: "https://script.google.com/macros/s/AKfycbwsEG416KzPEf7ReF_7G5eGzce3x7OvYwePke91Vd4POR2svkdgvzEoCQFtg3HWzVJ1EQ/exec",
+    apiUrl: "https://script.google.com/macros/s/AKfycbw7IDyRIqGfps_5Yw7az-9_vPXajFKR-rZaCHpFeBA3sVsnExFFmK70cfxr_Der58RJvA/exec",
     // 2. Apps Script의 SECRET_KEY와 동일하게 유지
     secretKey: "Mahjong_Quiz_Secret_Key_2026",
     // 3. 구글 시트 웹 게시 CSV URL
