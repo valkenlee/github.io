@@ -1,7 +1,7 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-30)
    ============================================================= */
-const APP_VERSION = "0.3.2";
+const APP_VERSION = "0.3.3";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 let zipInstance = null;
@@ -170,81 +170,45 @@ function loadLeaderboard() {
         complete: function(results) {
             const rows = results.data;
             
-            // Name과 Date를 키로 사용하여 최고 기록만 저장할 Map
+            // 동일 사용자/날짜의 중복을 방지하고 최고 기록만 저장할 Map
             const userRecordsMap = new Map();
 
             rows.forEach((row) => {
-                let rawLine = row.join('');
+                // 인덱스 기반으로 CSV 셀 데이터 추출 (기본 구분자: 쉼표)
+                const rawTimestamp = row[0] ? String(row[0]).trim() : '';
+                const name = row[1] ? String(row[1]).trim() : 'Anonymous';
+                const streak = row[2] ? parseInt(row[2], 10) || 0 : 0;
 
-                // 헤더 행 생략
-                if (rawLine.includes('타임스탬프') || rawLine.includes('Streak') || rawLine.includes('Name')) {
+                // 헤더 행 생략 (타임스탬프, Name, Streak 등이 포함된 경우)
+                if (
+                    rawTimestamp.includes('타임스탬프') || 
+                    rawTimestamp.includes('Timestamp') || 
+                    name.includes('Name') || 
+                    String(row[2]).includes('Streak')
+                ) {
                     return;
                 }
 
-                let rawTimestamp = '';
-                let name = 'Anonymous';
-                let streak = 0;
-
-                // 1. "YYYY-MM-DD HH:mm:ss" 형식 매칭
-                const isoTimeMatch = rawLine.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/);
-
-                // 2. "YYYY. M. D. 오전/오후 H:mm:ss" 기존 형식 매칭
-                const legacyTimeMatch = rawLine.match(/^(\d{4}[\s.-]+\d{1,2}[\s.-]+\d{1,2}\s*(?:오전|오후)?\s*\d{1,2}:\d{1,2}(?::\d{1,2})?)/);
-
-                const timeMatch = isoTimeMatch || legacyTimeMatch;
-
-                if (timeMatch) {
-                    rawTimestamp = timeMatch[1].trim();
-                    
-                    // 타임스탬프 이후 남은 문자열
-                    let remainStr = rawLine.substring(timeMatch[0].length).trim();
-
-                    // 💡 공백으로 구분된 맨 마지막 단어가 숫자(Streak)인 경우 (e.g. "Valken test2   998")
-                    const spaceStreakMatch = remainStr.match(/^(.*?)\s+(\d+)$/);
-                    
-                    if (spaceStreakMatch) {
-                        name = spaceStreakMatch[1].trim() || 'Anonymous';
-                        streak = parseInt(spaceStreakMatch[2], 10);
-                    } else {
-                        // 공백이 없어 붙어 나오는 경우에 대한 Fallback
-                        const tightStreakMatch = remainStr.match(/^(.*?)(\d+)$/);
-                        if (tightStreakMatch) {
-                            name = tightStreakMatch[1].trim() || 'Anonymous';
-                            streak = parseInt(tightStreakMatch[2], 10);
-                        } else {
-                            name = remainStr || 'Anonymous';
-                        }
-                    }
-                } else if (row.length >= 3) {
-                    // CSV 셀 단위로 분리되어 넘어온 경우
-                    rawTimestamp = row[0];
-                    name = row[1] || 'Anonymous';
-                    streak = parseInt(row[2]) || 0;
-                }
-
-                const formattedDate = formatTimestamp(rawTimestamp);
-
+                // 10연승 이상인 기록만 처리
                 if (streak >= 10) {
-                    // 💡 동일 이름 + 동일 날짜 조합을 고유 키로 사용
+                    const formattedDate = formatTimestamp(rawTimestamp);
+                    
+                    // 동일 이름 + 동일 날짜를 고유 키로 지정
                     const uniqueKey = `${name}_${formattedDate}`;
                     
-                    // 해당 키가 이미 존재하고, 기존 기록이 더 크다면 건너뜀
+                    // 기존에 등록된 동일 키의 기록보다 연승 수가 높을 때만 업데이트
                     if (userRecordsMap.has(uniqueKey)) {
-                        const existingStreak = userRecordsMap.get(uniqueKey).streak;
-                        if (streak > existingStreak) {
+                        if (streak > userRecordsMap.get(uniqueKey).streak) {
                             userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
                         }
                     } else {
-                        // 새로운 키라면 저장
                         userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
                     }
                 }
             });
 
-            // Map 객체의 값들을 배열로 변환
+            // Map을 배열로 변환 후 연승 수 기준 내림차순 정렬
             let parsedRecords = Array.from(userRecordsMap.values());
-
-            // 내림차순 정렬 (연승수 기준)
             parsedRecords.sort((a, b) => b.streak - a.streak);
 
             const top10 = parsedRecords.slice(0, 10);
