@@ -1,7 +1,7 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-30)
    ============================================================= */
-const APP_VERSION = "0.3.1";
+const APP_VERSION = "0.3.2";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 let zipInstance = null;
