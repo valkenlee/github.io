@@ -147,20 +147,23 @@ function loadLeaderboard() {
 
             rows.forEach(row => {
                 const keys = Object.keys(row);
-                // 구글 시트 컬럼 구조: [ 타임스탬프, Name, Streak ]
+                // 구글 시트 컬럼 구조: [ 0: 타임스탬프, 1: Name, 2: Streak ]
+                const rawTimestamp = row[keys[0]] || '';
                 const name = row[keys[1]] || 'Anonymous';
                 const streak = parseInt(row[keys[2]]) || 0;
-                const date = row[keys[0]] ? row[keys[0]].split(' ')[0] : '';
+
+                // 날짜 및 시간 포맷팅 (YYYY-MM-DD HH:mm:ss)
+                const formattedDate = formatTimestamp(rawTimestamp);
 
                 if (streak > 0) {
-                    parsedRecords.push({ name, streak, date });
+                    parsedRecords.push({ name, streak, date: formattedDate });
                 }
             });
 
             // 내림차순 정렬 (연승수 기준)
             parsedRecords.sort((a, b) => b.streak - a.streak);
 
-            // 상위 10개만 슬라이스
+            // 상위 10개만 추출
             const top10 = parsedRecords.slice(0, 10);
 
             const ul = document.getElementById('record-list-ul');
@@ -178,7 +181,7 @@ function loadLeaderboard() {
                     <span class="record-rank">${idx + 1}위</span>
                     <span class="record-name">${escapeHtml(rec.name)}</span>
                     <span class="record-score">${rec.streak}연승</span>
-                    <span class="record-date">${rec.date}</span>
+                    <span class="record-date" style="font-size: 11px; color: #888;">${rec.date}</span>
                 `;
                 ul.appendChild(li);
             });
@@ -189,6 +192,54 @@ function loadLeaderboard() {
                 '<li style="text-align:center; padding: 10px; color:#7f8c8d;">리더보드를 불러오는 데 실패했습니다.</li>';
         }
     });
+}
+
+// 🕒 구글 시트 타임스탬프 문자열을 'YYYY-MM-DD HH:mm:ss' 형태로 변환해주는 헬퍼 함수
+function formatTimestamp(rawStr) {
+    if (!rawStr) return '-';
+
+    const d = new Date(rawStr);
+    
+    // JS Date 객체로 정상 파싱되는 경우
+    if (!isNaN(d.getTime())) {
+        const pad = (n) => String(n).padStart(2, '0');
+        const year = d.getFullYear();
+        const month = pad(d.getMonth() + 1);
+        const day = pad(d.getDate());
+        const hours = pad(d.getHours());
+        const minutes = pad(d.getMinutes());
+        const seconds = pad(d.getSeconds());
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // 만약 구글 시트 한글 로케일 문자열("2026. 4. 15 오전 10:20:30") 등으로 올 경우 직접 파싱
+    try {
+        let isPM = rawStr.includes('오후');
+        let cleaned = rawStr.replace(/(오전|오후)/g, '').trim();
+        let parts = cleaned.split(/[\s.:-]+/).filter(Boolean);
+
+        if (parts.length >= 3) {
+            let year = parts[0];
+            let month = String(parts[1]).padStart(2, '0');
+            let day = String(parts[2]).padStart(2, '0');
+            let hour = parseInt(parts[3] || '0', 10);
+            let min = String(parts[4] || '0').padStart(2, '0');
+            let sec = String(parts[5] || '0').padStart(2, '0');
+
+            if (isPM && hour < 12) hour += 12;
+            if (!isPM && hour === 12) hour = 0;
+
+            let hourStr = String(hour).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hourStr}:${min}:${sec}`;
+        }
+    } catch (e) {
+        console.warn("Timestamp parsing fallback failed:", e);
+    }
+
+    // 파싱 불가 시 원본 반환
+    return rawStr;
 }
 
 /* -------------------------------------------------------------
