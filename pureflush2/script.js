@@ -150,6 +150,7 @@ function saveRecord() {
     });
 }
 
+
 /* -------------------------------------------------------------
    📊 구글 시트 실시간 리더보드 조회 (Read)
 ------------------------------------------------------------- */
@@ -168,7 +169,9 @@ function loadLeaderboard() {
         skipEmptyLines: true,
         complete: function(results) {
             const rows = results.data;
-            let parsedRecords = [];
+            
+            // Name과 Date를 키로 사용하여 최고 기록만 저장할 Map
+            const userRecordsMap = new Map();
 
             rows.forEach((row) => {
                 let rawLine = row.join('');
@@ -222,9 +225,24 @@ function loadLeaderboard() {
                 const formattedDate = formatTimestamp(rawTimestamp);
 
                 if (streak >= 10) {
-                    parsedRecords.push({ name, streak, date: formattedDate });
+                    // 💡 동일 이름 + 동일 날짜 조합을 고유 키로 사용
+                    const uniqueKey = `${name}_${formattedDate}`;
+                    
+                    // 해당 키가 이미 존재하고, 기존 기록이 더 크다면 건너뜀
+                    if (userRecordsMap.has(uniqueKey)) {
+                        const existingStreak = userRecordsMap.get(uniqueKey).streak;
+                        if (streak > existingStreak) {
+                            userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
+                        }
+                    } else {
+                        // 새로운 키라면 저장
+                        userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
+                    }
                 }
             });
+
+            // Map 객체의 값들을 배열로 변환
+            let parsedRecords = Array.from(userRecordsMap.values());
 
             // 내림차순 정렬 (연승수 기준)
             parsedRecords.sort((a, b) => b.streak - a.streak);
