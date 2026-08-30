@@ -1,7 +1,7 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-30)
    ============================================================= */
-const APP_VERSION = "0.3.3";
+const APP_VERSION = "0.3.4";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 let zipInstance = null;
@@ -150,7 +150,6 @@ function saveRecord() {
     });
 }
 
-
 /* -------------------------------------------------------------
    📊 구글 시트 실시간 리더보드 조회 (Read)
 ------------------------------------------------------------- */
@@ -169,34 +168,41 @@ function loadLeaderboard() {
         skipEmptyLines: true,
         complete: function(results) {
             const rows = results.data;
+            console.log("📌 CSV 파싱 원본 데이터:", rows); // 디버깅용 로그
             
-            // 동일 사용자/날짜의 중복을 방지하고 최고 기록만 저장할 Map
+            // 동일 사용자/날짜의 최고 기록만 저장할 Map
             const userRecordsMap = new Map();
 
-            rows.forEach((row) => {
-                // 인덱스 기반으로 CSV 셀 데이터 추출 (기본 구분자: 쉼표)
-                const rawTimestamp = row[0] ? String(row[0]).trim() : '';
-                const name = row[1] ? String(row[1]).trim() : 'Anonymous';
-                const streak = row[2] ? parseInt(row[2], 10) || 0 : 0;
+            rows.forEach((row, index) => {
+                // 데이터 유효성 검사 (최소 3개 컬럼 필요)
+                if (!row || row.length < 3) return;
 
-                // 헤더 행 생략 (타임스탬프, Name, Streak 등이 포함된 경우)
+                let rawTimestamp = String(row[0] || '').trim();
+                let name = String(row[1] || '').trim();
+                let streak = parseInt(row[2], 10);
+
+                // 헤더 행 및 잘못된 데이터 필터링
                 if (
                     rawTimestamp.includes('타임스탬프') || 
                     rawTimestamp.includes('Timestamp') || 
                     name.includes('Name') || 
-                    String(row[2]).includes('Streak')
+                    isNaN(streak)
                 ) {
                     return;
                 }
+
+                // 이름 기본값 처리
+                if (!name) name = 'Anonymous';
 
                 // 10연승 이상인 기록만 처리
                 if (streak >= 10) {
                     const formattedDate = formatTimestamp(rawTimestamp);
                     
-                    // 동일 이름 + 동일 날짜를 고유 키로 지정
-                    const uniqueKey = `${name}_${formattedDate}`;
+                    // 💡 중복 제거용 날짜 키 추출 (YYYY-MM-DD 부분만 잘라내어 같은 날짜 중복 방지)
+                    const dateOnly = formattedDate.split(' ')[0] || formattedDate;
+                    const uniqueKey = `${name}_${dateOnly}`;
                     
-                    // 기존에 등록된 동일 키의 기록보다 연승 수가 높을 때만 업데이트
+                    // 해당 날짜에 동일 인물의 더 높은 연승 기록이 있을 때만 갱신
                     if (userRecordsMap.has(uniqueKey)) {
                         if (streak > userRecordsMap.get(uniqueKey).streak) {
                             userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
@@ -210,6 +216,8 @@ function loadLeaderboard() {
             // Map을 배열로 변환 후 연승 수 기준 내림차순 정렬
             let parsedRecords = Array.from(userRecordsMap.values());
             parsedRecords.sort((a, b) => b.streak - a.streak);
+
+            console.log("📌 정제 및 중복 제거 완료된 기록:", parsedRecords); // 디버깅용 로그
 
             const top10 = parsedRecords.slice(0, 10);
             const ul = document.getElementById('record-list-ul');
@@ -239,7 +247,6 @@ function loadLeaderboard() {
         }
     });
 }
-
 
 
 
