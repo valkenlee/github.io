@@ -168,17 +168,48 @@ function loadLeaderboard() {
             rows.forEach((row) => {
                 let rawLine = row.join('');
 
-                // 헤더 생략
+                // 헤더 행 생략
                 if (rawLine.includes('타임스탬프') || rawLine.includes('Streak') || rawLine.includes('Name')) {
                     return;
                 }
 
-                let rawTimestamp = row[0] || '';
-                let name = row[1] || 'Anonymous';
-                let streak = parseInt(row[2]) || 0;
+                let rawTimestamp = '';
+                let name = 'Anonymous';
+                let streak = 0;
+
+                // 1. "YYYY-MM-DD HH:mm:ss" 형식 매칭 (새로운 Apps Script 방식)
+                const isoTimeMatch = rawLine.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/);
+
+                // 2. "YYYY. M. D. 오전/오후 H:mm:ss" 형식 매칭 (기존 방식)
+                const legacyTimeMatch = rawLine.match(/^(\d{4}[\s.-]+\d{1,2}[\s.-]+\d{1,2}\s*(?:오전|오후)?\s*\d{1,2}:\d{1,2}(?::\d{1,2})?)/);
+
+                const timeMatch = isoTimeMatch || legacyTimeMatch;
+
+                if (timeMatch) {
+                    rawTimestamp = timeMatch[1].trim();
+                    
+                    // 타임스탬프 이후의 남은 텍스트 (Name + Streak)
+                    let remainStr = rawLine.substring(timeMatch[0].length).trim();
+
+                    // 끝에 붙은 숫자를 Streak(연승수)로 추출
+                    const streakMatch = remainStr.match(/(\d+)$/);
+                    if (streakMatch) {
+                        streak = parseInt(streakMatch[1], 10);
+                        name = remainStr.substring(0, streakMatch.index).trim() || 'Anonymous';
+                    } else {
+                        name = remainStr || 'Anonymous';
+                    }
+                } else if (row.length >= 3) {
+                    // 표준 3개 컬럼으로 분리되어 들어온 경우
+                    rawTimestamp = row[0];
+                    name = row[1] || 'Anonymous';
+                    streak = parseInt(row[2]) || 0;
+                }
+
+                const formattedDate = formatTimestamp(rawTimestamp);
 
                 if (streak >= 10) {
-                    parsedRecords.push({ name, streak, date: rawTimestamp });
+                    parsedRecords.push({ name, streak, date: formattedDate });
                 }
             });
 
