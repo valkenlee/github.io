@@ -1,5 +1,5 @@
 /* =============================================================
-   📌 App Version: v0.3.1 (Last Updated: 2026-08-30)
+   📌 (Last Updated: 2026-08-30)
    ============================================================= */
 const APP_VERSION = "0.3.1";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
