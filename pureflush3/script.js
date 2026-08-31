@@ -652,7 +652,11 @@ function updateSelectionButtonsUI() {
 function handleSubmitOrNext() {
     if (isSubmitted) {
         generateQuiz();
-    } else {
+    } 
+   else if (selectedTiles.size === 0) {
+      return;
+    }
+    else {
         checkAnswer();
     }
 }
