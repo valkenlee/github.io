@@ -328,14 +328,6 @@ const TRANSLATIONS = {
 
 let currentLang = localStorage.getItem('app_lang') || 'ko';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const langSelect = document.getElementById('lang-select');
-    if (langSelect) {
-        // 최초 로딩 시 현재 select 박스에 설정된 언어로 광고 노출 여부 판단
-        updateAdVisibility(langSelect.value);
-    }
-});
-
 function updateAdVisibility(selectedLang) {
   const ad1Container = document.querySelector('.area_ad1');
   const ad2Container = document.querySelector('.area_ad2');   
