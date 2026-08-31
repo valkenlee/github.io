@@ -837,9 +837,38 @@ function toggleCustomTriggerBtn() {
 }
 
 function renderCustomButtons() {
-    // 필요한 커스텀 버튼 추가 처리
-}
+    const grid = document.getElementById('selection-buttons');
+    if (!grid) return;
+    grid.innerHTML = '';
 
+    for (let i = 1; i <= 9; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'contents';
+
+        // 히든 체크박스
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.id = `chk-tile-${i}`;
+        chk.style.display = 'none';
+        chk.addEventListener('change', (e) => toggleTileBtnStyle(i, e.target.checked));
+
+        // UI 버튼
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = `btn-tile-choice-${i}`;
+        btn.className = 'btn-number';
+        btn.innerText = i;
+        btn.onclick = () => {
+            if (chk.disabled) return;
+            chk.checked = !chk.checked;
+            toggleTileBtnStyle(i, chk.checked);
+        };
+
+        wrapper.appendChild(chk);
+        wrapper.appendChild(btn);
+        grid.appendChild(wrapper);
+    }
+}
 function escapeHtml(str) {
     if (!str) return '';
     return String(str)
