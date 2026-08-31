@@ -1,7 +1,7 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-31) - v0.4.0 Multilingual Support
    ============================================================= */
-const APP_VERSION = "0.4.0";
+const APP_VERSION = "0.4.1";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 let zipInstance = null;
@@ -744,38 +744,252 @@ function getWaitTypeName(type) {
     }
 }
 
+
+function getWaitTypeBadgeHtml(waitType) {
+    switch(waitType) {
+        case '양면': return `<span class="wait-type-badge badge-ryanmen">양면 대기</span>`;
+        case '단기': return `<span class="wait-type-badge badge-tanki">단기 대기</span>`;
+        case '샤보': return `<span class="wait-type-badge badge-shanpon">샤보 대기</span>`;
+        case '간짱': return `<span class="wait-type-badge badge-kanchan">간짱 대기</span>`;
+        case '변짱': return `<span class="wait-type-badge badge-penchan">변짱 대기</span>`;
+        default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
+    }
+}
+
+function getRyanmenExplanationItems(d, validWaitsSet) {
+    const w1 = d.targetMeldStart - 1;
+    const w2 = d.targetMeldStart + 2;
+    const w1Valid = validWaitsSet.has(w1);
+    const w2Valid = validWaitsSet.has(w2);
+
+    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a, b) => a - b);
+    if (waitTiles.length < 2) return null;
+
+    const w1Str = w1Valid ? `<span class="filled-slot">(${w1})</span>` : '';
+    const w2Str = w2Valid ? `<span class="filled-slot">(${w2})</span>` : '';
+
+    let parts = [];
+    parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
+    d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
+
+    let targetMeldHandled = false;
+    d.sequences.forEach(s => {
+        if (!targetMeldHandled && s === d.targetMeldStart) {
+            let meldParts = [];
+            if (w1Str) meldParts.push(w1Str);
+            meldParts.push(s);
+            meldParts.push(s + 1);
+            if (w2Str) meldParts.push(w2Str);
+
+            parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldParts.join(', ')}]</span>`);
+            targetMeldHandled = true;
+        } else {
+            parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
+        }
+    });
+
+    const groupKey = `ryanmen_p${d.pair}_t${d.triplets.slice().sort().join(',')}_s${d.sequences.slice().sort().join(',')}_m${d.targetMeldStart}`;
+    return {
+        waitType: '양면',
+        sortOrder: 1,
+        groupKey: groupKey,
+        tiles: waitTiles,
+        partsStr: parts.join(' ')
+    };
+}
+
+function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
+    let items = [];
+    const p = d.pair;
+
+    d.triplets.forEach(t => {
+        if (t === tile || p === tile) {
+            const shanponPair = [p, t].sort((a, b) => a - b);
+            const st1 = shanponPair[0];
+            const st2 = shanponPair[1];
+
+            const st1Is4Count = origCounts[st1] === 4;
+            const st2Is4Count = origCounts[st2] === 4;
+
+            if (origCounts[st1] >= 2 && origCounts[st2] >= 2) {
+                let parts = [];
+                parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st1}, ${st1}, <span class="filled-slot">(${st1})</span>]</span>`);
+                parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st2}, ${st2}, <span class="filled-slot">(${st2})</span>]</span>`);
+
+                d.triplets.forEach(tr => {
+                    if (tr !== p && tr !== t) {
+                        parts.push(`<span style="color:#27ae60;">[${tr},${tr},${tr}]</span>`);
+                    }
+                });
+                d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
+
+                let noteStr = '';
+                if (st1Is4Count || st2Is4Count) {
+                    const overTiles = [st1Is4Count ? st1 : null, st2Is4Count ? st2 : null].filter(Boolean);
+                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">(※ ${overTiles.join(', ')}번 패는 4장 이미 소지하여 화료 불가)</span>`;
+                }
+
+                const remainingTriplets = d.triplets.filter(tr => tr !== p && tr !== t).sort().join('_');
+                const sortedSeqs = d.sequences.slice().sort().join('_');
+                const groupKey = `shanpon_pair_${st1}_${st2}_remT_${remainingTriplets}_seqs_${sortedSeqs}`;
+
+                items.push({
+                    waitType: '샤보',
+                    sortOrder: 2,
+                    groupKey: groupKey,
+                    tiles: [st1, st2],
+                    partsStr: parts.join(' ') + noteStr
+                });
+            }
+        }
+    });
+
+    return items;
+}
+
+function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
+    if (!validWaitsSet.has(tile)) return null;
+
+    let parts = [];
+    if (waitType === '단기') {
+        parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
+    } else {
+        parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
+    }
+
+    d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
+
+    let targetMeldHandled = false;
+    d.sequences.forEach(s => {
+        if (!targetMeldHandled && d.targetMeldStart === s && (waitType === '간짱' || waitType === '변짱')) {
+            let meldStr = [];
+            for (let i = 0; i < 3; i++) {
+                let curr = s + i;
+                if (curr === tile) {
+                    meldStr.push(`<span class="filled-slot">(${curr})</span>`);
+                } else {
+                    meldStr.push(curr);
+                }
+            }
+            parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldStr.join(',')}]</span>`);
+            targetMeldHandled = true;
+        } else {
+            parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
+        }
+    });
+
+    let sortOrder = 3; 
+    if (waitType === '간짱') sortOrder = 4;
+    if (waitType === '변짱') sortOrder = 5;
+
+    const groupKey = `${waitType}_tile${tile}_p${d.pair}_t${d.triplets.slice().sort().join(',')}_s${d.sequences.slice().sort().join(',')}_m${d.targetMeldStart}`;
+
+    return {
+        waitType: waitType,
+        sortOrder: sortOrder,
+        groupKey: groupKey,
+        tiles: [tile],
+        partsStr: parts.join(' ')
+    };
+}
+
 function renderDecompositionExplanation() {
-    let html = `<div class="decomp-box">`;
-    html += `<div class="decomp-title">${t('explanationTitle')}</div>`;
+    if (currentMode === 'streak') return ''; 
 
-    const allWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+    let html = `<div class="explanation-box">`;
+    html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
 
-    allWaits.forEach(tile => {
-        const decomps = winningDecompositions[tile];
-        const isMaxed = maxedOutWinningTiles.includes(tile);
+    let origCounts = Array(10).fill(0);
+    currentHand.forEach(n => origCounts[n]++);
 
-        html += `<div class="decomp-item">`;
-        html += `<span class="decomp-wait-tile">${tile}</span> : `;
+    const validWaits = [...winningTiles].sort((a, b) => a - b);
+    const validWaitsSet = new Set(validWaits);
+    let itemsList = [];
 
-        if (isMaxed) {
-            html += `<span style="color:#d35400; font-weight:bold; font-size:12px; margin-right:6px;">[4장 사용]</span>`;
-        }
-
-        if (decomps && decomps.length > 0) {
-            decomps.forEach(d => {
-                const waitName = getWaitTypeName(d.type);
-                html += `<span class="decomp-tag">[ ${waitName} ]</span> `;
-                if (d.head) html += `머리: ${d.head} / `;
-                if (d.body && d.body.length > 0) html += `몸통: ${d.body.join(' ')}`;
-                html += ` &nbsp;|&nbsp; `;
+    if (isChiitoiHand) {
+        validWaits.forEach(tile => {
+            itemsList.push({
+                waitType: '단기',
+                sortOrder: 3,
+                groupKey: `chiitoi_${tile}`,
+                tiles: [tile],
+                htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <span style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`
             });
+        });
+    } else {
+        const allWaitCandidates = new Set([...validWaits]);
+        for (let t = 1; t <= 9; t++) {
+            if (origCounts[t] === 4) allWaitCandidates.add(t);
         }
-        html += `</div>`;
+        const candidateWaits = [...allWaitCandidates].sort((a, b) => a - b);
+
+        candidateWaits.forEach(tile => {
+            const decomps = winningDecompositions[tile] || [];
+            decomps.forEach(d => {
+                let waitType = d.waitType;
+                if (waitType === '양면') {
+                    const item = getRyanmenExplanationItems(d, validWaitsSet);
+                    if (item) itemsList.push(item);
+                } else if (waitType === '샤보') {
+                    const items = getShanponExplanationItems(d, tile, validWaitsSet, origCounts);
+                    itemsList.push(...items);
+                } else {
+                    const item = getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet);
+                    if (item) itemsList.push(item);
+                }
+            });
+        });
+    }
+
+    let uniqueMap = new Map();
+    itemsList.forEach(item => {
+        if (!uniqueMap.has(item.groupKey)) uniqueMap.set(item.groupKey, item);
+    });
+
+    let renderItems = Array.from(uniqueMap.values());
+    renderItems.sort((a, b) => (a.sortOrder !== b.sortOrder) ? a.sortOrder - b.sortOrder : (a.tiles[0] || 0) - (b.tiles[0] || 0));
+
+    renderItems.forEach(group => {
+        const tileHeader = group.tiles.length > 1 ? `[ ${group.tiles.join(', ')} ]` : `[ ${group.tiles[0]} ]`;
+        const badge = getWaitTypeBadgeHtml(group.waitType);
+
+        if (group.htmlContent) {
+            html += `<div class="explanation-item">${group.htmlContent}</div>`;
+        } else {
+            html += `<div class="explanation-item">${badge} <b>${tileHeader}</b> --- ${group.partsStr}</div>`;
+        }
     });
 
     html += `</div>`;
     return html;
 }
+
+function getAnswerString() {
+    let tagNotice = '';
+    if (isRyanpeikouHand) {
+        tagNotice = `<div class="special-tag ryanpeikou-tag">💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다.</div><br>`;
+    } else if (isChiitoiHand) {
+        tagNotice = `<div class="special-tag chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 단기대기 문제입니다.</div><br>`;
+    }
+
+    const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
+    let baseText = '';
+
+    if (maxedOutWinningTiles.length > 0) {
+        const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
+        baseText = `${tagNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+    } else {
+        baseText = `${tagNotice}오름패: [ ${actualStr} ]`;
+    }
+
+    if (currentMode !== 'streak') {
+        baseText += renderDecompositionExplanation();
+    }
+
+    return baseText;
+}
+
+
 
 function checkStreakRecordAndReset() {
     if (streakCount >= 10) {
