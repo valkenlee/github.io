@@ -1,7 +1,7 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-31)
    ============================================================= */
-const APP_VERSION = "0.4.3";
+const APP_VERSION = "0.4.4";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 let zipInstance = null;
@@ -40,6 +40,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     loadLeaderboard(); 
     initTitleClickTrigger();
     renderCustomButtons();
+    updateModeUI();   
     
     window.addEventListener('keydown', (e) => {
         if (document.activeElement.tagName === 'INPUT') return;
