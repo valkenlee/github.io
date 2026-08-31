@@ -37,7 +37,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderCustomButtons();
     
     try {
-        const response = await fetch('Regular.zip');
+        const response = await fetch('../pureflush/Regular.zip');
         if (!response.ok) throw new Error('ZIP 파일을 찾을 수 없습니다.');
         
         const blob = await response.blob();
