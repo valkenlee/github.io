@@ -337,10 +337,22 @@ function setLanguage(lang) {
 }
 
 function t(key, params = {}) {
-    let text = TRANSLATIONS[currentLang]?.[key] || TRANSLATIONS['ko']?.[key] || key;
-    Object.keys(params).forEach(p => {
-        text = text.replace(`{${p}}`, params[p]);
-    });
+    // 중첩 경로('descriptions.easy') 탐색용 헬퍼 함수
+    const getNestedValue = (obj, path) => {
+        if (!obj) return undefined;
+        return path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined) ? acc[part] : undefined, obj);
+    };
+
+    let text = getNestedValue(TRANSLATIONS[currentLang], key) || 
+               getNestedValue(TRANSLATIONS['ko'], key) || 
+               key;
+
+    if (typeof text === 'string') {
+        Object.keys(params).forEach(p => {
+            text = text.replace(`{${p}}`, params[p]);
+        });
+    }
+
     return text;
 }
 
