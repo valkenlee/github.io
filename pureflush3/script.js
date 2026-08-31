@@ -845,14 +845,14 @@ function renderCustomButtons() {
         const wrapper = document.createElement('div');
         wrapper.style.display = 'contents';
 
-        // 히든 체크박스
+        // 체크박스 (숨김)
         const chk = document.createElement('input');
         chk.type = 'checkbox';
         chk.id = `chk-tile-${i}`;
         chk.style.display = 'none';
         chk.addEventListener('change', (e) => toggleTileBtnStyle(i, e.target.checked));
 
-        // UI 버튼
+        // 선택 버튼
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.id = `btn-tile-choice-${i}`;
@@ -869,6 +869,8 @@ function renderCustomButtons() {
         grid.appendChild(wrapper);
     }
 }
+
+
 function escapeHtml(str) {
     if (!str) return '';
     return String(str)
