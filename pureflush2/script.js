@@ -785,7 +785,7 @@ function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
 function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
-    let html = `<div class="explanation-box">`;
+    let html = `<div class="decomp-box">`;
     html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
 
     let origCounts = Array(10).fill(0);
