@@ -1,7 +1,7 @@
 /* =============================================================
-   📌 (Last Updated: 2026-08-31 - v0.4.0 Multilingual Ready)
+   📌 (Last Updated: 2026-08-31)
    ============================================================= */
-const APP_VERSION = "0.4.0d";
+const APP_VERSION = "0.4.1";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 let zipInstance = null;
@@ -36,21 +36,7 @@ let titleClickTimer = null;
 let customHand = [];
 let customSuitCode = 'Man';
 
-const MODE_DESCRIPTIONS = {
-    easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
-    normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공줍니다.`,
-    hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다면대기가 만드는 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.`,
-    streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 숙련자를 위한 모드로 <b>별도의 패 분해 해설이 제공되지 않고</b> 빠른 진행을 지원합니다.`
-};
-
 window.addEventListener('DOMContentLoaded', async () => {
-    // 🌐 다국어 선택 드롭다운 초기값 반영 및 번역 실행
-    if (typeof currentLang !== 'undefined') {
-        const langSelect = document.getElementById('lang-select');
-        if (langSelect) langSelect.value = currentLang;
-        if (typeof applyTranslations === 'function') applyTranslations();
-    }
-
     loadLeaderboard(); 
     initTitleClickTrigger();
     renderCustomButtons();
@@ -75,12 +61,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         zipInstance = await JSZip.loadAsync(arrayBuffer);
         
         document.getElementById('status-msg').style.color = '#27ae60';
-        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
+        document.getElementById('status-msg').innerText = t('loadingSuccess');
         
         document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
     } catch (err) {
         document.getElementById('status-msg').style.color = '#e74c3c';
-        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
+        document.getElementById('status-msg').innerText = t('loadingError');
         console.error(err);
     }
 });
@@ -111,7 +97,7 @@ function saveRecord() {
     }
 
     saveBtn.disabled = true;
-    saveBtn.innerText = '검증 및 등록 중...';
+    saveBtn.innerText = '...';
 
     const timestamp = Date.now();
     const streak = pendingRecordStreak;
@@ -139,21 +125,21 @@ function saveRecord() {
     .then(res => res.json())
     .then(data => {
         if (data.result === 'success') {
-            alert(`🎉 ${playerName} 님의 ${streak}연승 기록이 검증을 통과하여 명예의 전당에 등록되었습니다!`);
+            alert(`🎉 ${playerName} (${streak})`);
             document.getElementById('name-input-container').style.display = 'none';
             inputElem.value = '';
             setTimeout(loadLeaderboard, 1500);
         } else {
-            alert(`⚠️ 등록 실패: ${data.message || '인증 오류가 발생했습니다.'}`);
+            alert(`⚠️ ${data.message || 'Error'}`);
         }
     })
     .catch(err => {
-        alert('기록 저장 도중 네트워크 오류가 발생했습니다.');
+        alert('Error');
         console.error(err);
     })
     .finally(() => {
         saveBtn.disabled = false;
-        saveBtn.innerText = '기록 등록';
+        saveBtn.innerText = t('btnSaveRecord');
     });
 }
 
@@ -163,7 +149,7 @@ function saveRecord() {
 function loadLeaderboard() {
     if (!GAS_CONFIG.csvUrl || GAS_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
         document.getElementById('record-list-ul').innerHTML = 
-            '<li style="text-align:center; padding:10px; color:#e74c3c;">구글 시트 CSV URL 설정이 필요합니다.</li>';
+            '<li style="text-align:center; padding:10px; color:#e74c3c;">CSV URL Error</li>';
         return;
     }
 
@@ -175,20 +161,15 @@ function loadLeaderboard() {
         skipEmptyLines: true,
         complete: function(results) {
             const rows = results.data;
-            console.log("📌 CSV 파싱 원본 데이터:", rows); // 디버깅용 로그
-            
-            // 동일 사용자/날짜의 최고 기록만 저장할 Map
             const userRecordsMap = new Map();
 
             rows.forEach((row, index) => {
-                // 데이터 유효성 검사 (최소 3개 컬럼 필요)
                 if (!row || row.length < 3) return;
 
                 let rawTimestamp = String(row[0] || '').trim();
                 let name = String(row[1] || '').trim();
                 let streak = parseInt(row[2], 10);
 
-                // 헤더 행 및 잘못된 데이터 필터링
                 if (
                     rawTimestamp.includes('타임스탬프') || 
                     rawTimestamp.includes('Timestamp') || 
@@ -198,18 +179,13 @@ function loadLeaderboard() {
                     return;
                 }
 
-                // 이름 기본값 처리
                 if (!name) name = 'Anonymous';
 
-                // 10연승 이상인 기록만 처리
                 if (streak >= 10) {
                     const formattedDate = formatTimestamp(rawTimestamp);
-                    
-                    // 💡 중복 제거용 날짜 키 추출 (YYYY-MM-DD 부분만 잘라내어 같은 날짜 중복 방지)
                     const dateOnly = formattedDate.split(' ')[0] || formattedDate;
                     const uniqueKey = `${name}_${dateOnly}`;
                     
-                    // 해당 날짜에 동일 인물의 더 높은 연승 기록이 있을 때만 갱신
                     if (userRecordsMap.has(uniqueKey)) {
                         if (streak > userRecordsMap.get(uniqueKey).streak) {
                             userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
@@ -220,18 +196,15 @@ function loadLeaderboard() {
                 }
             });
 
-            // Map을 배열로 변환 후 연승 수 기준 내림차순 정렬
             let parsedRecords = Array.from(userRecordsMap.values());
             parsedRecords.sort((a, b) => b.streak - a.streak);
-
-            console.log("📌 정제 및 중복 제거 완료된 기록:", parsedRecords); // 디버깅용 로그
 
             const top10 = parsedRecords.slice(0, 10);
             const ul = document.getElementById('record-list-ul');
             ul.innerHTML = '';
 
             if (top10.length === 0) {
-                ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 기록이 없습니다. 10연승에 도전해보세요!</li>';
+                ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">-</li>';
                 return;
             }
 
@@ -239,27 +212,24 @@ function loadLeaderboard() {
                 const li = document.createElement('li');
                 li.className = 'record-item';
                 li.innerHTML = `
-                    <span class="record-rank">${idx + 1}위</span>
+                    <span class="record-rank">${idx + 1}</span>
                     <span class="record-name">${escapeHtml(rec.name)}</span>
-                    <span class="record-score">${rec.streak}연승</span>
+                    <span class="record-score">${rec.streak}</span>
                     <span class="record-date" style="font-size: 11px; color: #888; white-space: nowrap;">${rec.date}</span>
                 `;
                 ul.appendChild(li);
             });
         },
         error: function(err) {
-            console.error("리더보드 불러오기 오류:", err);
+            console.error("Leaderboard error:", err);
             document.getElementById('record-list-ul').innerHTML = 
-                '<li style="text-align:center; padding: 10px; color:#7f8c8d;">리더보드를 불러오는 데 실패했습니다.</li>';
+                '<li style="text-align:center; padding: 10px; color:#7f8c8d;">Error</li>';
         }
     });
 }
 
-
-
 function formatTimestamp(rawStr) {
     if (!rawStr) return '-';
-
     let str = String(rawStr).trim();
 
     try {
@@ -288,7 +258,6 @@ function formatTimestamp(rawStr) {
 
     return str;
 }
-
 
 /* -------------------------------------------------------------
    🔒 히든 패 분석기 트리거
@@ -319,7 +288,7 @@ function initTitleClickTrigger() {
                     analyzer.style.display = 'block';
                     pickRandomNextSuit();
                     updateCustomHandDisplay();
-                    alert('🔓 히든 패 분석기 모드가 활성화되었습니다!');
+                    alert('🔓 Hidden Analyzer Mode Enabled');
                 } else {
                     analyzer.style.display = 'none';
                 }
@@ -331,7 +300,7 @@ function initTitleClickTrigger() {
 }
 
 /* -------------------------------------------------------------
-   히든 분석기 및 퀴즈 로직 (이전 버전 동일)
+   히든 분석기 및 퀴즈 로직
 ------------------------------------------------------------- */
 function pickRandomNextSuit() {
     const available = SUITS.filter(s => s.code !== customSuitCode);
@@ -354,12 +323,12 @@ function renderCustomButtons() {
 
 function addCustomTile(num) {
     if (customHand.length >= 13) {
-        alert('패는 최대 13장까지 선택할 수 있습니다.');
+        alert('Max 13 tiles');
         return;
     }
     const count = customHand.filter(x => x === num).length;
     if (count >= 4) {
-        alert(`동일한 패(${num})는 최대 4장까지만 추가할 수 있습니다.`);
+        alert(`Max 4 tiles for (${num})`);
         return;
     }
 
@@ -371,7 +340,7 @@ function addCustomTile(num) {
 function applyCustomTextInput() {
     const input = document.getElementById('custom-text-input').value.trim();
     if (!/^[1-9]{1,13}$/.test(input)) {
-        alert('1~9 범위의 숫자만 최대 13자리 입력해 주세요.');
+        alert('Enter 1-9 digits (max 13)');
         return;
     }
 
@@ -381,7 +350,7 @@ function applyCustomTextInput() {
         let n = parseInt(char);
         counts[n]++;
         if (counts[n] > 4) {
-            alert(`동일한 숫자(${n})가 4장을 초과할 수 없습니다.`);
+            alert(`Max 4 tiles for (${n})`);
             return;
         }
         newHand.push(n);
@@ -397,7 +366,7 @@ async function updateCustomHandDisplay() {
     container.innerHTML = '';
 
     if (customHand.length === 0) {
-        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.</span>`;
+        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">Select 1~9 tiles or enter numbers.</span>`;
         return;
     }
 
@@ -407,7 +376,7 @@ async function updateCustomHandDisplay() {
         img.src = await getTileImageSrc(customSuitCode, num);
         img.className = 'tile-img';
         img.style.cursor = 'pointer';
-        img.title = '클릭하면 삭제됩니다';
+        img.title = 'Click to remove';
         img.onclick = () => removeCustomTile(i);
         container.appendChild(img);
     }
@@ -428,7 +397,7 @@ function clearCustomHand() {
 
 function analyzeCustomHand() {
     if (customHand.length !== 13) {
-        alert(`패는 정확히 13장이어야 계산이 가능합니다. (현재: ${customHand.length}장)`);
+        alert(`Hand must contain 13 tiles. (Current: ${customHand.length})`);
         return;
     }
 
@@ -452,20 +421,20 @@ function analyzeCustomHand() {
     isRyanpeikouHand = resultData.isRyanpeikou;
     currentMode = 'hard'; 
 
-    let actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '노텐 (대기패 없음)';
+    let actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '-';
     let tagNotice = '';
     if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">💡 량페코(兩盃口) 형태가 포함된 손패입니다.</div><br>`;
+        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('ryanpeikouNotice')}</div><br>`;
     } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">💡 치또이즈(七対子) 형태의 단기대기 손패입니다.</div><br>`;
+        tagNotice = `<div class="special-tag chiitoi-tag">${t('chiitoiNotice')}</div><br>`;
     }
 
     let htmlStr = '';
     if (maxedOutWinningTiles.length > 0) {
         const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        htmlStr = `${tagNotice}<b>실제 대기패:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>이론상 대기패:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 4장 사용 중으로 화료 불가)</small>`;
+        htmlStr = `${tagNotice}<b>${t('actualWaits')}:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>${t('theoreticalWaits')}:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
     } else {
-        htmlStr = `${tagNotice}<b>실제 대기패:</b> [ ${actualStr} ]`;
+        htmlStr = `${tagNotice}<b>${t('actualWaits')}:</b> [ ${actualStr} ]`;
     }
 
     if (winningTiles.length > 0 || maxedOutWinningTiles.length > 0) {
@@ -529,7 +498,7 @@ function updateModeUI() {
     if (activeBtn) activeBtn.classList.add('active');
 
     const infoBox = document.getElementById('mode-info-box');
-    infoBox.innerHTML = MODE_DESCRIPTIONS[currentMode] || '';
+    infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
     infoBox.style.display = 'block';
 
     if (currentMode === 'streak') {
@@ -594,14 +563,14 @@ function generateQuiz() {
     const timerGaugeContainer = document.getElementById('timer-gauge-container');
 
     if (currentMode === 'easy') {
-        hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
+        hintElem.innerText = t('hintEasy', { count: winningTiles.length });
         hintElem.style.display = 'inline-block';
     } else {
         hintElem.style.display = 'none';
     }
 
     if (currentMode === 'streak') {
-        streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
+        streakElem.innerText = t('streakCount', { count: streakCount });
         streakElem.style.display = 'inline-block';
         timerElem.style.display = 'inline-block';
         timerGaugeContainer.style.display = 'block';
@@ -613,7 +582,7 @@ function generateQuiz() {
     }
 
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = '제출 및 정답 확인';
+    submitBtn.innerText = t('btnSubmit');
     submitBtn.style.backgroundColor = '#2980b9';
 
     document.getElementById('quiz-area').style.display = 'block';
@@ -636,18 +605,18 @@ function startTimer() {
 }
 
 function updateTimerDisplay() {
-    document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
+    document.getElementById('timer-display').innerText = t('timerSeconds', { count: timeLeft });
     const percentage = Math.max(0, (timeLeft / 60) * 100);
     document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
 }
 
 function getWaitTypeBadgeHtml(waitType) {
     switch(waitType) {
-        case '양면': return `<span class="wait-type-badge badge-ryanmen">양면 대기</span>`;
-        case '단기': return `<span class="wait-type-badge badge-tanki">단기 대기</span>`;
-        case '샤보': return `<span class="wait-type-badge badge-shanpon">샤보 대기</span>`;
-        case '간짱': return `<span class="wait-type-badge badge-kanchan">간짱 대기</span>`;
-        case '변짱': return `<span class="wait-type-badge badge-penchan">변짱 대기</span>`;
+        case '양면': return `<span class="wait-type-badge badge-ryanmen">${t('waitRyanmen')}</span>`;
+        case '단기': return `<span class="wait-type-badge badge-tanki">${t('waitTanki')}</span>`;
+        case '샤보': return `<span class="wait-type-badge badge-shanpon">${t('waitShanpon')}</span>`;
+        case '간짱': return `<span class="wait-type-badge badge-kanchan">${t('waitKanchan')}</span>`;
+        case '변짱': return `<span class="wait-type-badge badge-penchan">${t('waitPenchan')}</span>`;
         default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
     }
 }
@@ -722,7 +691,7 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
                 let noteStr = '';
                 if (st1Is4Count || st2Is4Count) {
                     const overTiles = [st1Is4Count ? st1 : null, st2Is4Count ? st2 : null].filter(Boolean);
-                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">(※ ${overTiles.join(', ')}번 패는 4장 이미 소지하여 화료 불가)</span>`;
+                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">${t('maxedNotice', { tiles: overTiles.join(', ') })}</span>`;
                 }
 
                 const remainingTriplets = d.triplets.filter(tr => tr !== p && tr !== t).sort().join('_');
@@ -793,7 +762,7 @@ function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
     let html = `<div class="explanation-box">`;
-    html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
+    html += `<h4>${t('explanationTitle')}</h4>`;
 
     let origCounts = Array(10).fill(0);
     currentHand.forEach(n => origCounts[n]++);
@@ -809,13 +778,13 @@ function renderDecompositionExplanation() {
                 sortOrder: 3,
                 groupKey: `chiitoi_${tile}`,
                 tiles: [tile],
-                htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <span style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`
+                htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ <span style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`
             });
         });
     } else {
         const allWaitCandidates = new Set([...validWaits]);
-        for (let t = 1; t <= 9; t++) {
-            if (origCounts[t] === 4) allWaitCandidates.add(t);
+        for (let tNum = 1; tNum <= 9; tNum++) {
+            if (origCounts[tNum] === 4) allWaitCandidates.add(tNum);
         }
         const candidateWaits = [...allWaitCandidates].sort((a, b) => a - b);
 
@@ -863,19 +832,19 @@ function renderDecompositionExplanation() {
 function getAnswerString() {
     let tagNotice = '';
     if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다.</div><br>`;
+        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('ryanpeikouNotice')}</div><br>`;
     } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 단기대기 문제입니다.</div><br>`;
+        tagNotice = `<div class="special-tag chiitoi-tag">${t('chiitoiNotice')}</div><br>`;
     }
 
-    const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
+    const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '-';
     let baseText = '';
 
     if (maxedOutWinningTiles.length > 0) {
         const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        baseText = `${tagNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+        baseText = `${tagNotice}${t('actualWaits')}: [ ${actualStr} ] &nbsp;|&nbsp; ${t('theoreticalWaits')}: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
     } else {
-        baseText = `${tagNotice}오름패: [ ${actualStr} ]`;
+        baseText = `${tagNotice}${t('actualWaits')}: [ ${actualStr} ]`;
     }
 
     if (currentMode !== 'streak') {
@@ -890,12 +859,12 @@ function handleTimeout() {
     const resultDiv = document.getElementById('result');
     resultDiv.style.display = 'block';
     resultDiv.className = 'result-message incorrect';
-    resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>👉 ${getAnswerString()}`;
+    resultDiv.innerHTML = `${t('timeout')}<br>👉 ${getAnswerString()}`;
 
     checkStreakRecordAndReset();
 
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = '새 문제 제출';
+    submitBtn.innerText = t('btnNextSame');
     submitBtn.style.backgroundColor = '#8e44ad';
 }
 
@@ -1138,20 +1107,20 @@ function handleSubmitOrNext() {
         resultDiv.className = 'result-message correct';
         if (currentMode === 'streak') {
             streakCount++;
-            document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
-            resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!)<br>👉 ${answerText}`;
+            document.getElementById('streak-display').innerText = t('streakCount', { count: streakCount });
+            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
         } else {
-            resultDiv.innerHTML = `🎉 정답입니다!<br>👉 ${answerText}`;
+            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
         }
     } else {
         resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
+        resultDiv.innerHTML = `${t('incorrect')}<br>👉 ${answerText}`;
         if (currentMode === 'streak') checkStreakRecordAndReset();
     }
 
     isSubmitted = true;
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = currentMode === 'streak' ? '다음 연승 문제로 이동' : '같은 난이도로 새 문제 제출';
+    submitBtn.innerText = currentMode === 'streak' ? t('btnNextStreak') : t('btnNextSame');
     submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
 }
 
@@ -1170,7 +1139,7 @@ function escapeHtml(text) {
 
 function copyCurrentQuizToCustom() {
     if (!currentHand || currentHand.length !== 13) {
-        alert('현재 생성된 문제가 없습니다.');
+        alert('No quiz data');
         return;
     }
     customHand = [...currentHand];
