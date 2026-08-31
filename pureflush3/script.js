@@ -1,874 +1,586 @@
 /* =============================================================
-   📌 (Last Updated: 2026-08-30)
+   📌 (Last Updated: 2026-08-31)
    ============================================================= */
-const APP_VERSION = "0.3.5";
+const APP_VERSION = "0.4.0";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
-let zipInstance = null;
-const tileSvgCache = {};
-
-const SUITS = [
-    { code: 'Man', name: '만자패' },
-    { code: 'Pin', name: '통자패' },
-    { code: 'Sou', name: '삭자패' }
-];
-
-let currentSuitObj = null;
-let currentHand = [];
-let winningTiles = [];
-let maxedOutWinningTiles = [];
-let winningDecompositions = {}; 
-let isChiitoiHand = false;     
-let isRyanpeikouHand = false; 
-let selectedTiles = new Set();
-
-let currentMode = 'normal';
+// ==========================================
+// 1. 전역 상태 및 자원 변수
+// ==========================================
+let tileImages = {}; // 1~9삭 이미지 블롭 저장
+let currentMode = 'easy'; // easy, normal, hard, streak
+let currentHand = []; // 현재 13장 손패 (숫자 배열)
+let winningTiles = []; // 정답 대기패 목록
+let maxedOutWinningTiles = []; // 손패에 4장 들어있어 오를 수 없는 이론상 대기패
 let isSubmitted = false;
+let isRyanpeikouHand = false; // 량페코 포함 여부
+let isChiitoiHand = false; // 치또이즈 포함 여부
 
+// 연승 모드 관련 변수
 let streakCount = 0;
-let timerInterval = null;
+let streakTimer = null;
 let timeLeft = 60;
-let pendingRecordStreak = 0;
 
-// 🔒 히든 모드 변수
-let titleClickCount = 0;
-let titleClickTimer = null;
-let customHand = [];
-let customSuitCode = 'Man';
-
-const MODE_DESCRIPTIONS = {
-    easy: `📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱) 및 세부 분해 해설을 제공합니다.`,
-    normal: `📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다만, 3개 이상의 오름패인 경우도 있습니다.<br>• 제출 후 대기 유형(양면, 단기, 샤보, 간짱, 변짱)과 세부 분해 해설을 제공줍니다.`,
-    hard: `📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다면대기가 만드는 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.`,
-    streak: `📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 숙련자를 위한 모드로 <b>별도의 패 분해 해설이 제공되지 않고</b> 빠른 진행을 지원합니다.`
-};
-
+// ==========================================
+// 2. 초기화 및 리소스 로딩 (ZIP 파일 해제)
+// ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
+    // 저장된 언어 설정 불러오기 및 드롭다운 초기화
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+        langSelect.value = currentLang;
+    }
+    applyTranslations();
+
     loadLeaderboard(); 
     initTitleClickTrigger();
     renderCustomButtons();
     
-    window.addEventListener('keydown', (e) => {
-        if (document.activeElement.tagName === 'INPUT') return;
-        if (e.key >= '1' && e.key <= '9') {
-            if (isSubmitted) return; 
-            const num = parseInt(e.key);
-            const btn = document.getElementById(`btn-num-${num}`);
-            if (btn) toggleSelect(num, btn);
-        } else if (e.key === 'Enter') {
-            handleSubmitOrNext();
-        }
-    });
-
     try {
         const response = await fetch('Regular.zip');
-        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
+        if (!response.ok) throw new Error('ZIP 파일을 찾을 수 없습니다.');
         
-        const arrayBuffer = await response.arrayBuffer();
-        zipInstance = await JSZip.loadAsync(arrayBuffer);
+        const blob = await response.blob();
+        const zip = await JSZip.loadAsync(blob);
         
-        document.getElementById('status-msg').style.color = '#27ae60';
-        document.getElementById('status-msg').innerText = '✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.';
+        // s1.png ~ s9.png 읽어오기
+        for (let i = 1; i <= 9; i++) {
+            const fileName = `s${i}.png`;
+            const file = zip.file(fileName);
+            if (file) {
+                const imgBlob = await file.async('blob');
+                tileImages[i] = URL.createObjectURL(imgBlob);
+            } else {
+                console.warn(`${fileName} 이 zip 파일 내에 없습니다.`);
+            }
+        }
         
-        document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
+        const statusMsg = document.getElementById('status-msg');
+        if (statusMsg) {
+            statusMsg.style.color = '#27ae60';
+            statusMsg.innerText = t('loadingSuccess');
+        }
+
+        // 난이도 버튼 활성화
+        ['btn-mode-easy', 'btn-mode-normal', 'btn-mode-hard', 'btn-mode-streak'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.disabled = false;
+        });
+
+        // 기본 모드로 게임 시작
+        selectMode('easy');
+
     } catch (err) {
-        document.getElementById('status-msg').style.color = '#e74c3c';
-        document.getElementById('status-msg').innerText = '❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 Regular.zip이 있는지 확인해주세요.';
         console.error(err);
+        const statusMsg = document.getElementById('status-msg');
+        if (statusMsg) {
+            statusMsg.style.color = '#e74c3c';
+            statusMsg.innerText = t('loadingError');
+        }
     }
 });
 
+// 키보드 단축키 처리 (1~9: 숫자 체크, Enter: 제출/다음)
+document.addEventListener('keydown', (e) => {
+    if (e.key >= '1' && e.key <= '9') {
+        const num = parseInt(e.key);
+        const checkbox = document.getElementById(`chk-tile-${num}`);
+        if (checkbox && !checkbox.disabled) {
+            checkbox.checked = !checkbox.checked;
+            toggleTileBtnStyle(num, checkbox.checked);
+        }
+    } else if (e.key === 'Enter') {
+        const streakModal = document.getElementById('streak-start-modal');
+        const hofModal = document.getElementById('hof-input-modal');
+        
+        if (streakModal && streakModal.style.display === 'flex') {
+            confirmStartStreak();
+        } else if (hofModal && hofModal.style.display === 'flex') {
+            submitHallOfFame();
+        } else {
+            handleSubmitOrNext();
+        }
+    }
+});
 
 // ==========================================
-// Google Apps Script API 설정
+// 3. 모드 선택 및 UI 갱신
 // ==========================================
-const GAS_CONFIG = {
-    // 1. 배포된 Google Apps Script Web App URL
-    apiUrl: "https://script.google.com/macros/s/AKfycbw7IDyRIqGfps_5Yw7az-9_vPXajFKR-rZaCHpFeBA3sVsnExFFmK70cfxr_Der58RJvA/exec",
-    // 2. Apps Script의 SECRET_KEY와 동일하게 유지
-    secretKey: "Mahjong_Quiz_Secret_Key_2026",
-    // 3. 구글 시트 웹 게시 CSV URL
-    csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnJU4yDCDyeZZCmpkbogFP62WF_AcmsitYv6YBufHxY2qafrzmqXjvOHUrAsGp0sjeK-FBAptasrpq/pub?gid=1559316332&single=true&output=csv"
-};
-
-/* -------------------------------------------------------------
-   📊 HMAC 서명 생성 및 Apps Script 기록 저장 (Write)
-------------------------------------------------------------- */
-function saveRecord() {
-    const inputElem = document.getElementById('player-name-input');
-    const saveBtn = document.getElementById('btn-save-record');
-    let playerName = inputElem.value.trim();
-    
-    if (!playerName) {
-        playerName = 'Anonymous';
-    }
-
-    saveBtn.disabled = true;
-    saveBtn.innerText = '검증 및 등록 중...';
-
-    const timestamp = Date.now();
-    const streak = pendingRecordStreak;
-
-    // HMAC 서명 검증 키 생성: Name_Streak_Timestamp
-    const rawMessage = `${playerName}_${streak}_${timestamp}`;
-    const signature = CryptoJS.HmacSHA256(rawMessage, GAS_CONFIG.secretKey).toString(CryptoJS.enc.Hex);
-
-    const payload = {
-        name: playerName,
-        streak: streak,
-        timestamp: timestamp,
-        signature: signature
-    };
-
-    // Google Apps Script Web App으로 JSON 데이터 전송
-    fetch(GAS_CONFIG.apiUrl, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8' // GAS CORS 회피 표준 설정
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.result === 'success') {
-            alert(`🎉 ${playerName} 님의 ${streak}연승 기록이 검증을 통과하여 명예의 전당에 등록되었습니다!`);
-            document.getElementById('name-input-container').style.display = 'none';
-            inputElem.value = '';
-            setTimeout(loadLeaderboard, 1500);
-        } else {
-            alert(`⚠️ 등록 실패: ${data.message || '인증 오류가 발생했습니다.'}`);
-        }
-    })
-    .catch(err => {
-        alert('기록 저장 도중 네트워크 오류가 발생했습니다.');
-        console.error(err);
-    })
-    .finally(() => {
-        saveBtn.disabled = false;
-        saveBtn.innerText = '기록 등록';
-    });
-}
-
-/* -------------------------------------------------------------
-   📊 구글 시트 실시간 리더보드 조회 (Read)
-------------------------------------------------------------- */
-function loadLeaderboard() {
-    if (!GAS_CONFIG.csvUrl || GAS_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
-        document.getElementById('record-list-ul').innerHTML = 
-            '<li style="text-align:center; padding:10px; color:#e74c3c;">구글 시트 CSV URL 설정이 필요합니다.</li>';
-        return;
-    }
-
-    const fetchUrl = `${GAS_CONFIG.csvUrl}&t=${Date.now()}`;
-
-    Papa.parse(fetchUrl, {
-        download: true,
-        header: false,
-        skipEmptyLines: true,
-        complete: function(results) {
-            const rows = results.data;
-            console.log("📌 CSV 파싱 원본 데이터:", rows); // 디버깅용 로그
-            
-            // 동일 사용자/날짜의 최고 기록만 저장할 Map
-            const userRecordsMap = new Map();
-
-            rows.forEach((row, index) => {
-                // 데이터 유효성 검사 (최소 3개 컬럼 필요)
-                if (!row || row.length < 3) return;
-
-                let rawTimestamp = String(row[0] || '').trim();
-                let name = String(row[1] || '').trim();
-                let streak = parseInt(row[2], 10);
-
-                // 헤더 행 및 잘못된 데이터 필터링
-                if (
-                    rawTimestamp.includes('타임스탬프') || 
-                    rawTimestamp.includes('Timestamp') || 
-                    name.includes('Name') || 
-                    isNaN(streak)
-                ) {
-                    return;
-                }
-
-                // 이름 기본값 처리
-                if (!name) name = 'Anonymous';
-
-                // 10연승 이상인 기록만 처리
-                if (streak >= 10) {
-                    const formattedDate = formatTimestamp(rawTimestamp);
-                    
-                    // 💡 중복 제거용 날짜 키 추출 (YYYY-MM-DD 부분만 잘라내어 같은 날짜 중복 방지)
-                    const dateOnly = formattedDate.split(' ')[0] || formattedDate;
-                    const uniqueKey = `${name}_${dateOnly}`;
-                    
-                    // 해당 날짜에 동일 인물의 더 높은 연승 기록이 있을 때만 갱신
-                    if (userRecordsMap.has(uniqueKey)) {
-                        if (streak > userRecordsMap.get(uniqueKey).streak) {
-                            userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
-                        }
-                    } else {
-                        userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
-                    }
-                }
-            });
-
-            // Map을 배열로 변환 후 연승 수 기준 내림차순 정렬
-            let parsedRecords = Array.from(userRecordsMap.values());
-            parsedRecords.sort((a, b) => b.streak - a.streak);
-
-            console.log("📌 정제 및 중복 제거 완료된 기록:", parsedRecords); // 디버깅용 로그
-
-            const top10 = parsedRecords.slice(0, 10);
-            const ul = document.getElementById('record-list-ul');
-            ul.innerHTML = '';
-
-            if (top10.length === 0) {
-                ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">등록된 기록이 없습니다. 10연승에 도전해보세요!</li>';
-                return;
-            }
-
-            top10.forEach((rec, idx) => {
-                const li = document.createElement('li');
-                li.className = 'record-item';
-                li.innerHTML = `
-                    <span class="record-rank">${idx + 1}위</span>
-                    <span class="record-name">${escapeHtml(rec.name)}</span>
-                    <span class="record-score">${rec.streak}연승</span>
-                    <span class="record-date" style="font-size: 11px; color: #888; white-space: nowrap;">${rec.date}</span>
-                `;
-                ul.appendChild(li);
-            });
-        },
-        error: function(err) {
-            console.error("리더보드 불러오기 오류:", err);
-            document.getElementById('record-list-ul').innerHTML = 
-                '<li style="text-align:center; padding: 10px; color:#7f8c8d;">리더보드를 불러오는 데 실패했습니다.</li>';
-        }
-    });
-}
-
-
-
-function formatTimestamp(rawStr) {
-    if (!rawStr) return '-';
-
-    let str = String(rawStr).trim();
-
-    try {
-        let isPM = str.includes('오후');
-        let cleaned = str.replace(/(오전|오후)/g, '').trim();
-        let parts = cleaned.split(/[\s.:-]+/).filter(Boolean);
-
-        if (parts.length >= 3) {
-            let year = parts[0];
-            let month = String(parts[1]).padStart(2, '0');
-            let day = String(parts[2]).padStart(2, '0');
-            let hour = parseInt(parts[3] || '0', 10);
-            let min = String(parts[4] || '0').padStart(2, '0');
-            let sec = String(parts[5] || '0').padStart(2, '0');
-
-            if (isPM && hour < 12) hour += 12;
-            if (!isPM && hour === 12) hour = 0;
-
-            let hourStr = String(hour).padStart(2, '0');
-
-            return `${year}-${month}-${day} ${hourStr}:${min}:${sec}`;
-        }
-    } catch (e) {
-        console.warn("Timestamp parsing error:", e);
-    }
-
-    return str;
-}
-
-
-/* -------------------------------------------------------------
-   🔒 히든 패 분석기 트리거
-------------------------------------------------------------- */
-function isWrappedEnvironment() {
-    return Boolean(
-        window.__IS_WRAPPED__ === true ||
-        window.location.href.includes('wrapped=true') ||
-        Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
-    );
-}
-
-function initTitleClickTrigger() {
-    const mainTitle = document.getElementById('title-icon');
-    if (!mainTitle) return;
-
-    mainTitle.addEventListener('click', () => {
-        if (!isWrappedEnvironment()) return;
-
-        titleClickCount++;
-        clearTimeout(titleClickTimer);
-
-        if (titleClickCount >= 5) {
-            titleClickCount = 0;
-            const analyzer = document.getElementById('hidden-analyzer');
-            if (analyzer) {
-                if (analyzer.style.display === 'none' || analyzer.style.display === '') {
-                    analyzer.style.display = 'block';
-                    pickRandomNextSuit();
-                    updateCustomHandDisplay();
-                    alert('🔓 히든 패 분석기 모드가 활성화되었습니다!');
-                } else {
-                    analyzer.style.display = 'none';
-                }
-            }
-        } else {
-            titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 2000);
-        }
-    });
-}
-
-/* -------------------------------------------------------------
-   히든 분석기 및 퀴즈 로직 (이전 버전 동일)
-------------------------------------------------------------- */
-function pickRandomNextSuit() {
-    const available = SUITS.filter(s => s.code !== customSuitCode);
-    const chosen = available[Math.floor(Math.random() * available.length)];
-    customSuitCode = chosen.code;
-}
-
-function renderCustomButtons() {
-    const grid = document.getElementById('custom-tile-buttons');
-    if (!grid) return;
-    grid.innerHTML = '';
-    for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'btn-number';
-        btn.innerText = `${i}`;
-        btn.onclick = () => addCustomTile(i);
-        grid.appendChild(btn);
-    }
-}
-
-function addCustomTile(num) {
-    if (customHand.length >= 13) {
-        alert('패는 최대 13장까지 선택할 수 있습니다.');
-        return;
-    }
-    const count = customHand.filter(x => x === num).length;
-    if (count >= 4) {
-        alert(`동일한 패(${num})는 최대 4장까지만 추가할 수 있습니다.`);
-        return;
-    }
-
-    customHand.push(num);
-    customHand.sort((a, b) => a - b);
-    updateCustomHandDisplay();
-}
-
-function applyCustomTextInput() {
-    const input = document.getElementById('custom-text-input').value.trim();
-    if (!/^[1-9]{1,13}$/.test(input)) {
-        alert('1~9 범위의 숫자만 최대 13자리 입력해 주세요.');
-        return;
-    }
-
-    let counts = Array(10).fill(0);
-    let newHand = [];
-    for (let char of input) {
-        let n = parseInt(char);
-        counts[n]++;
-        if (counts[n] > 4) {
-            alert(`동일한 숫자(${n})가 4장을 초과할 수 없습니다.`);
-            return;
-        }
-        newHand.push(n);
-    }
-
-    pickRandomNextSuit();
-    customHand = newHand.sort((a, b) => a - b);
-    updateCustomHandDisplay();
-}
-
-async function updateCustomHandDisplay() {
-    const container = document.getElementById('custom-hand-container');
-    container.innerHTML = '';
-
-    if (customHand.length === 0) {
-        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.</span>`;
-        return;
-    }
-
-    for (let i = 0; i < customHand.length; i++) {
-        const num = customHand[i];
-        const img = document.createElement('img');
-        img.src = await getTileImageSrc(customSuitCode, num);
-        img.className = 'tile-img';
-        img.style.cursor = 'pointer';
-        img.title = '클릭하면 삭제됩니다';
-        img.onclick = () => removeCustomTile(i);
-        container.appendChild(img);
-    }
-}
-
-function removeCustomTile(index) {
-    customHand.splice(index, 1);
-    updateCustomHandDisplay();
-}
-
-function clearCustomHand() {
-    customHand = [];
-    document.getElementById('custom-text-input').value = '';
-    document.getElementById('custom-result').style.display = 'none';
-    pickRandomNextSuit();
-    updateCustomHandDisplay();
-}
-
-function analyzeCustomHand() {
-    if (customHand.length !== 13) {
-        alert(`패는 정확히 13장이어야 계산이 가능합니다. (현재: ${customHand.length}장)`);
-        return;
-    }
-
-    const resultData = getWinningTiles(customHand);
-    const resultDiv = document.getElementById('custom-result');
-    resultDiv.style.display = 'block';
-
-    const savedHand = [...currentHand];
-    const savedWaits = [...winningTiles];
-    const savedMaxed = [...maxedOutWinningTiles];
-    const savedDecomps = { ...winningDecompositions };
-    const savedChiitoi = isChiitoiHand;
-    const savedRyan = isRyanpeikouHand;
-    const savedMode = currentMode;
-
-    currentHand = [...customHand];
-    winningTiles = resultData.waits;
-    maxedOutWinningTiles = resultData.maxedOut;
-    winningDecompositions = resultData.decomps;
-    isChiitoiHand = resultData.isChiitoi;
-    isRyanpeikouHand = resultData.isRyanpeikou;
-    currentMode = 'hard'; 
-
-    let actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '노텐 (대기패 없음)';
-    let tagNotice = '';
-    if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">💡 량페코(兩盃口) 형태가 포함된 손패입니다.</div><br>`;
-    } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">💡 치또이즈(七対子) 형태의 단기대기 손패입니다.</div><br>`;
-    }
-
-    let htmlStr = '';
-    if (maxedOutWinningTiles.length > 0) {
-        const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        htmlStr = `${tagNotice}<b>실제 대기패:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>이론상 대기패:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 4장 사용 중으로 화료 불가)</small>`;
-    } else {
-        htmlStr = `${tagNotice}<b>실제 대기패:</b> [ ${actualStr} ]`;
-    }
-
-    if (winningTiles.length > 0 || maxedOutWinningTiles.length > 0) {
-        htmlStr += renderDecompositionExplanation();
-        resultDiv.className = 'result-message correct';
-    } else {
-        resultDiv.className = 'result-message incorrect';
-    }
-
-    resultDiv.innerHTML = htmlStr;
-
-    currentHand = savedHand;
-    winningTiles = savedWaits;
-    maxedOutWinningTiles = savedMaxed;
-    winningDecompositions = savedDecomps;
-    isChiitoiHand = savedChiitoi;
-    isRyanpeikouHand = savedRyan;
-    currentMode = savedMode;
-}
-
-async function getTileImageSrc(suitCode, num) {
-    const targetName = `${suitCode}${num}.svg`;
-    const cacheKey = `${suitCode}${num}`;
-    if (tileSvgCache[cacheKey]) return tileSvgCache[cacheKey];
-
-    let targetFile = null;
-    zipInstance.forEach((relativePath, file) => {
-        if (relativePath.endsWith(targetName)) targetFile = file;
-    });
-
-    if (targetFile) {
-        const text = await targetFile.async('string');
-        const blob = new Blob([text], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        tileSvgCache[cacheKey] = url;
-        return url;
-    }
-    return '';
-}
-
 function selectMode(mode) {
-    if (currentMode !== mode) streakCount = 0;
-    currentMode = mode;
+    if (mode === 'streak' && currentMode !== 'streak') {
+        showStreakStartModal();
+        return;
+    }
 
-    if (mode === 'streak' && !sessionStorage.getItem('streak_notice_shown')) {
-        document.getElementById('streak-modal').style.display = 'flex';
-    } else {
+    currentMode = mode;
+    
+    // 버튼 스타일 active 처리
+    ['easy', 'normal', 'hard', 'streak'].forEach(m => {
+        const btn = document.getElementById(`btn-mode-${m}`);
+        if (btn) {
+            if (m === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+    });
+
+    updateModeUI();
+
+    if (mode !== 'streak') {
+        stopStreakTimer();
+        streakCount = 0;
         generateQuiz();
     }
 }
 
-function startStreakModeAfterNotice() {
-    sessionStorage.setItem('streak_notice_shown', 'true');
-    document.getElementById('streak-modal').style.display = 'none';
-    generateQuiz();
-}
-
 function updateModeUI() {
-    document.querySelectorAll('.btn-diff').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
-    if (activeBtn) activeBtn.classList.add('active');
-
     const infoBox = document.getElementById('mode-info-box');
-    infoBox.innerHTML = MODE_DESCRIPTIONS[currentMode] || '';
-    infoBox.style.display = 'block';
-
-    if (currentMode === 'streak') {
-        infoBox.style.backgroundColor = '#f5ee2e15';
-        infoBox.style.borderColor = '#8e44ad';
-        infoBox.style.color = '#4a235a';
-    } else {
-        infoBox.style.backgroundColor = '#f8f9fa';
-        infoBox.style.borderColor = '#ced4da';
-        infoBox.style.color = '#2c3e50';
-    }
-}
-
-function generateQuiz() {
-    clearInterval(timerInterval);
-    isSubmitted = false;
-
-    updateModeUI();
-
-    let availableSuits = SUITS;
-    if (currentSuitObj) {
-        availableSuits = SUITS.filter(suit => suit.code !== currentSuitObj.code);
-    }
-    currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
-
-    let targetDifficulty = currentMode;
-    if (currentMode === 'streak') {
-        targetDifficulty = Math.random() < 0.2 ? 'normal' : 'hard';
+    if (infoBox) {
+        infoBox.innerHTML = TRANSLATIONS[currentLang]?.descriptions[currentMode] || '';
+        infoBox.style.display = 'block';
     }
 
-    let hand = [];
-    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: false };
-
-    while (true) {
-        hand = generateRandom13Tiles();
-        resultData = getWinningTiles(hand);
-        const count = resultData.waits.length;
-
-        if (targetDifficulty === 'easy') {
-            if (count >= 1 && count <= 2) break;
-        } else if (targetDifficulty === 'normal') {
-            if (count >= 2 && count <= 4) break;
-        } else if (targetDifficulty === 'hard') {
-            if (count >= 3 && count <= 9) break;
-            if (count === 2 && Math.random() < 0.05) break; 
-        }
-    }
-
-    currentHand = hand;
-    winningTiles = resultData.waits;
-    maxedOutWinningTiles = resultData.maxedOut;
-    winningDecompositions = resultData.decomps;
-    isChiitoiHand = resultData.isChiitoi;
-    isRyanpeikouHand = resultData.isRyanpeikou;
-
-    renderHand();
-    renderButtons();
-    
-    const hintElem = document.getElementById('easy-hint');
-    const streakElem = document.getElementById('streak-display');
+    const streakCountElem = document.getElementById('streak-count-display');
     const timerElem = document.getElementById('timer-display');
-    const timerGaugeContainer = document.getElementById('timer-gauge-container');
-
-    if (currentMode === 'easy') {
-        hintElem.innerText = `💡 힌트: 총 ${winningTiles.length}개의 오름패가 있습니다.`;
-        hintElem.style.display = 'inline-block';
-    } else {
-        hintElem.style.display = 'none';
-    }
 
     if (currentMode === 'streak') {
-        streakElem.innerText = `🔥 현재 ${streakCount}연승 중`;
-        streakElem.style.display = 'inline-block';
-        timerElem.style.display = 'inline-block';
-        timerGaugeContainer.style.display = 'block';
-        startTimer();
+        if (streakCountElem) {
+            streakCountElem.style.display = 'inline-block';
+            streakCountElem.innerText = t('streakCount', { count: streakCount });
+        }
+        if (timerElem) {
+            timerElem.style.display = 'inline-block';
+            updateTimerDisplay();
+        }
     } else {
-        streakElem.style.display = 'none';
-        timerElem.style.display = 'none';
-        timerGaugeContainer.style.display = 'none';
+        if (streakCountElem) streakCountElem.style.display = 'none';
+        if (timerElem) timerElem.style.display = 'none';
     }
-
-    const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = '제출 및 정답 확인';
-    submitBtn.style.backgroundColor = '#2980b9';
-
-    document.getElementById('quiz-area').style.display = 'block';
-    document.getElementById('result').style.display = 'none';
-    document.getElementById('name-input-container').style.display = 'none';
-    selectedTiles.clear();
 }
 
-function startTimer() {
+// ==========================================
+// 4. 연승 모드 타이머 및 모달 처리
+// ==========================================
+function showStreakStartModal() {
+    const modal = document.getElementById('streak-start-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function confirmStartStreak() {
+    const modal = document.getElementById('streak-start-modal');
+    if (modal) modal.style.display = 'none';
+
+    currentMode = 'streak';
+    ['easy', 'normal', 'hard', 'streak'].forEach(m => {
+        const btn = document.getElementById(`btn-mode-${m}`);
+        if (btn) {
+            if (m === 'streak') btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+    });
+
+    streakCount = 0;
+    updateModeUI();
+    generateQuiz();
+    startStreakTimer();
+}
+
+function startStreakTimer() {
+    stopStreakTimer();
     timeLeft = 60;
     updateTimerDisplay();
-    timerInterval = setInterval(() => {
+
+    streakTimer = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
+
         if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            handleTimeout();
+            stopStreakTimer();
+            handleStreakTimeout();
         }
     }, 1000);
 }
 
+function stopStreakTimer() {
+    if (streakTimer) {
+        clearInterval(streakTimer);
+        streakTimer = null;
+    }
+}
+
 function updateTimerDisplay() {
-    document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}초`;
-    const percentage = Math.max(0, (timeLeft / 60) * 100);
-    document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
-}
-
-function getWaitTypeBadgeHtml(waitType) {
-    switch(waitType) {
-        case '양면': return `<span class="wait-type-badge badge-ryanmen">양면 대기</span>`;
-        case '단기': return `<span class="wait-type-badge badge-tanki">단기 대기</span>`;
-        case '샤보': return `<span class="wait-type-badge badge-shanpon">샤보 대기</span>`;
-        case '간짱': return `<span class="wait-type-badge badge-kanchan">간짱 대기</span>`;
-        case '변짱': return `<span class="wait-type-badge badge-penchan">변짱 대기</span>`;
-        default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
+    const timerElem = document.getElementById('timer-display');
+    if (timerElem) {
+        timerElem.innerText = t('timerSeconds', { count: timeLeft });
     }
 }
 
-function getRyanmenExplanationItems(d, validWaitsSet) {
-    const w1 = d.targetMeldStart - 1;
-    const w2 = d.targetMeldStart + 2;
-    const w1Valid = validWaitsSet.has(w1);
-    const w2Valid = validWaitsSet.has(w2);
+function handleStreakTimeout() {
+    isSubmitted = true;
+    disableAnswerInputs();
 
-    const waitTiles = [w1, w2].filter(x => validWaitsSet.has(x)).sort((a, b) => a - b);
-    if (waitTiles.length < 2) return null;
+    const resultDiv = document.getElementById('result-message');
+    if (resultDiv) {
+        resultDiv.className = 'result-message incorrect';
+        resultDiv.innerHTML = `${t('timeout')}<br>👉 ${getAnswerString()}`;
+    }
 
-    const w1Str = w1Valid ? `<span class="filled-slot">(${w1})</span>` : '';
-    const w2Str = w2Valid ? `<span class="filled-slot">(${w2})</span>` : '';
+    checkStreakHallOfFameEligibility();
 
-    let parts = [];
-    parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
-    d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
-
-    let targetMeldHandled = false;
-    d.sequences.forEach(s => {
-        if (!targetMeldHandled && s === d.targetMeldStart) {
-            let meldParts = [];
-            if (w1Str) meldParts.push(w1Str);
-            meldParts.push(s);
-            meldParts.push(s + 1);
-            if (w2Str) meldParts.push(w2Str);
-
-            parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldParts.join(', ')}]</span>`);
-            targetMeldHandled = true;
-        } else {
-            parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
-        }
-    });
-
-    const groupKey = `ryanmen_p${d.pair}_t${d.triplets.slice().sort().join(',')}_s${d.sequences.slice().sort().join(',')}_m${d.targetMeldStart}`;
-    return {
-        waitType: '양면',
-        sortOrder: 1,
-        groupKey: groupKey,
-        tiles: waitTiles,
-        partsStr: parts.join(' ')
-    };
+    const submitBtn = document.getElementById('btn-submit');
+    if (submitBtn) submitBtn.innerText = t('btnNextStreak');
 }
 
-function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
-    let items = [];
-    const p = d.pair;
+// ==========================================
+// 5. 마작 청일색 알고리즘 엔진
+// ==========================================
+function generateQuiz() {
+    isSubmitted = false;
+    resetInputUI();
 
-    d.triplets.forEach(t => {
-        if (t === tile || p === tile) {
-            const shanponPair = [p, t].sort((a, b) => a - b);
-            const st1 = shanponPair[0];
-            const st2 = shanponPair[1];
+    let found = false;
+    let attempts = 0;
 
-            const st1Is4Count = origCounts[st1] === 4;
-            const st2Is4Count = origCounts[st2] === 4;
+    while (!found && attempts < 2000) {
+        attempts++;
+        const candidateHand = generateRandom13Tiles();
+        const rawWaits = calculateWaits(candidateHand);
 
-            if (origCounts[st1] >= 2 && origCounts[st2] >= 2) {
-                let parts = [];
-                parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st1}, ${st1}, <span class="filled-slot">(${st1})</span>]</span>`);
-                parts.push(`<span style="color:#27ae60; font-weight:bold;">[${st2}, ${st2}, <span class="filled-slot">(${st2})</span>]</span>`);
+        if (rawWaits.length === 0) continue;
 
-                d.triplets.forEach(tr => {
-                    if (tr !== p && tr !== t) {
-                        parts.push(`<span style="color:#27ae60;">[${tr},${tr},${tr}]</span>`);
-                    }
-                });
-                d.sequences.forEach(s => parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`));
+        // 손패 내 각 패의 개수 세기
+        const counts = {};
+        candidateHand.forEach(num => counts[num] = (counts[num] || 0) + 1);
 
-                let noteStr = '';
-                if (st1Is4Count || st2Is4Count) {
-                    const overTiles = [st1Is4Count ? st1 : null, st2Is4Count ? st2 : null].filter(Boolean);
-                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">(※ ${overTiles.join(', ')}번 패는 4장 이미 소지하여 화료 불가)</span>`;
-                }
+        // 실제 대기패(4장 사용 안 된 패)와 4장 다 쓴 이론상 대기패 분리
+        const validWaits = rawWaits.filter(num => (counts[num] || 0) < 4);
+        const maxedWaits = rawWaits.filter(num => (counts[num] || 0) === 4);
 
-                const remainingTriplets = d.triplets.filter(tr => tr !== p && tr !== t).sort().join('_');
-                const sortedSeqs = d.sequences.slice().sort().join('_');
-                const groupKey = `shanpon_pair_${st1}_${st2}_remT_${remainingTriplets}_seqs_${sortedSeqs}`;
+        if (validWaits.length === 0) continue;
 
-                items.push({
-                    waitType: '샤보',
-                    sortOrder: 2,
-                    groupKey: groupKey,
-                    tiles: [st1, st2],
-                    partsStr: parts.join(' ') + noteStr
-                });
+        // 특수 역 점검 (량페코 / 치또이)
+        const checkRyanpeikou = isRyanpeikou(candidateHand);
+        const checkChiitoi = isChiitoiTenpai(candidateHand);
+
+        // 난이도 필터링
+        if (currentMode === 'easy') {
+            if (validWaits.length >= 1 && validWaits.length <= 2) {
+                currentHand = candidateHand;
+                winningTiles = validWaits;
+                maxedOutWinningTiles = maxedWaits;
+                isRyanpeikouHand = checkRyanpeikou;
+                isChiitoiHand = checkChiitoi;
+                found = true;
+            }
+        } else if (currentMode === 'normal') {
+            if (validWaits.length === 2) {
+                currentHand = candidateHand;
+                winningTiles = validWaits;
+                maxedOutWinningTiles = maxedWaits;
+                isRyanpeikouHand = checkRyanpeikou;
+                isChiitoiHand = checkChiitoi;
+                found = true;
+            }
+        } else if (currentMode === 'hard' || currentMode === 'streak') {
+            if (validWaits.length >= 3) {
+                currentHand = candidateHand;
+                winningTiles = validWaits;
+                maxedOutWinningTiles = maxedWaits;
+                isRyanpeikouHand = checkRyanpeikou;
+                isChiitoiHand = checkChiitoi;
+                found = true;
             }
         }
-    });
-
-    return items;
-}
-
-function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {
-    if (!validWaitsSet.has(tile)) return null;
-
-    let parts = [];
-    if (waitType === '단기') {
-        parts.push(`<span style="color:#d35400; font-weight:bold;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`);
-    } else {
-        parts.push(`<span style="color:#d35400;">[${d.pair},${d.pair}]</span>`);
     }
 
-    d.triplets.forEach(t => parts.push(`<span style="color:#27ae60;">[${t},${t},${t}]</span>`));
+    if (!found) {
+        // 폴백 기본 텐파이 손패
+        currentHand = [1,1,1,2,3,4,5,6,7,8,9,9,9];
+        winningTiles = [1,2,3,4,5,6,7,8,9];
+        maxedOutWinningTiles = [];
+        isRyanpeikouHand = false;
+        isChiitoiHand = false;
+    }
 
-    let targetMeldHandled = false;
-    d.sequences.forEach(s => {
-        if (!targetMeldHandled && d.targetMeldStart === s && (waitType === '간짱' || waitType === '변짱')) {
-            let meldStr = [];
-            for (let i = 0; i < 3; i++) {
-                let curr = s + i;
-                if (curr === tile) {
-                    meldStr.push(`<span class="filled-slot">(${curr})</span>`);
-                } else {
-                    meldStr.push(curr);
-                }
+    renderHandTiles();
+
+    // 쉬움 모드 힌트 표시
+    const hintElem = document.getElementById('easy-mode-hint');
+    if (hintElem) {
+        if (currentMode === 'easy') {
+            hintElem.innerText = t('hintEasy', { count: winningTiles.length });
+            hintElem.style.display = 'inline-block';
+        } else {
+            hintElem.style.display = 'none';
+        }
+    }
+
+    if (currentMode === 'streak') {
+        startStreakTimer();
+    }
+}
+
+// 랜딜 13장 생성 (각 패 최대 4장 제한)
+function generateRandom13Tiles() {
+    const pool = [];
+    for (let i = 1; i <= 9; i++) {
+        for (let j = 0; j < 4; j++) pool.push(i);
+    }
+    
+    // Fisher-Yates 셔플
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    
+    return pool.slice(0, 13).sort((a, b) => a - b);
+}
+
+// 14장 완공(오름) 검사 (4멘츠 1작두 또는 치또이즈)
+function isWinningHand(tiles14) {
+    if (tiles14.length !== 14) return false;
+
+    // 1. 치또이즈 검사 (7쌍)
+    const counts = {};
+    tiles14.forEach(x => counts[x] = (counts[x] || 0) + 1);
+    const pairs = Object.values(counts).filter(c => c === 2).length;
+    if (pairs === 7) return true;
+
+    // 2. 일반 형태 검사 (4멘츠 + 1작두)
+    return checkStandardAgari(counts);
+}
+
+function checkStandardAgari(countsObj) {
+    const counts = { ...countsObj };
+    
+    // 작두(머리) 후보 선정
+    for (let i = 1; i <= 9; i++) {
+        if (counts[i] >= 2) {
+            counts[i] -= 2;
+            if (canFormMentsu(counts, 0)) return true;
+            counts[i] += 2; // 원복
+        }
+    }
+    return false;
+}
+
+function canFormMentsu(counts, MentsuCount) {
+    if (MentsuCount === 4) return true;
+
+    // 남아있는 첫 번째 패 찾기
+    let first = 0;
+    for (let i = 1; i <= 9; i++) {
+        if (counts[i] > 0) {
+            first = i;
+            break;
+        }
+    }
+    if (first === 0) return true;
+
+    // 커츠(刻子) 시도
+    if (counts[first] >= 3) {
+        counts[first] -= 3;
+        if (canFormMentsu(counts, MentsuCount + 1)) return true;
+        counts[first] += 3;
+    }
+
+    // 슌츠(順子) 시도
+    if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
+        counts[first]--;
+        counts[first + 1]--;
+        counts[first + 2]--;
+        if (canFormMentsu(counts, MentsuCount + 1)) return true;
+        counts[first]++;
+        counts[first + 1]++;
+        counts[first + 2]++;
+    }
+
+    return false;
+}
+
+// 13장 손패의 오름패 계산
+function calculateWaits(tiles13) {
+    const waits = [];
+    for (let tile = 1; tile <= 9; tile++) {
+        const testHand = [...tiles13, tile].sort((a, b) => a - b);
+        if (isWinningHand(testHand)) {
+            waits.push(tile);
+        }
+    }
+    return waits;
+}
+
+// 특수 형태 검사
+function isRyanpeikou(hand13) {
+    // 량페코는 동일한 슌츠 2쌍이 2개 존재하는 14장 형태
+    for (let t = 1; t <= 9; t++) {
+        const test = [...hand13, t].sort((a, b) => a - b);
+        if (!isWinningHand(test)) continue;
+
+        const counts = {};
+        test.forEach(x => counts[x] = (counts[x] || 0) + 1);
+
+        // 머리 후보
+        for (let head = 1; head <= 9; head++) {
+            if (counts[head] >= 2) {
+                counts[head] -= 2;
+                if (checkRyanpeikouMentsu(counts)) return true;
+                counts[head] += 2;
             }
-            parts.push(`<span style="color:#2980b9; font-weight:bold;">[${meldStr.join(',')}]</span>`);
-            targetMeldHandled = true;
-        } else {
-            parts.push(`<span style="color:#2980b9;">[${s},${s+1},${s+2}]</span>`);
         }
-    });
-
-    let sortOrder = 3; 
-    if (waitType === '간짱') sortOrder = 4;
-    if (waitType === '변짱') sortOrder = 5;
-
-    const groupKey = `${waitType}_tile${tile}_p${d.pair}_t${d.triplets.slice().sort().join(',')}_s${d.sequences.slice().sort().join(',')}_m${d.targetMeldStart}`;
-
-    return {
-        waitType: waitType,
-        sortOrder: sortOrder,
-        groupKey: groupKey,
-        tiles: [tile],
-        partsStr: parts.join(' ')
-    };
+    }
+    return false;
 }
 
-function renderDecompositionExplanation() {
-    if (currentMode === 'streak') return ''; 
+function checkRyanpeikouMentsu(countsObj) {
+    const c = { ...countsObj };
+    let shuntsuList = [];
 
-    let html = `<div class="explanation-box">`;
-    html += `<h4>🔍 대기패별 대기 유형 및 손패 구조 해설</h4>`;
-
-    let origCounts = Array(10).fill(0);
-    currentHand.forEach(n => origCounts[n]++);
-
-    const validWaits = [...winningTiles].sort((a, b) => a - b);
-    const validWaitsSet = new Set(validWaits);
-    let itemsList = [];
-
-    if (isChiitoiHand) {
-        validWaits.forEach(tile => {
-            itemsList.push({
-                waitType: '단기',
-                sortOrder: 3,
-                groupKey: `chiitoi_${tile}`,
-                tiles: [tile],
-                htmlContent: `${getWaitTypeBadgeHtml('단기')} <b>[ ${tile} ]</b> └ 치이토이츠(7쌍) 완성 형태 → <span style="color:#d35400;">[${tile}, <span class="filled-slot">(${tile})</span>]</span>`
-            });
-        });
-    } else {
-        const allWaitCandidates = new Set([...validWaits]);
-        for (let t = 1; t <= 9; t++) {
-            if (origCounts[t] === 4) allWaitCandidates.add(t);
+    for (let i = 1; i <= 7; i++) {
+        while (c[i] > 0 && c[i+1] > 0 && c[i+2] > 0) {
+            shuntsuList.push(i);
+            c[i]--; c[i+1]--; c[i+2]--;
         }
-        const candidateWaits = [...allWaitCandidates].sort((a, b) => a - b);
-
-        candidateWaits.forEach(tile => {
-            const decomps = winningDecompositions[tile] || [];
-            decomps.forEach(d => {
-                let waitType = d.waitType;
-                if (waitType === '양면') {
-                    const item = getRyanmenExplanationItems(d, validWaitsSet);
-                    if (item) itemsList.push(item);
-                } else if (waitType === '샤보') {
-                    const items = getShanponExplanationItems(d, tile, validWaitsSet, origCounts);
-                    itemsList.push(...items);
-                } else {
-                    const item = getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet);
-                    if (item) itemsList.push(item);
-                }
-            });
-        });
     }
 
-    let uniqueMap = new Map();
-    itemsList.forEach(item => {
-        if (!uniqueMap.has(item.groupKey)) uniqueMap.set(item.groupKey, item);
+    if (Object.values(c).some(val => val > 0)) return false;
+    if (shuntsuList.length !== 4) return false;
+
+    // 4개의 슌츠가 2개씩 한 쌍을 이루는지 확인
+    shuntsuList.sort((a, b) => a - b);
+    return (shuntsuList[0] === shuntsuList[1] && shuntsuList[2] === shuntsuList[3]);
+}
+
+function isChiitoiTenpai(hand13) {
+    const counts = {};
+    hand13.forEach(x => counts[x] = (counts[x] || 0) + 1);
+    const pairs = Object.values(counts).filter(c => c === 2).length;
+    const singles = Object.values(counts).filter(c => c === 1).length;
+    return (pairs === 6 && singles === 1);
+}
+
+// ==========================================
+// 6. 렌더링 및 UI 연동
+// ==========================================
+function renderHandTiles() {
+    const container = document.getElementById('hand-tiles-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    currentHand.forEach(num => {
+        const img = document.createElement('img');
+        img.src = tileImages[num] || '';
+        img.alt = `${num}삭`;
+        img.className = 'tile-img';
+        container.appendChild(img);
     });
+}
 
-    let renderItems = Array.from(uniqueMap.values());
-    renderItems.sort((a, b) => (a.sortOrder !== b.sortOrder) ? a.sortOrder - b.sortOrder : (a.tiles[0] || 0) - (b.tiles[0] || 0));
-
-    renderItems.forEach(group => {
-        const tileHeader = group.tiles.length > 1 ? `[ ${group.tiles.join(', ')} ]` : `[ ${group.tiles[0]} ]`;
-        const badge = getWaitTypeBadgeHtml(group.waitType);
-
-        if (group.htmlContent) {
-            html += `<div class="explanation-item">${group.htmlContent}</div>`;
-        } else {
-            html += `<div class="explanation-item">${badge} <b>${tileHeader}</b> --- ${group.partsStr}</div>`;
+function resetInputUI() {
+    for (let i = 1; i <= 9; i++) {
+        const chk = document.getElementById(`chk-tile-${i}`);
+        const btn = document.getElementById(`btn-tile-choice-${i}`);
+        if (chk) {
+            chk.checked = false;
+            chk.disabled = false;
         }
-    });
+        if (btn) btn.classList.remove('selected');
+    }
 
-    html += `</div>`;
-    return html;
+    const resultDiv = document.getElementById('result-message');
+    if (resultDiv) {
+        resultDiv.className = 'result-message';
+        resultDiv.innerHTML = '';
+    }
+
+    const submitBtn = document.getElementById('btn-submit');
+    if (submitBtn) submitBtn.innerText = t('btnSubmit');
+}
+
+function toggleTileBtnStyle(num, isChecked) {
+    const btn = document.getElementById(`btn-tile-choice-${num}`);
+    if (btn) {
+        if (isChecked) btn.classList.add('selected');
+        else btn.classList.remove('selected');
+    }
+}
+
+function disableAnswerInputs() {
+    for (let i = 1; i <= 9; i++) {
+        const chk = document.getElementById(`chk-tile-${i}`);
+        if (chk) chk.disabled = true;
+    }
+}
+
+function handleSubmitOrNext() {
+    if (isSubmitted) {
+        // 다음 문제 제출
+        generateQuiz();
+        return;
+    }
+
+    // 답안 제출 검사
+    const userAnswers = [];
+    for (let i = 1; i <= 9; i++) {
+        const chk = document.getElementById(`chk-tile-${i}`);
+        if (chk && chk.checked) userAnswers.push(i);
+    }
+
+    // 정답 일치 확인
+    const isCorrect = (userAnswers.length === winningTiles.length) &&
+        userAnswers.every((val, idx) => val === winningTiles[idx]);
+
+    isSubmitted = true;
+    disableAnswerInputs();
+
+    if (currentMode === 'streak') {
+        stopStreakTimer();
+    }
+
+    const resultDiv = document.getElementById('result-message');
+    const answerText = getAnswerString();
+
+    if (isCorrect) {
+        if (resultDiv) {
+            resultDiv.className = 'result-message correct';
+            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
+        }
+        if (currentMode === 'streak') {
+            streakCount++;
+            const streakDisplay = document.getElementById('streak-count-display');
+            if (streakDisplay) streakDisplay.innerText = t('streakCount', { count: streakCount });
+        }
+    } else {
+        if (resultDiv) {
+            resultDiv.className = 'result-message incorrect';
+            resultDiv.innerHTML = `${t('incorrect')}<br>👉 ${answerText}`;
+        }
+        if (currentMode === 'streak') {
+            checkStreakHallOfFameEligibility();
+        }
+    }
+
+    const submitBtn = document.getElementById('btn-submit');
+    if (submitBtn) {
+        submitBtn.innerText = currentMode === 'streak' ? t('btnNextStreak') : t('btnNextSame');
+    }
 }
 
 function getAnswerString() {
     let tagNotice = '';
     if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다.</div><br>`;
+        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('ryanpeikouNotice')}</div><br>`;
     } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 단기대기 문제입니다.</div><br>`;
+        tagNotice = `<div class="special-tag chiitoi-tag">${t('chiitoiNotice')}</div><br>`;
     }
 
-    const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '없음';
+    const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : 'None';
     let baseText = '';
 
     if (maxedOutWinningTiles.length > 0) {
         const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        baseText = `${tagNotice}실제 오름패: [ ${actualStr} ] &nbsp;|&nbsp; 이론상 대기패: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">(※ ${maxedOutWinningTiles.join(', ')}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)</small>`;
+        baseText = `${tagNotice}${t('actualWaits')}: [ ${actualStr} ] &nbsp;|&nbsp; ${t('theoreticalWaits')}: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
     } else {
-        baseText = `${tagNotice}오름패: [ ${actualStr} ]`;
+        baseText = `${tagNotice}${t('actualWaits')}: [ ${actualStr} ]`;
     }
 
     if (currentMode !== 'streak') {
@@ -878,300 +590,261 @@ function getAnswerString() {
     return baseText;
 }
 
-function handleTimeout() {
-    isSubmitted = true;
-    const resultDiv = document.getElementById('result');
-    resultDiv.style.display = 'block';
-    resultDiv.className = 'result-message incorrect';
-    resultDiv.innerHTML = `⏰ 시간 초과로 실패했습니다!<br>👉 ${getAnswerString()}`;
+// ==========================================
+// 7. 대기패 분석 및 해설 생성
+// ==========================================
+function getWaitTypeBadgeHtml(waitType) {
+    let label = waitType;
+    if (waitType === '양면') label = t('waitRyanmen');
+    else if (waitType === '단기') label = t('waitTanki');
+    else if (waitType === '샤보') label = t('waitShanpon');
+    else if (waitType === '간짱') label = t('waitKanchan');
+    else if (waitType === '변짱') label = t('waitPenchan');
 
-    checkStreakRecordAndReset();
-
-    const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = '새 문제 제출';
-    submitBtn.style.backgroundColor = '#8e44ad';
+    return `<span class="wait-type-badge badge-ryanmen">${label}</span>`;
 }
 
-function generateRandom13Tiles() {
-    let counts = Array(10).fill(0);
-    let hand = [];
-    while (hand.length < 13) {
-        let num = Math.floor(Math.random() * 9) + 1;
-        if (counts[num] < 4) {
-            counts[num]++;
-            hand.push(num);
-        }
-    }
-    return hand.sort((a, b) => a - b);
-}
+function renderDecompositionExplanation() {
+    let html = `<div class="explanation-box">`;
+    html += `<h4>${t('explanationTitle')}</h4>`;
 
-function getWinningTiles(hand) {
-    let waits = [], maxedOut = [], decomps = {};
-    let isChiitoi = false, isRyanpeikou = false;
-    let counts = Array(10).fill(0);
-    hand.forEach(num => counts[num]++);
+    const allPossibleWaits = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
 
-    for (let tile = 1; tile <= 9; tile++) {
-        const checkTile = (isMaxed) => {
-            counts[tile]++;
-            const checkRes = checkCompleteHand(counts, tile, hand);
-            if (checkRes.complete) {
-                if (isMaxed) maxedOut.push(tile); else waits.push(tile);
-                decomps[tile] = checkRes.decompositions;
-                if (checkRes.isRyanpeikou) isRyanpeikou = true;
-                else if (checkRes.isChiitoi) isChiitoi = true;
-            }
-            counts[tile]--;
-        };
+    allPossibleWaits.forEach(waittile => {
+        const testHand = [...currentHand, waittile].sort((a, b) => a - b);
+        const structures = decomposeHandForWaitTile(testHand, waittile);
 
-        if (counts[tile] < 4) checkTile(false);
-        else checkTile(true);
-    }
+        html += `<div class="wait-tile-explain">`;
+        html += `<strong>🀄 [ ${waittile} ] ${t('actualWaits')}:</strong><br>`;
 
-    if (isRyanpeikou) isChiitoi = false;
-    return { waits, maxedOut, decomps, isChiitoi, isRyanpeikou };
-}
-
-function checkCompleteHand(counts, addedTile, originalHand) {
-    const decompositions = findAllDecompositions(counts, addedTile, originalHand);
-    const isStandard = decompositions.length > 0;
-
-    let pairCount = 0, hasQuad = false;
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] === 2) pairCount++;
-        if (counts[i] === 4) hasQuad = true;
-    }
-    const is7Pairs = (pairCount === 7 && !hasQuad);
-
-    if (isStandard && is7Pairs && checkRyanpeikouForm(counts)) {
-        return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: true };
-    }
-    if (isStandard) return { complete: true, decompositions, isChiitoi: false, isRyanpeikou: false };
-    if (is7Pairs) return { complete: true, decompositions: [], isChiitoi: true, isRyanpeikou: false };
-
-    return { complete: false, decompositions: [], isChiitoi: false, isRyanpeikou: false };
-}
-
-function classifyWaitTypes(decomp, addedTile, originalHand) {
-    let results = [];
-    let origCounts = Array(10).fill(0);
-    originalHand.forEach(n => origCounts[n]++);
-
-    if (decomp.pair === addedTile) results.push({ waitType: '단기', targetMeldStart: null });
-    if (decomp.triplets.includes(addedTile) && origCounts[addedTile] === 2) results.push({ waitType: '샤보', targetMeldStart: null });
-
-    for (let s of decomp.sequences) {
-        if (addedTile >= s && addedTile <= s + 2) {
-            const pos = addedTile - s;
-            if (pos === 1) results.push({ waitType: '간짱', targetMeldStart: s });
-            else if ((s === 1 && addedTile === 3) || (s === 7 && addedTile === 7)) results.push({ waitType: '변짱', targetMeldStart: s });
-            else if (pos === 0 || pos === 2) {
-                const oppositeTile = (pos === 0) ? (s + 2) : (s - 1);
-                if (oppositeTile >= 1 && oppositeTile <= 9) results.push({ waitType: '양면', targetMeldStart: s });
-            }
-        }
-    }
-    return results;
-}
-
-function findAllDecompositions(counts, addedTile, originalHand) {
-    let results = [];
-    let tempCounts = [...counts];
-
-    for (let pairVal = 1; pairVal <= 9; pairVal++) {
-        if (tempCounts[pairVal] >= 2) {
-            tempCounts[pairVal] -= 2;
-            let meldResults = [];
-            findMeldsRecursive(tempCounts, [], meldResults);
-
-            meldResults.forEach(m => {
-                const trips = [...m.triplets].sort((a,b)=>a-b);
-                const seqs = [...m.sequences].sort((a,b)=>a-b);
-                const decompCandidate = { pair: pairVal, triplets: trips, sequences: seqs };
-                const waitInfos = classifyWaitTypes(decompCandidate, addedTile, originalHand);
-
-                waitInfos.forEach(waitInfo => {
-                    results.push({
-                        pair: pairVal, triplets: trips, sequences: seqs,
-                        waitType: waitInfo.waitType, targetMeldStart: waitInfo.targetMeldStart,
-                        key: `${pairVal}|T:${trips.join(',')}|S:${seqs.join(',')}|W:${waitInfo.waitType}|M:${waitInfo.targetMeldStart}`
-                    });
-                });
+        if (structures.length === 0) {
+            html += `<span class="decomp-line">• 특수 오름 형태</span><br>`;
+        } else {
+            structures.forEach(st => {
+                const badge = getWaitTypeBadgeHtml(st.waitType);
+                html += `<div class="decomp-line">• ${badge} <b>${st.groups.join(' ')}</b> (대기: ${st.waitingMentsu})</div>`;
             });
-            tempCounts[pairVal] += 2;
+        }
+        html += `</div>`;
+    });
+
+    html += `</div>`;
+    return html;
+}
+
+function decomposeHandForWaitTile(hand14, waitTile) {
+    const counts = {};
+    hand14.forEach(x => counts[x] = (counts[x] || 0) + 1);
+
+    const results = [];
+
+    // 작두 선정
+    for (let head = 1; head <= 9; head++) {
+        if (counts[head] >= 2) {
+            counts[head] -= 2;
+            const mentsuList = [];
+            findAllMentsuCombinations(counts, 0, mentsuList, head, waitTile, results);
+            counts[head] += 2;
         }
     }
 
-    let uniqueResults = [];
-    let seenKeys = new Set();
-    results.forEach(r => {
-        if (!seenKeys.has(r.key)) {
-            seenKeys.add(r.key);
-            uniqueResults.push(r);
+    // 중복 제거
+    const uniqueMap = new Map();
+    results.forEach(item => {
+        const key = `${item.waitType}-${item.groups.join('-')}`;
+        if (!uniqueMap.has(key)) {
+            uniqueMap.set(key, item);
         }
     });
 
-    return uniqueResults;
+    return Array.from(uniqueMap.values());
 }
 
-function findMeldsRecursive(counts, currentMelds, results) {
-    let first = 0;
-    for (let i = 1; i <= 9; i++) {
-        if (counts[i] > 0) { first = i; break; }
-    }
-
-    if (first === 0) {
-        let triplets = [], sequences = [];
-        currentMelds.forEach(m => {
-            if (m.type === 'triplet') triplets.push(m.val);
-            else if (m.type === 'sequence') sequences.push(m.val);
-        });
-        results.push({ triplets, sequences });
+function findAllMentsuCombinations(counts, MentsuCount, currentMentsu, headTile, waitTile, results) {
+    if (MentsuCount === 4) {
+        // 분석 완료: 완성된 4개 멘츠 + 작두 중에서 waitTile이 포함된 멘츠/작두 찾기
+        const handGroups = [`[${headTile}${headTile}]`, ...currentMentsu];
+        analyzeWaitTypeForTile(currentMentsu, headTile, waitTile, handGroups, results);
         return;
     }
 
+    let first = 0;
+    for (let i = 1; i <= 9; i++) {
+        if (counts[i] > 0) {
+            first = i;
+            break;
+        }
+    }
+    if (first === 0) return;
+
+    // 커츠 시도
     if (counts[first] >= 3) {
         counts[first] -= 3;
-        currentMelds.push({ type: 'triplet', val: first });
-        findMeldsRecursive(counts, currentMelds, results);
-        currentMelds.pop();
+        currentMentsu.push(`(${first}${first}${first})`);
+        findAllMentsuCombinations(counts, MentsuCount + 1, currentMentsu, headTile, waitTile, results);
+        currentMentsu.pop();
         counts[first] += 3;
     }
 
+    // 슌츠 시도
     if (first <= 7 && counts[first + 1] > 0 && counts[first + 2] > 0) {
-        counts[first]--; counts[first + 1]--; counts[first + 2]--;
-        currentMelds.push({ type: 'sequence', val: first });
-        findMeldsRecursive(counts, currentMelds, results);
-        currentMelds.pop();
-        counts[first]++; counts[first + 1]++; counts[first + 2]++;
+        counts[first]--;
+        counts[first + 1]--;
+        counts[first + 2]--;
+        currentMentsu.push(`(${first}${first+1}${first+2})`);
+        findAllMentsuCombinations(counts, MentsuCount + 1, currentMentsu, headTile, waitTile, results);
+        currentMentsu.pop();
+        counts[first]++;
+        counts[first + 1]++;
+        counts[first + 2]++;
     }
 }
 
-function checkRyanpeikouForm(counts) {
-    let tempCounts = [...counts];
-    for (let i = 1; i <= 9; i++) {
-        if (tempCounts[i] >= 2) {
-            tempCounts[i] -= 2;
-            if (canFormTwoIdenticalChowPairs(tempCounts)) return true;
-            tempCounts[i] += 2;
+function analyzeWaitTypeForTile(mentsuList, headTile, waitTile, handGroups, results) {
+    // 1. 단기대기 (작두가 완성된 오름패인 경우)
+    if (headTile === waitTile) {
+        results.push({
+            waitType: '단기',
+            groups: handGroups,
+            waitingMentsu: `작두 [${waitTile}] 단기`
+        });
+    }
+
+    // 2. 멘츠 내 대기 형태 분류
+    mentsuList.forEach(mStr => {
+        if (mStr.includes(`${waitTile}`)) {
+            const nums = mStr.replace(/[()]/g, '').split('').map(Number);
+            
+            // 커츠 형태면 샤보대기
+            if (nums[0] === nums[1] && nums[1] === nums[2]) {
+                results.push({
+                    waitType: '샤보',
+                    groups: handGroups,
+                    waitingMentsu: `쌍봉 (${waitTile}${waitTile})`
+                });
+            } else {
+                // 슌츠 형태 (양면, 간짱, 변짱)
+                if (nums[0] === waitTile) {
+                    if (waitTile === 7 && nums[1] === 8 && nums[2] === 9) {
+                        results.push({ waitType: '변짱', groups: handGroups, waitingMentsu: `(89) 변짱` });
+                    } else {
+                        results.push({ waitType: '양면', groups: handGroups, waitingMentsu: `(${nums[1]}${nums[2]}) 양면` });
+                    }
+                } else if (nums[2] === waitTile) {
+                    if (waitTile === 3 && nums[0] === 1 && nums[1] === 2) {
+                        results.push({ waitType: '변짱', groups: handGroups, waitingMentsu: `(12) 변짱` });
+                    } else {
+                        results.push({ waitType: '양면', groups: handGroups, waitingMentsu: `(${nums[0]}${nums[1]}) 양면` });
+                    }
+                } else if (nums[1] === waitTile) {
+                    results.push({ waitType: '간짱', groups: handGroups, waitingMentsu: `(${nums[0]}${nums[2]}) 간짱` });
+                }
+            }
         }
-    }
-    return false;
+    });
 }
 
-function canFormTwoIdenticalChowPairs(counts) {
-    let tempCounts = [...counts];
-    let doubleChowCount = 0;
-    for (let i = 1; i <= 7; i++) {
-        while (tempCounts[i] >= 2 && tempCounts[i+1] >= 2 && tempCounts[i+2] >= 2) {
-            tempCounts[i] -= 2; tempCounts[i+1] -= 2; tempCounts[i+2] -= 2;
-            doubleChowCount++;
+// ==========================================
+// 8. 명예의 전당 (리더보드) & 트리거
+// ==========================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQpW_Z9wL--1wQeT1mXG4f9P1Z8rL9x-J3180/exec"; // 사용자의 Apps Script URL
+
+async function loadLeaderboard() {
+    const listElem = document.getElementById('hof-list');
+    if (!listElem) return;
+
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        
+        listElem.innerHTML = '';
+        if (!data || data.length === 0) {
+            listElem.innerHTML = '<li style="text-align:center; color:#7f8c8d;">등록된 기록이 없습니다.</li>';
+            return;
         }
-    }
-    return doubleChowCount === 2;
-}
 
-async function renderHand() {
-    const container = document.getElementById('hand-container');
-    container.innerHTML = '';
-    for (const num of currentHand) {
-        const img = document.createElement('img');
-        img.src = await getTileImageSrc(currentSuitObj.code, num);
-        img.className = 'tile-img';
-        img.alt = `${currentSuitObj.code}${num}`;
-        container.appendChild(img);
-    }
-}
+        data.slice(0, 10).forEach((item, index) => {
+            const li = document.createElement('li');
+            li.style.display = 'flex';
+            li.style.justifyContent = 'space-between';
+            li.style.padding = '6px 10px';
+            li.style.borderBottom = '1px solid #eee';
 
-function renderButtons() {
-    const grid = document.getElementById('selection-buttons');
-    grid.innerHTML = '';
-    for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'btn-number';
-        btn.id = `btn-num-${i}`;
-        btn.innerText = `${i}`;
-        btn.onclick = () => toggleSelect(i, btn);
-        grid.appendChild(btn);
+            const rankBadge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+            li.innerHTML = `<span><b>${rankBadge} ${escapeHtml(item.name)}</b></span> <span><b style="color:#e67e22;">${item.score}</b> 연승 (${item.date || ''})</span>`;
+            listElem.appendChild(li);
+        });
+    } catch (err) {
+        console.error('리더보드 로드 실패:', err);
+        listElem.innerHTML = '<li style="text-align:center; color:#e74c3c;">리더보드를 불러오지 못했습니다.</li>';
     }
 }
 
-function toggleSelect(num, btn) {
-    if (isSubmitted) return;
-    if (selectedTiles.has(num)) {
-        selectedTiles.delete(num);
-        btn.classList.remove('selected');
-    } else {
-        selectedTiles.add(num);
-        btn.classList.add('selected');
-    }
-}
-
-function handleSubmitOrNext() {
-    if (isSubmitted) { generateQuiz(); return; }
-    if (selectedTiles.size === 0) return;
-
-    clearInterval(timerInterval);
-    const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
-    
-    const isCorrectActual = userAnswers.length === winningTiles.length && 
-                            userAnswers.every((val, idx) => val === winningTiles[idx]);
-
-    const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-    const isCorrectTheoretical = userAnswers.length === theoreticalList.length && 
-                                userAnswers.every((val, idx) => val === theoreticalList[idx]);
-
-    const isCorrect = isCorrectActual || isCorrectTheoretical;
-    const resultDiv = document.getElementById('result');
-    resultDiv.style.display = 'block';
-
-    const answerText = getAnswerString();
-
-    if (isCorrect) {
-        resultDiv.className = 'result-message correct';
-        if (currentMode === 'streak') {
-            streakCount++;
-            document.getElementById('streak-display').innerText = `🔥 현재 ${streakCount}연승 중`;
-            resultDiv.innerHTML = `🎉 정답입니다! (${streakCount}연승 성공!)<br>👉 ${answerText}`;
-        } else {
-            resultDiv.innerHTML = `🎉 정답입니다!<br>👉 ${answerText}`;
-        }
-    } else {
-        resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `❌ 오답입니다.<br>👉 ${answerText}`;
-        if (currentMode === 'streak') checkStreakRecordAndReset();
-    }
-
-    isSubmitted = true;
-    const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = currentMode === 'streak' ? '다음 연승 문제로 이동' : '같은 난이도로 새 문제 제출';
-    submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
-}
-
-function checkStreakRecordAndReset() {
+function checkStreakHallOfFameEligibility() {
     if (streakCount >= 10) {
-        pendingRecordStreak = streakCount;
-        document.getElementById('name-input-container').style.display = 'block';
+        const modal = document.getElementById('hof-input-modal');
+        const scoreElem = document.getElementById('modal-streak-score');
+        if (scoreElem) scoreElem.innerText = streakCount;
+        if (modal) modal.style.display = 'flex';
     }
+}
+
+async function submitHallOfFame() {
+    const nameInput = document.getElementById('input-hof-name');
+    const name = nameInput ? nameInput.value.trim() : '';
+    const modal = document.getElementById('hof-input-modal');
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name || 'Anonymous', score: streakCount })
+        });
+    } catch (e) {
+        console.error('기록 등록 중 오류:', e);
+    }
+
+    if (modal) modal.style.display = 'none';
     streakCount = 0;
+    loadLeaderboard();
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+function initTitleClickTrigger() {
+    let clickCount = 0;
+    let timer = null;
+    const titleIcon = document.getElementById('title-icon');
+
+    if (titleIcon) {
+        titleIcon.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 1) {
+                timer = setTimeout(() => { clickCount = 0; }, 2000);
+            } else if (clickCount >= 5) {
+                clearTimeout(timer);
+                clickCount = 0;
+                toggleCustomTriggerBtn();
+            }
+        });
+    }
 }
 
-function copyCurrentQuizToCustom() {
-    if (!currentHand || currentHand.length !== 13) {
-        alert('현재 생성된 문제가 없습니다.');
-        return;
+function toggleCustomTriggerBtn() {
+    const area = document.getElementById('custom-trigger-area');
+    if (area) {
+        area.style.display = area.style.display === 'none' ? 'block' : 'none';
     }
-    customHand = [...currentHand];
-    if (typeof currentSuitObj !== 'undefined' && currentSuitObj && currentSuitObj.code) {
-        customSuitCode = currentSuitObj.code;
-    }
-    const textInput = document.getElementById('custom-text-input');
-    if (textInput) textInput.value = customHand.join('');
+}
 
-    updateCustomHandDisplay();
+function renderCustomButtons() {
+    // 필요한 커스텀 버튼 추가 처리
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
