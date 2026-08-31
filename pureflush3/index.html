@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마작 청일색 텐파이 대기패 퀴즈 (v0.4)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PXBMWZV3Q0', {
+        'screen_class': 'Pure_Flush_Hand_Quiz',
+        'page_title': '마작 청일색 텐파이 대기패 퀴즈'
+      });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <script src="i18n.js"></script>
+</head>
+<body>
+
+<div class="header-container">
+    <h1 style="user-select: none;">
+        <span id="title-icon" style="cursor: pointer;">🀄</span> 
+        <span data-i18n="title">청일색 텐파이 대기패 퀴즈</span> (v0.4)
+    </h1>
+    <div class="lang-select-wrapper">
+        <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
+            <option value="ko">한국어</option>
+            <option value="ja">日本語</option>
+            <option value="zh_CN">简体中文</option>
+            <option value="zh_TW">繁體中文</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+</div>
+
+<div class="card">
+    <div id="status-msg" data-i18n="loading" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
+        📦 Regular.zip 패키지를 읽어오는 중입니다...
+    </div>
+    
+    <div class="difficulty-group">
+        <button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" disabled data-i18n="modeEasy">🌱 쉬움</button>
+        <button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" disabled data-i18n="modeNormal">🌿 보통</button>
+        <button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" disabled data-i18n="modeHard">🔥 어려움</button>
+        <button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" disabled data-i18n="modeStreak">⚡ 연승 모드</button>
+    </div>
+
+    <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
+
+    <div class="status-bar" style="margin-top: 15px;">
+        <span id="streak-display" class="streak-badge" style="display: none;"></span>
+        <span id="timer-display" class="timer-badge" style="display: none;"></span>
+    </div>
+
+    <div id="timer-gauge-container" class="timer-gauge-container" style="display: none;">
+        <div id="timer-gauge-bar" class="timer-gauge-bar"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
+        <div id="easy-hint" class="hint-badge" style="display: none;"></div>
+    </div>
+
+    <div class="hand-container-wrapper" id="main-hand-wrapper">
+        <div class="hand-display" id="hand-container"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 18px;">
+        <div style="font-weight: bold; margin-bottom: 8px;">
+            <span data-i18n="quizInstruction">오름패(대기패)가 되는 숫자를 모두 선택하세요:</span>
+            <span style="font-weight: normal; font-size: 13px; color: #7f8c8d;" data-i18n="shortcutHint">(단축키: 1~9, Enter)</span>
+        </div>
+        
+        <div class="selection-grid">
+            <button class="btn-number" id="btn-num-1" onclick="toggleSelect(1, this)">1</button>
+            <button class="btn-number" id="btn-num-2" onclick="toggleSelect(2, this)">2</button>
+            <button class="btn-number" id="btn-num-3" onclick="toggleSelect(3, this)">3</button>
+            <button class="btn-number" id="btn-num-4" onclick="toggleSelect(4, this)">4</button>
+            <button class="btn-number" id="btn-num-5" onclick="toggleSelect(5, this)">5</button>
+            <button class="btn-number" id="btn-num-6" onclick="toggleSelect(6, this)">6</button>
+            <button class="btn-number" id="btn-num-7" onclick="toggleSelect(7, this)">7</button>
+            <button class="btn-number" id="btn-num-8" onclick="toggleSelect(8, this)">8</button>
+            <button class="btn-number" id="btn-num-9" onclick="toggleSelect(9, this)">9</button>
+        </div>
+
+        <button id="btn-submit" class="btn-submit" onclick="handleSubmitOrNext()" data-i18n="btnSubmit">제출 및 정답 확인</button>
+    </div>
+
+    <div id="quiz-result" class="result-message" style="display: none;"></div>
+
+    <div id="name-input-container" style="display: none;" class="hall-of-fame">
+        <h4 data-i18n="congratsStreak" style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
+        <div class="name-input-box">
+            <input type="text" id="player-name-input" maxlength="20" data-i18n-placeholder="inputNamePlaceholder" placeholder="Anonymous (최대 20자)" onkeydown="if(event.key==='Enter') saveRecord()">
+            <button id="btn-save-record" onclick="saveRecord()" data-i18n="btnSaveRecord">기록 등록</button>
+        </div>
+    </div>
+</div>
+
+<div class="card hall-of-fame">
+    <h3 data-i18n="hallOfFameTitle">🏆 연승 모드 글로벌 명예의 전당 (Top 10)</h3>
+    <p data-i18n="hallOfFameSubtitle" style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;">
+        🌐 Google Sheets 연동 글로벌 실시간 리더보드입니다.
+    </p>
+    <div id="leaderboard-content">
+        <ul class="record-list" id="record-list-ul">
+            <li style="text-align:center; padding: 10px; color:#7f8c8d;">기록을 불러오는 중...</li>
+        </ul>
+    </div>
+</div>
+
+<div class="modal-overlay" id="streak-modal" style="display: none;">
+    <div class="modal-content">
+        <h2 data-i18n="modalTitle">⚡ 어려움 연승 모드</h2>
+        <div class="modal-body">
+            <p data-i18n="modalTimeRule">⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.</p>
+            <p data-i18n="modalHofRule">🏆 <b>글로벌 명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 전 세계 리더보드에 저장됩니다.</p>
+            <p data-i18n="modalNameRule">✏️ <b>이름 설정:</b> 이름을 입력하지 않으면 <b>Anonymous</b>로 등록됩니다.</p>
+        </div>
+        <button class="modal-btn" onclick="startStreakModeAfterNotice()" data-i18n="modalStartBtn">도전 시작하기</button>
+    </div>
+</div>
+
+<div class="card" id="hidden-analyzer" style="display: none; border: 2px dashed #8e44ad; background: #fcf8ff;">
+    <h3 style="margin-top:0; color:#8e44ad;">🔓 히든 패 분석기 (임의 손패 생성 및 청일색 대기 분석)</h3>
+    <p style="font-size:13px; color:#666;">원하는 패 13장을 선택하면 이론상 대기패, 실전 대기패 및 분해 해설을 즉시 계산합니다.</p>
+    
+    <div style="margin-bottom: 12px;">
+        <b>1. 패 선택 (클릭하여 추가):</b>
+        <div id="custom-tile-buttons" class="selection-grid" style="margin: 8px 0;"></div>
+    </div>
+
+    <div style="margin-bottom: 12px;">
+        <b>2. 직관적 숫자 입력 (예: 1112345678999):</b>
+        <div style="display: flex; gap: 8px; margin-top: 5px;">
+            <input type="text" id="custom-text-input" placeholder="숫자 13자리 입력" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+            <button onclick="applyCustomTextInput()" style="padding: 8px 15px; background: #34495e; color: white; border: none; border-radius: 6px; cursor: pointer;">적용</button>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <b>3. 현재 구성된 손패 (<span id="custom-count">0</span>/13장):</b>
+        <div class="hand-container-wrapper" style="background: #1e3f20; min-height: 60px;">
+            <div id="custom-hand-container" class="hand-display"></div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+        <button onclick="analyzeCustomHand()" style="flex:2; padding: 12px; background: #8e44ad; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">🔍 패 분석 실행</button>
+        <button onclick="clearCustomHand()" style="flex:1; padding: 12px; background: #7f8c8d; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">초기화</button>
+    </div>
+
+    <div id="custom-result" class="result-message" style="display: none; margin-top: 15px;"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
