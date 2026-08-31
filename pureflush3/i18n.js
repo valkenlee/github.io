@@ -19,9 +19,21 @@ const TRANSLATIONS = {
         btnSaveRecord: "기록 등록",
         hallOfFameTitle: "🏆 연승 모드 글로벌 명예의 전당 (Top 10)",
         hallOfFameSubtitle: "🌐 Google Sheets 연동 글로벌 실시간 리더보드입니다.",
+        hallOfFameLoading: "기록을 불러오는 중...",
         congratsStreak: "🏆 축하합니다! 10연승 이상 기록 달성!",
+        inputNameNotice: "명예의 전당 등록 이름 (미입력 시 Anonymous):",
         inputNamePlaceholder: "Anonymous (최대 20자)",
         
+        // 히든 분석기
+        analyzerTitle: "🕵️‍♂️ 히든 패 분석기 (자유 패 입력)",
+        analyzerInputLabel: "⌨️ 숫자 직접 입력 (예: 1112345678999):",
+        analyzerInputPlaceholder: "숫자 13자리 입력",
+        analyzerApplyBtn: "입력 반영",
+        analyzerCopyBtn: "문제 복사",
+        analyzerEmptyHint: "1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.",
+        analyzerClearBtn: "전체 삭제",
+        analyzerAnalyzeBtn: "🔍 대기패 및 해설 계산하기",
+
         // 역/대기 형태 태그 및 용어
         ryanpeikouNotice: "💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다.",
         chiitoiNotice: "💡 이 문제는 청일색과 치또이(七対子)가 조합된 단기대기 문제입니다.",
@@ -49,7 +61,6 @@ const TRANSLATIONS = {
         modalNameRule: "✏️ <b>이름 설정:</b> 이름을 입력하지 않으면 <b>Anonymous</b>로 등록됩니다.",
         modalStartBtn: "도전 시작하기",
 
-        // 난이도 설명
         descriptions: {
             easy: "📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇 개인지도 알려 줍니다.<br>• 제출 후 대기 유형 및 세부 분해 해설을 제공합니다.",
             normal: "📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 대기 유형과 세부 분해 해설을 제공합니다.",
@@ -77,9 +88,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "記録を登録",
         hallOfFameTitle: "🏆 連勝モード グローバル殿堂 (Top 10)",
         hallOfFameSubtitle: "🌐 Google スプレッドシート連携のリアルタイムリーダーボードです。",
+        hallOfFameLoading: "記録を読み込んでいます...",
         congratsStreak: "🏆 おめでとうございます！10連勝以上達成！",
+        inputNameNotice: "殿堂入り登録名 (未入力の場合は Anonymous):",
         inputNamePlaceholder: "Anonymous (最大20文字)",
         
+        analyzerTitle: "🕵️‍♂️ 手牌アナライザー（自由入力）",
+        analyzerInputLabel: "⌨️ 数字直接入力 (例: 1112345678999):",
+        analyzerInputPlaceholder: "数字13桁を入力",
+        analyzerApplyBtn: "反映",
+        analyzerCopyBtn: "問題をコピー",
+        analyzerEmptyHint: "1〜9のボタンを押すか、数字を入力してください。",
+        analyzerClearBtn: "すべて消去",
+        analyzerAnalyzeBtn: "🔍 待ち牌と解説を計算",
+
         ryanpeikouNotice: "💡 二盃口（リャンペーコー）の形が含まれている問題です。",
         chiitoiNotice: "💡 清一色と七対子（チートイツ）が複合した単騎待ち問題です。",
         waitRyanmen: "両面",
@@ -130,9 +152,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "提交成绩",
         hallOfFameTitle: "🏆 连胜模式 全球名人堂 (Top 10)",
         hallOfFameSubtitle: "🌐 基于 Google Sheets 绑定的实时全球排行榜。",
+        hallOfFameLoading: "正在加载纪录...",
         congratsStreak: "🏆 恭喜！达成 10 连胜以上纪录！",
+        inputNameNotice: "名人堂登记名称 (未输入时为 Anonymous):",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
+        analyzerTitle: "🕵️‍♂️ 隐藏手牌分析器（自由输入）",
+        analyzerInputLabel: "⌨️ 直接输入数字 (例: 1112345678999):",
+        analyzerInputPlaceholder: "输入13位数字",
+        analyzerApplyBtn: "应用",
+        analyzerCopyBtn: "复制题目",
+        analyzerEmptyHint: "请点击1~9按钮或输入数字。",
+        analyzerClearBtn: "全部清除",
+        analyzerAnalyzeBtn: "🔍 计算听牌与解析",
+
         ryanpeikouNotice: "💡 本题包含两杯口牌型。",
         chiitoiNotice: "💡 本题为清一色与七对子复合的单骑听牌。",
         waitRyanmen: "两面",
@@ -183,9 +216,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "送出紀錄",
         hallOfFameTitle: "🏆 連勝模式 全球名人堂 (Top 10)",
         hallOfFameSubtitle: "🌐 基於 Google Sheets 連結的即時全球排行榜。",
+        hallOfFameLoading: "正在載入紀錄...",
         congratsStreak: "🏆 恭喜！達成 10 連勝以上紀錄！",
+        inputNameNotice: "名人堂登記名稱 (未輸入時為 Anonymous):",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
+        analyzerTitle: "🕵️‍♂️ 隱藏手牌分析器（自由輸入）",
+        analyzerInputLabel: "⌨️ 直接輸入數字 (例: 1112345678999):",
+        analyzerInputPlaceholder: "輸入13位數字",
+        analyzerApplyBtn: "套用",
+        analyzerCopyBtn: "複製題目",
+        analyzerEmptyHint: "請點擊1~9按鈕或輸入數字。",
+        analyzerClearBtn: "全部清除",
+        analyzerAnalyzeBtn: "🔍 計算聽牌與解析",
+
         ryanpeikouNotice: "💡 本題包含兩盃口牌型。",
         chiitoiNotice: "💡 本題為清一色與七對子複合的單騎聽牌。",
         waitRyanmen: "兩面",
@@ -236,9 +280,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "Submit Score",
         hallOfFameTitle: "🏆 Global Hall of Fame (Top 10)",
         hallOfFameSubtitle: "🌐 Live global leaderboard synced via Google Sheets.",
+        hallOfFameLoading: "Loading records...",
         congratsStreak: "🏆 Congratulations! You achieved a 10+ win streak!",
+        inputNameNotice: "Leaderboard display name (Default: Anonymous):",
         inputNamePlaceholder: "Anonymous(Max 20 ch)",
         
+        analyzerTitle: "🕵️‍♂️ Hidden Analyzer (Custom Hand Input)",
+        analyzerInputLabel: "⌨️ Direct Number Input (e.g. 1112345678999):",
+        analyzerInputPlaceholder: "Enter 13 digits",
+        analyzerApplyBtn: "Apply",
+        analyzerCopyBtn: "Copy Quiz",
+        analyzerEmptyHint: "Select 1-9 buttons or enter numbers.",
+        analyzerClearBtn: "Clear All",
+        analyzerAnalyzeBtn: "🔍 Analyze Wait Tiles & Breakdown",
+
         ryanpeikouNotice: "💡 This hand contains a Ryanpeikou (Two Double Pungs) pattern.",
         chiitoiNotice: "💡 This hand is a combination of Chinitsu and Chiitoitsu (Seven Pairs) Tanki wait.",
         waitRyanmen: "Ryanmen (Two-sided)",
@@ -290,6 +345,9 @@ function t(key, params = {}) {
 }
 
 function applyTranslations() {
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) langSelect.value = currentLang;
+
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         el.innerHTML = t(key);
@@ -300,3 +358,5 @@ function applyTranslations() {
         el.placeholder = t(key);
     });
 }
+
+document.addEventListener('DOMContentLoaded', applyTranslations);
