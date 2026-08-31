@@ -6,6 +6,41 @@ body {
     background-color: #1e3f20;
     color: #333;
 }
+
+/* 상단 언어 선택 바 */
+.lang-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.lang-select-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    backdrop-filter: blur(4px);
+}
+.lang-select-box select {
+    background: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+}
+.lang-select-box select:hover {
+    border-color: #8e44ad;
+}
+
 h1 { 
     text-align: center; 
     color: #ffffff; 
@@ -139,13 +174,9 @@ h1 {
 .tile-img {
     width: 44px;
     height: 60px;
-    background-color: #fdfbf7;
-    border: 1px solid #d1ccc0;
-    border-radius: 5px;
-    box-shadow: 
-        inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-        inset -1px -1px 2px rgba(0, 0, 0, 0.15),
-        1px 2px 4px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    background: #fdfdfd;
+    box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -1px -1px 2px rgba(0, 0, 0, 0.15), 1px 2px 4px rgba(0, 0, 0, 0.3);
     padding: 2px 1px;
     box-sizing: border-box;
     object-fit: contain;
@@ -176,115 +207,62 @@ h1 {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.hint-badge {
-    display: inline-block;
-    background-color: #27ae60;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 15px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
 .result-message {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    margin-top: 15px;
-    padding: 12px;
+    margin-top: 20px;
+    padding: 15px;
     border-radius: 8px;
-    line-height: 1.6;
+    font-weight: bold;
+    text-align: center;
 }
-.correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.result-message.correct {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.result-message.incorrect {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
 
-/* 해설 상자 스타일 */
+.special-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+.ryanpeikou-tag { background-color: #e8f8f5; color: #117a65; border: 1px solid #a3e4d7; }
+.chiitoi-tag { background-color: #fef9e7; color: #7d6608; border: 1px solid #f9e79f; }
+
 .explanation-box {
     margin-top: 15px;
-    background: #ffffff;
-    border: 1px solid #abdde5;
+    padding: 12px;
+    background-color: #ffffff;
+    border: 1px solid #bdc3c7;
     border-radius: 8px;
-    padding: 12px 15px;
     text-align: left;
-    font-size: 14px;
-    color: #2c3e50;
-    font-weight: normal;
+    font-size: 13px;
     line-height: 1.6;
+    color: #2c3e50;
 }
 .explanation-box h4 {
     margin: 0 0 8px 0;
-    color: #16a085;
-    font-size: 15px;
-    border-bottom: 1px solid #e0f2f1;
-    padding-bottom: 4px;
+    color: #2980b9;
 }
-/* 해설 항목 스타일 */
-.explanation-item {
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    border-left: 4px solid #2980b9;
-    background-color: #f8f9fa;
-    border-radius: 0 4px 4px 0;
-    font-size: 15px;
-    line-height: 1.5;
+.explanation-box ul {
+    margin: 0;
+    padding-left: 20px;
 }
 
-.explanation-item b {
-    color: #2c3e50;
-}
-
-.wait-type-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
-    margin-right: 5px;
-}
-.badge-ryanmen { background-color: #27ae60; }
-.badge-tanki { background-color: #8e44ad; }
-.badge-shanpon { background-color: #d35400; }
-.badge-kanchan { background-color: #2980b9; }
-.badge-penchan { background-color: #c0392b; }
-
-/* 대기패 강조 스타일 */
 .filled-slot {
     color: #e67e22;
     font-weight: bold;
-    background-color: #fef5e7;
-    padding: 2px 4px;
-    border-radius: 4px;
-    border: 1px dashed #e67e22;
 }
 
-/* 치이토이츠 및 량페코 안내 태그 스타일 */
-.special-tag {
-    display: inline-block;
-    color: #ffffff;
-    font-size: 14px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-.chiitoi-tag { background-color: #8e44ad; }
-.ryanpeikou-tag { background-color: #d35400; }
-
-/* 명예의 전당 리더보드 스타일 */
 .hall-of-fame {
-    margin-top: 15px;
-    background: #faf8f5;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #e0dcd3;
-}
-.hall-of-fame h3 {
-    margin-top: 0;
-    margin-bottom: 5px;
-    color: #8e44ad;
-    text-align: center;
+    margin-top: 20px;
 }
 .record-list {
     list-style: none;
@@ -298,27 +276,38 @@ h1 {
     border-bottom: 1px solid #eee;
     font-size: 14px;
 }
-.record-item:last-child { border-bottom: none; }
-.record-rank { font-weight: bold; color: #8e44ad; width: 30px; }
-.record-name { font-weight: bold; flex: 1; margin: 0 10px; word-break: break-all; }
-.record-score { font-weight: bold; color: #e74c3c; width: 60px; text-align: right; }
-.record-date { color: #7f8c8d; font-size: 12px; width: 130px; text-align: right; }
+.record-item:last-child {
+    border-bottom: none;
+}
+.record-rank {
+    font-weight: bold;
+    color: #8e44ad;
+    width: 30px;
+}
+.record-name {
+    flex: 1;
+    font-weight: bold;
+}
+.record-score {
+    color: #e67e22;
+    font-weight: bold;
+    margin-right: 15px;
+}
 
 .name-input-box {
     display: flex;
     gap: 8px;
-    margin-top: 10px;
 }
 .name-input-box input {
     flex: 1;
-    padding: 10px;
-    border: 2px solid #8e44ad;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 14px;
 }
 .name-input-box button {
-    padding: 10px 15px;
-    background: #8e44ad;
+    padding: 8px 16px;
+    background-color: #8e44ad;
     color: white;
     border: none;
     border-radius: 6px;
@@ -326,23 +315,9 @@ h1 {
     cursor: pointer;
 }
 
-.btn-reset-records {
-    display: block;
-    margin: 15px auto 0 auto;
-    padding: 6px 12px;
-    background-color: #7f8c8d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.btn-reset-records:hover { background-color: #c0392b; }
-
-/* 모달 팝업 스타일 */
+/* 모달 스타일 */
 .modal-overlay {
-    display: none;
+    display: flex;
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.6);
@@ -358,7 +333,6 @@ h1 {
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     text-align: center;
-    animation: fadeIn 0.2s ease-out;
 }
 .modal-content h2 {
     margin-top: 0;
@@ -383,22 +357,4 @@ h1 {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-}
-.modal-btn:hover { background: #71368a; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@media (max-width: 600px) {
-    body { padding: 10px; }
-    .card { padding: 15px 10px; }
-    .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .btn-diff { font-size: 14px; padding: 12px 2px; }
-    .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
-    .hand-display { gap: 2px; }
-    .selection-grid { gap: 4px; }
-    .btn-number { padding: 10px 0; font-size: 16px; }
-    .record-date { display: none; }
 }
