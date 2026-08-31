@@ -1,18 +1,18 @@
 /* =============================================================
-   🀄 청일색 텐파이 대기패 퀴즈 - Main Logic
-   (Version: v0.4.0 - i18n & Global Leaderboard Support)
+   🀄 청일색 텐파이 대기패 퀴즈 - Main Logic (Problem Generator Fixed)
+   (Version: v0.4.1 - i18n & Pure Flush Generator Fix)
    ============================================================= */
 
-const APP_VERSION = "0.4.0";
+const APP_VERSION = "0.4.1";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
 // -------------------------------------------------------------
 // 1. 전역 상태 변수
 // -------------------------------------------------------------
 let zipInstance = null;
-let currentSuit = 1;        // 1: Man, 2: Pin, 3: Sou
-let currentHandArray = [];   // 현재 패의 숫자 배열 (예: [1,1,1,2,3,4,5,6,7,8,9,9,9])
-let winningTiles = [];       // 정답 대기패 배열 (예: [1,2,3,4,5,6,7,8,9])
+let currentSuit = 1;        // 1: 만수(m), 2: 통수(p), 3: 삭수(s)
+let currentHandArray = [];   // 현재 손패 숫자 배열 (13장)
+let winningTiles = [];       // 정답 대기패 배열
 let userSelected = new Set();
 let isSubmitted = false;
 
@@ -22,15 +22,15 @@ let streakTimer = null;
 let timeLeft = 60;
 const STREAK_LIMIT_SEC = 60;
 
-// 암호화 관련 파라미터 (Google Sheets API 연동)
+// API 연동 암호화 키
 const SECRET_PASSPHRASE = "Mahjong_Pure_Flush_Quiz_Secret_2026";
-const ENCRYPTED_ENDPOINT = "U2FsdGVkX1+v/s4B9xR3A9z7R/8z5W2Z4Y9x3v2y1A=="; // 실제 배치 시 암호화된 앱스크립트 URL 설정
+const ENCRYPTED_ENDPOINT = "U2FsdGVkX1+v/s4B9xR3A9z7R/8z5W2Z4Y9x3v2y1A==";
 
 // -------------------------------------------------------------
 // 2. DOM Load & 초기화
 // -------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', async () => {
-    // 1) UI 언어 선택 드롭다운 상태 동기화 및 번역 적용
+    // 1) 드롭다운 언어 동기화 및 다국어 번역 적용
     const langSelect = document.getElementById('lang-select');
     if (langSelect && typeof currentLang !== 'undefined') {
         langSelect.value = currentLang;
@@ -39,13 +39,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         applyTranslations();
     }
 
-    // 2) 명예의 전당 리더보드 불러오기
+    // 2) 리더보드 로드
     loadLeaderboard();
-
-    // 3) 숨겨진 이스터에그 및 커스텀 버튼 이벤트 등록
     initTitleClickTrigger();
 
-    // 4) 키보드 단축키 (1~9: 패 선택, Enter: 제출/다음)
+    // 3) 키보드 단축키 이벤트
     window.addEventListener('keydown', (e) => {
         if (document.activeElement.tagName === 'INPUT') return;
         
@@ -59,7 +57,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 5) Regular.zip 패 이미지 리소스 받아오기
+    // 4) Regular.zip 패 리소스 로딩
     try {
         const response = await fetch('Regular.zip');
         if (!response.ok) throw new Error('Regular.zip load failed');
@@ -73,10 +71,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             statusMsg.innerText = typeof t === 'function' ? t('loadingSuccess') : "✅ 마작패 로딩 완료!";
         }
         
-        // 난이도 버튼 활성화
+        // 버튼 활성화
         document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
         
-        // 기본 모드(보통) 문제 시작
+        // 초기 보통 모드 문제 시작
         selectMode('normal');
 
     } catch (err) {
@@ -90,7 +88,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 // -------------------------------------------------------------
-// 3. 모드(난이도) 선택 & 관리
+// 3. 모드 선택 및 관리
 // -------------------------------------------------------------
 function selectMode(mode) {
     if (currentMode === 'streak' && mode !== 'streak') {
@@ -101,8 +99,8 @@ function selectMode(mode) {
     updateModeUI();
 
     if (mode === 'streak') {
-        // 연승 모드는 모달을 먼저 표시
-        document.getElementById('streak-modal').style.display = 'flex';
+        const modal = document.getElementById('streak-modal');
+        if (modal) modal.style.display = 'flex';
     } else {
         streakCount = 0;
         updateStreakAndTimerDisplay();
@@ -116,8 +114,8 @@ function updateModeUI() {
     if (activeBtn) activeBtn.classList.add('active');
 
     const infoBox = document.getElementById('mode-info-box');
+    if (!infoBox) return;
     
-    // i18n 번역 텍스트 매핑
     let desc = "";
     if (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].descriptions) {
         desc = TRANSLATIONS[currentLang].descriptions[currentMode];
@@ -125,8 +123,8 @@ function updateModeUI() {
         const defaults = {
             easy: "🌱 <b>쉬움 모드:</b> 1~3면짱 대기 위주의 복잡도가 낮은 문제가 출제됩니다. (대기패 개수 힌트 제공)",
             normal: "🌿 <b>보통 모드:</b> 일반적인 청일색 텐파이 문제가 랜덤으로 출제됩니다.",
-            hard: "🔥 <b>어려움 모드:</b> 5면짱 이상의 다면짱 복잡한 고난도 문제가 출제됩니다.",
-            streak: "⚡ <b>연승 모드:</b> 제한시간(60초) 내에 고난도 문제 연승에 도전하세요!"
+            hard: "🔥 <b>어려움 모드:</b> 복잡한 다면짱 고난도 문제가 출제됩니다.",
+            streak: "⚡ <b>연승 모드:</b> 제한시간(60초) 내에 다면짱 연속 정답에 도전하세요!"
         };
         desc = defaults[currentMode] || "";
     }
@@ -146,54 +144,62 @@ function updateModeUI() {
 }
 
 function startStreakModeAfterNotice() {
-    document.getElementById('streak-modal').style.display = 'none';
+    const modal = document.getElementById('streak-modal');
+    if (modal) modal.style.display = 'none';
     streakCount = 0;
     updateStreakAndTimerDisplay();
     generateNewQuestion();
 }
 
 // -------------------------------------------------------------
-// 4. 문제 생성 및 화면 렌더링
+// 4. 문제 생성 및 텐파이 대기패 계산 (핵심 수정)
 // -------------------------------------------------------------
 function generateNewQuestion() {
     isSubmitted = false;
     userSelected.clear();
     resetNumberButtons();
 
-    // 결과 창 초기화
+    // 결과 메시지 초기화
     const resultDiv = document.getElementById('result-message');
-    resultDiv.style.display = 'none';
-    resultDiv.className = 'result-message';
-    resultDiv.innerHTML = '';
+    if (resultDiv) {
+        resultDiv.style.display = 'none';
+        resultDiv.className = 'result-message';
+        resultDiv.innerHTML = '';
+    }
     
-    document.getElementById('name-input-container').style.display = 'none';
+    const nameInput = document.getElementById('name-input-container');
+    if (nameInput) nameInput.style.display = 'none';
 
-    // 제출 버튼 텍스트 원복
+    // 제출 버튼 초기화
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = typeof t === 'function' ? t('btnSubmit') : "제출 및 정답 확인";
-    submitBtn.style.backgroundColor = '#2980b9';
+    if (submitBtn) {
+        submitBtn.innerText = typeof t === 'function' ? t('btnSubmit') : "제출 및 정답 확인";
+        submitBtn.style.backgroundColor = '#2980b9';
+    }
 
-    // 랜덤 수패(1:만수, 2:통수, 3:삭수) 선택
+    // 랜덤 수패 결정 (1:만수, 2:통수, 3:삭수)
     currentSuit = Math.floor(Math.random() * 3) + 1;
 
-    // 모드별 패턴 생성 및 완성형 13패 + 대기패 계산
+    // 문제 및 정답 생성
     const question = createPureFlushHand(currentMode);
     currentHandArray = question.hand;
     winningTiles = question.wins;
 
     // 쉬움 모드 힌트 표시
     const hintBadge = document.getElementById('easy-hint');
-    if (currentMode === 'easy') {
-        const hintText = typeof t === 'function' 
-            ? t('hintEasy', { count: winningTiles.length }) 
-            : `💡 힌트: 대기패는 총 ${winningTiles.length}개 입니다.`;
-        hintBadge.innerText = hintText;
-        hintBadge.style.display = 'inline-block';
-    } else {
-        hintBadge.style.display = 'none';
+    if (hintBadge) {
+        if (currentMode === 'easy') {
+            const hintText = typeof t === 'function' 
+                ? t('hintEasy', { count: winningTiles.length }) 
+                : `💡 힌트: 대기패는 총 ${winningTiles.length}개 입니다.`;
+            hintBadge.innerText = hintText;
+            hintBadge.style.display = 'inline-block';
+        } else {
+            hintBadge.style.display = 'none';
+        }
     }
 
-    // 연승 모드 타이머 가동
+    // 연승 모드 타이머
     if (currentMode === 'streak') {
         startStreakTimer();
     } else {
@@ -203,32 +209,32 @@ function generateNewQuestion() {
     renderHandImages(currentHandArray, currentSuit);
 }
 
-// 마작 텐파이 손패 자동 생성 알고리즘 (13장 청일색 패)
+// 청일색 13장 패 생성 및 검증
 function createPureFlushHand(mode) {
-    while (true) {
+    let attempts = 0;
+    let fallbackResult = null;
+
+    while (attempts < 200) {
+        attempts++;
         let counts = new Array(10).fill(0);
-        let total = 0;
-        
-        // 4몸통 + 1머리 형태에서 1장 부족한(13장) 청일색패 무작위 빌드
-        // 몸통(멘츠) 4개 생성
+
+        // 4개 몸통(안코 or 슌츠) 생성
         for (let i = 0; i < 4; i++) {
-            if (Math.random() < 0.5) {
-                // 안코 (동일패 3장)
+            if (Math.random() < 0.4) {
                 let r = Math.floor(Math.random() * 9) + 1;
                 counts[r] += 3;
             } else {
-                // 슌츠 (연속패 3장)
                 let r = Math.floor(Math.random() * 7) + 1;
                 counts[r] += 1;
                 counts[r+1] += 1;
                 counts[r+2] += 1;
             }
         }
-        // 머리(아타마) 또는 대기 후보 1장 추가
-        let head = Math.floor(Math.random() * 9) + 1;
-        counts[head] += 1;
+        // 머리 후보 또는 텐파이 대기 1장 추가
+        let extra = Math.floor(Math.random() * 9) + 1;
+        counts[extra] += 1;
 
-        // 동일 패가 4장을 초과하는 부정확한 패 제외
+        // 동일 패가 4장 초과하면 불가능
         let isValid = true;
         for (let k = 1; k <= 9; k++) {
             if (counts[k] > 4) { isValid = false; break; }
@@ -244,28 +250,36 @@ function createPureFlushHand(mode) {
         }
         if (hand.length !== 13) continue;
 
-        // 계산된 손패의 대기패(오름패) 판정
+        // 대기패 계산
         let wins = calculateWaitingTiles(hand);
-        if (wins.length === 0) continue; // 텐파이가 아니면 재생성
+        if (wins.length === 0) continue; // 텐파이 아니면 패스
 
-        // 난이도 조건 필터링
-        if (mode === 'easy' && wins.length > 3) continue;       // 쉬움: 1~3면짱
-        if (mode === 'hard' && wins.length < 5) continue;       // 어려움: 5면짱 이상
-        if (mode === 'streak' && wins.length < 4) continue;     // 연승: 4면짱 이상
+        const result = { hand: hand, wins: wins };
+        if (!fallbackResult) fallbackResult = result;
 
-        return { hand: hand, wins: wins };
+        // 모드 조건 검사
+        if (mode === 'easy' && wins.length <= 3) return result;
+        if (mode === 'normal') return result;
+        if (mode === 'hard' && wins.length >= 4) return result;
+        if (mode === 'streak' && wins.length >= 3) return result;
     }
+
+    // 조건에 딱 맞는 패 생성이 지연될 경우 기본 반환
+    return fallbackResult || { 
+        hand: [1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9], 
+        wins: [1, 2, 3, 4, 5, 6, 7, 8, 9] 
+    };
 }
 
-// 손패 13장에 1~9 패를 하나씩 더해보며 오름(화료)이 가능한지 체크
+// 1~9 패를 더했을 때 화료(오름)가 되는지 전체 확인
 function calculateWaitingTiles(hand13) {
     let wins = [];
     for (let t = 1; t <= 9; t++) {
-        let testHand = [...hand13, t];
         let counts = new Array(10).fill(0);
-        testHand.forEach(v => counts[v]++);
-        
-        // 동일 패 5장 이상 사용 불가
+        hand13.forEach(v => counts[v]++);
+        counts[t]++;
+
+        // 동일 패가 5장 이상이면 오름 불가
         if (counts[t] > 4) continue;
 
         if (canFormMahjongHand(counts)) {
@@ -275,12 +289,11 @@ function calculateWaitingTiles(hand13) {
     return wins;
 }
 
-// 14장 손패가 4몸통 + 1머리를 완성하는지 백트래킹(DFS) 검증
+// 14장 패가 4몸통 + 1머리를 이루는지 백트래킹 검사
 function canFormMahjongHand(counts) {
-    // 1. 머리(아타마 - 동일패 2장) 후보를 찾음
     for (let i = 1; i <= 9; i++) {
         if (counts[i] >= 2) {
-            counts[i] -= 2;
+            counts[i] -= 2; // 머리로 가정
             if (checkMelds([...counts])) {
                 counts[i] += 2;
                 return true;
@@ -291,7 +304,7 @@ function canFormMahjongHand(counts) {
     return false;
 }
 
-// 나머지 12장이 모두 몸통(안코/슌츠)으로 분해되는지 확인
+// 남은 패가 몸통(코츠/슌츠)으로 전부 분해되는지 확인
 function checkMelds(counts) {
     let first = 0;
     for (let i = 1; i <= 9; i++) {
@@ -300,17 +313,16 @@ function checkMelds(counts) {
             break;
         }
     }
-    // 남은 패가 없으면 모든 몸통 완성
-    if (first === 0) return true;
+    if (first === 0) return true; // 패를 모두 사용함
 
-    // 1) 코츠(3장 동일) 제거 시도
+    // 1) 코츠 (같은 패 3장)
     if (counts[first] >= 3) {
         counts[first] -= 3;
         if (checkMelds(counts)) return true;
         counts[first] += 3;
     }
 
-    // 2) 슌츠(연속 3장) 제거 시도
+    // 2) 슌츠 (연속 패 3장)
     if (first <= 7 && counts[first+1] > 0 && counts[first+2] > 0) {
         counts[first]--;
         counts[first+1]--;
@@ -324,9 +336,10 @@ function checkMelds(counts) {
     return false;
 }
 
-// Zip 리소스에서 패 이미지 렌더링
+// Zip 이미지 렌더링
 async function renderHandImages(handArray, suit) {
     const handContainer = document.getElementById('hand-container');
+    if (!handContainer) return;
     handContainer.innerHTML = '';
 
     const prefixMap = { 1: 'm', 2: 'p', 3: 's' };
@@ -376,10 +389,8 @@ function resetNumberButtons() {
 
 function handleSubmitOrNext() {
     if (isSubmitted) {
-        // 다음 문제로 진행
         generateNewQuestion();
     } else {
-        // 정답 확인 및 제출
         checkAnswer();
     }
 }
@@ -395,40 +406,46 @@ function checkAnswer() {
         userAnsArray.every((val, index) => val === correctAnsArray[index]);
 
     const resultDiv = document.getElementById('result-message');
-    resultDiv.style.display = 'block';
+    if (resultDiv) resultDiv.style.display = 'block';
 
     const answerText = correctAnsArray.join(', ');
 
     if (isCorrect) {
-        resultDiv.className = 'result-message correct';
-        if (currentMode === 'streak') {
-            streakCount++;
-            updateStreakAndTimerDisplay();
-            const correctStr = typeof t === 'function' ? t('correct') : "⭕ 정답입니다!";
-            const streakStr = typeof t === 'function' ? t('streakCount', { count: streakCount }) : `${streakCount}연승`;
-            resultDiv.innerHTML = `${correctStr} (${streakStr}!)<br>👉 ${answerText}`;
-        } else {
-            const correctStr = typeof t === 'function' ? t('correct') : "⭕ 정답입니다!";
-            resultDiv.innerHTML = `${correctStr}<br>👉 ${answerText}`;
+        if (resultDiv) {
+            resultDiv.className = 'result-message correct';
+            if (currentMode === 'streak') {
+                streakCount++;
+                updateStreakAndTimerDisplay();
+                const correctStr = typeof t === 'function' ? t('correct') : "⭕ 정답입니다!";
+                const streakStr = typeof t === 'function' ? t('streakCount', { count: streakCount }) : `${streakCount}연승`;
+                resultDiv.innerHTML = `${correctStr} (${streakStr}!)<br>👉 대기패: [ ${answerText} ]`;
+            } else {
+                const correctStr = typeof t === 'function' ? t('correct') : "⭕ 정답입니다!";
+                resultDiv.innerHTML = `${correctStr}<br>👉 대기패: [ ${answerText} ]`;
+            }
         }
     } else {
-        resultDiv.className = 'result-message incorrect';
-        const incorrectStr = typeof t === 'function' ? t('incorrect') : "❌ 오답입니다!";
-        resultDiv.innerHTML = `${incorrectStr}<br>👉 정답: [ ${answerText} ]`;
+        if (resultDiv) {
+            resultDiv.className = 'result-message incorrect';
+            const incorrectStr = typeof t === 'function' ? t('incorrect') : "❌ 오답입니다!";
+            resultDiv.innerHTML = `${incorrectStr}<br>👉 정답: [ ${answerText} ]`;
+        }
 
         if (currentMode === 'streak') {
             checkStreakRecordAndReset();
         }
     }
 
-    // 버튼 갱신 (다음 문제)
+    // 다음 버튼 텍스트
     const submitBtn = document.getElementById('btn-submit');
-    if (currentMode === 'streak') {
-        submitBtn.innerText = typeof t === 'function' ? t('btnNextStreak') : "다음 문제 도전 ⚡";
-        submitBtn.style.backgroundColor = '#8e44ad';
-    } else {
-        submitBtn.innerText = typeof t === 'function' ? t('btnNextSame') : "다음 문제 풀어보기 ➡️";
-        submitBtn.style.backgroundColor = '#27ae60';
+    if (submitBtn) {
+        if (currentMode === 'streak') {
+            submitBtn.innerText = typeof t === 'function' ? t('btnNextStreak') : "다음 문제 도전 ⚡";
+            submitBtn.style.backgroundColor = '#8e44ad';
+        } else {
+            submitBtn.innerText = typeof t === 'function' ? t('btnNextSame') : "다음 문제 풀어보기 ➡️";
+            submitBtn.style.backgroundColor = '#27ae60';
+        }
     }
 }
 
@@ -473,18 +490,21 @@ function stopStreakTimer() {
 function handleTimeout() {
     isSubmitted = true;
     const resultDiv = document.getElementById('result-message');
-    resultDiv.style.display = 'block';
-    resultDiv.className = 'result-message incorrect';
-
-    const timeoutStr = typeof t === 'function' ? t('timeout') : "⏰ 시간 초과!";
-    const answerText = winningTiles.join(', ');
-    resultDiv.innerHTML = `${timeoutStr}<br>👉 정답: [ ${answerText} ]`;
+    if (resultDiv) {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'result-message incorrect';
+        const timeoutStr = typeof t === 'function' ? t('timeout') : "⏰ 시간 초과!";
+        const answerText = winningTiles.join(', ');
+        resultDiv.innerHTML = `${timeoutStr}<br>👉 정답: [ ${answerText} ]`;
+    }
 
     checkStreakRecordAndReset();
 
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = typeof t === 'function' ? t('btnNextStreak') : "다음 문제 도전 ⚡";
-    submitBtn.style.backgroundColor = '#8e44ad';
+    if (submitBtn) {
+        submitBtn.innerText = typeof t === 'function' ? t('btnNextStreak') : "다음 문제 도전 ⚡";
+        submitBtn.style.backgroundColor = '#8e44ad';
+    }
 }
 
 function updateStreakAndTimerDisplay() {
@@ -492,18 +512,21 @@ function updateStreakAndTimerDisplay() {
     const timerDisplay = document.getElementById('timer-display');
 
     if (currentMode === 'streak') {
-        streakDisplay.innerText = typeof t === 'function' 
-            ? t('streakCount', { count: streakCount }) 
-            : `🔥 현재 ${streakCount}연승`;
-        timerDisplay.innerText = typeof t === 'function' 
-            ? t('timerSeconds', { count: timeLeft }) 
-            : `⏱️ ${timeLeft}초`;
-
-        streakDisplay.style.display = 'inline-block';
-        timerDisplay.style.display = 'inline-block';
+        if (streakDisplay) {
+            streakDisplay.innerText = typeof t === 'function' 
+                ? t('streakCount', { count: streakCount }) 
+                : `🔥 현재 ${streakCount}연승`;
+            streakDisplay.style.display = 'inline-block';
+        }
+        if (timerDisplay) {
+            timerDisplay.innerText = typeof t === 'function' 
+                ? t('timerSeconds', { count: timeLeft }) 
+                : `⏱️ ${timeLeft}초`;
+            timerDisplay.style.display = 'inline-block';
+        }
     } else {
-        streakDisplay.style.display = 'none';
-        timerDisplay.style.display = 'none';
+        if (streakDisplay) streakDisplay.style.display = 'none';
+        if (timerDisplay) timerDisplay.style.display = 'none';
     }
 }
 
@@ -512,18 +535,16 @@ function checkStreakRecordAndReset() {
         const nameContainer = document.getElementById('name-input-container');
         if (nameContainer) nameContainer.style.display = 'block';
     }
-    // 연승 수 초기화 (기록 등록용으로 직전 값 저장 후 차회 리셋)
 }
 
 // -------------------------------------------------------------
-// 7. 명예의 전당 및 Google Sheets 연동
+// 7. 리더보드 및 Google Sheets 연동
 // -------------------------------------------------------------
 async function saveRecord() {
     const input = document.getElementById('player-name-input');
-    const name = (input.value.trim() === "") ? "Anonymous" : input.value.trim();
+    const name = (!input || input.value.trim() === "") ? "Anonymous" : input.value.trim();
 
     try {
-        // 암호화된 앱스크립트 URL 복호화 시도 (설정 시)
         let endpointUrl = "";
         try {
             const bytes = CryptoJS.AES.decrypt(ENCRYPTED_ENDPOINT, SECRET_PASSPHRASE);
@@ -533,9 +554,9 @@ async function saveRecord() {
         }
 
         if (!endpointUrl || !endpointUrl.startsWith("http")) {
-            console.warn("리더보드 API URL이 설정되지 않아 로컬 기록으로 대체합니다.");
             alert(`🏆 [${name}] 님 ${streakCount}연승 기록 완료!`);
-            document.getElementById('name-input-container').style.display = 'none';
+            const nameContainer = document.getElementById('name-input-container');
+            if (nameContainer) nameContainer.style.display = 'none';
             streakCount = 0;
             updateStreakAndTimerDisplay();
             return;
@@ -555,7 +576,8 @@ async function saveRecord() {
         });
 
         alert(`🏆 명예의 전당에 [${name}] (${streakCount}연승) 기록이 등록되었습니다!`);
-        document.getElementById('name-input-container').style.display = 'none';
+        const nameContainer = document.getElementById('name-input-container');
+        if (nameContainer) nameContainer.style.display = 'none';
         streakCount = 0;
         updateStreakAndTimerDisplay();
         loadLeaderboard();
@@ -606,7 +628,7 @@ async function loadLeaderboard() {
 }
 
 // -------------------------------------------------------------
-// 8. 기타 이스터에그 및 트리거
+// 8. 기타 이벤트
 // -------------------------------------------------------------
 function initTitleClickTrigger() {
     const icon = document.getElementById('title-icon');
@@ -615,13 +637,9 @@ function initTitleClickTrigger() {
         icon.addEventListener('click', () => {
             clickCount++;
             if (clickCount >= 5) {
-                alert(`🀄 [Developer Info] App Version: ${APP_VERSION}\nPure Flush Waiting Quiz Engine Activated!`);
+                alert(`🀄 [Developer Info] App Version: ${APP_VERSION}\nPure Flush Engine Ready!`);
                 clickCount = 0;
             }
         });
     }
-}
-
-function renderCustomButtons() {
-    // 필요 시 UI 조작용 커스텀 확장 슬롯
 }
