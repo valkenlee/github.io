@@ -124,7 +124,7 @@
     
     <div id="name-input-container" style="display: none;" class="hall-of-fame">
         <h4 style="margin: 0 0 8px 0; color: #8e44ad;" data-i18n="congratsStreak">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
-        <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당 등록 이름 (미입력 시 Anonymous):</p>
+        <p style="margin: 0 0 10px 0; font-size: 14px;" data-i18n="inputNameNotice">명예의 전당 등록 이름 (미입력 시 Anonymous):</p>
         <div class="name-input-box">
             <input type="text" id="player-name-input" maxlength="20" data-i18n-placeholder="inputNamePlaceholder" placeholder="Anonymous (최대 20자)" onkeydown="if(event.key==='Enter') saveRecord()">
             <button id="btn-save-record" onclick="saveRecord()" data-i18n="btnSaveRecord">기록 등록</button>
@@ -139,7 +139,7 @@
     </p>
     <div id="leaderboard-content">
         <ul class="record-list" id="record-list-ul">
-            <li style="text-align:center; padding: 10px; color:#7f8c8d;">기록을 불러오는 중...</li>
+            <li style="text-align:center; padding: 10px; color:#7f8c8d;" data-i18n="hallOfFameLoading">기록을 불러오는 중...</li>
         </ul>
     </div>
 </div>
