@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 텐파이 대기패 퀴즈 (v0.3a)</title>
+    <title data-i18n="title">청일색 텐파이 대기패 퀴즈</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="style.css">
 
-    <!-- PapaParse: CSV 데이터를 JSON으로 변환해주는 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -22,33 +21,44 @@
       });
     </script>
 
-    <!-- index.html의 <head> 내부에 추가 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    
+    <script src="i18n.js"></script>
 </head>
 <body>
 
+<div class="lang-bar">
+    <div class="lang-select-box">
+        <span>🌐 Language:</span>
+        <select id="lang-select" onchange="setLanguage(this.value)">
+            <option value="ko">한국어</option>
+            <option value="ja">日本語</option>
+            <option value="zh_CN">简体中文</option>
+            <option value="zh_TW">繁體中文</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+</div>
+
 <h1 style="user-select: none;">
     <span id="title-icon" style="cursor: pointer;">🀄</span> 
-    청일색 텐파이 대기패 퀴즈 (v0.3a)
+    <span data-i18n="title">청일색 텐파이 대기패 퀴즈</span> (v0.4b)
 </h1>
 
 <div class="card">
-    <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
-        📦 Regular.zip 패키지를 읽어오는 중입니다...
+    <div id="status-msg" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;" data-i18n="loading">
+        📦 마작패 패키지를 읽어오는 중입니다...
     </div>
     
     <div class="difficulty-group">
-        <button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" disabled>🌱 쉬움</button>
-        <button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" disabled>🌿 보통</button>
-        <button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" disabled>🔥 어려움</button>
-        <button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" disabled>⚡ 연승 모드</button>
+        <button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" disabled data-i18n="modeEasy">🌱 쉬움</button>
+        <button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" disabled data-i18n="modeNormal">🌿 보통</button>
+        <button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" disabled data-i18n="modeHard">🔥 어려움</button>
+        <button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" disabled data-i18n="modeStreak">⚡ 연승 모드</button>
     </div>
 
     <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
     <div class="status-bar" style="margin-top: 15px;">
-        <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
+        <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승 중</span>
         <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
     </div>
 
@@ -56,65 +66,37 @@
         <div id="timer-gauge-bar" class="timer-gauge-bar"></div>
     </div>
 
-    <div style="text-align: center; margin-top: 10px;">
-        <div id="easy-hint" class="hint-badge" style="display: none;"></div>
-    </div>
-    
-    <div class="hand-container-wrapper" id="main-hand-wrapper">
-        <div class="hand-display" id="hand-container"></div>
-    </div>
-</div>
-
-<!-- 🔒 히든 패 분석기 영역 -->
-<div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; background: #faf5ff;">
-    <h3 style="margin-top:0; color:#8e44ad; text-align:center;">🕵️‍♂️ 히든 패 분석기 (자유 패 입력)</h3>
-    <div style="text-align: center; margin-bottom: 15px;">
-        <label for="custom-text-input" style="font-weight: bold; font-size: 14px;">⌨️ 숫자 직접 입력 (예: 1112345678999):</label><br>
-        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
-            <input type="text" id="custom-text-input" placeholder="숫자 13자리 입력" maxlength="13" 
-                   style="width: 200px; padding: 6px 10px; font-size: 15px; text-align: center; border: 1px solid #ccc; border-radius: 6px;"
-                   onkeydown="if(event.key==='Enter') applyCustomTextInput()">
-            <button class="btn-submit" style="background-color: #27ae60; padding: 6px 12px; margin:0;" onclick="applyCustomTextInput()">입력 반영</button>
-            <button class="btn-submit" style="background-color: #2980b9; padding: 6px 12px; margin:0;" onclick="copyCurrentQuizToCustom()">문제 복사</button>
-        </div>
+    <div class="hand-container-wrapper">
+        <div id="hand-container" class="hand-display"></div>
     </div>
 
-    <div class="hand-container-wrapper" style="background:#1b4332;">
-        <div class="hand-display" id="custom-hand-container">
-            <span style="color:#a3b18a; font-size:14px;">1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.</span>
-        </div>
-    </div>
+    <div id="easy-mode-hint" style="display:none; text-align:center; font-weight:bold; color:#27ae60; margin-top:10px;"></div>
 
-    <div style="margin-top: 15px;">
-        <div class="selection-grid" id="custom-tile-buttons"></div>
-        <div style="display:flex; gap:10px;">
-            <button class="btn-submit" style="background-color: #e74c3c; flex: 1;" onclick="clearCustomHand()">전체 삭제</button>
-            <button class="btn-submit" style="background-color: #8e44ad; flex: 2;" onclick="analyzeCustomHand()">🔍 대기패 및 해설 계산하기</button>
-        </div>
-    </div>
+    <p style="text-align: center; font-weight: bold; margin-top: 20px;" data-i18n="quizInstruction">
+        오름패(대기패)가 되는 숫자를 모두 선택하세요:
+    </p>
 
-    <div id="custom-result" class="result-message" style="display: none;"></div>
-</div>
-    
-<div class="card" id="quiz-area" style="display: none;">
-    <h3 style="margin-top:0;">오름패(대기패)가 되는 숫자를 모두 선택하세요: <small style="font-size:12px; font-weight:normal; color:#666;">(단축키: 1~9, Enter)</small></h3>
-    <div class="selection-grid" id="selection-buttons"></div>
-    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()">제출 및 정답 확인</button>
+    <div class="selection-grid" id="selection-grid"></div>
+
+    <p style="text-align: center; color: #7f8c8d; font-size: 13px;" data-i18n="shortcutHint">(단축키: 1~9, Enter)</p>
+
+    <button id="btn-submit" class="btn-submit" onclick="handleSubmitOrNext()" disabled data-i18n="btnSubmit">제출 및 정답 확인</button>
+
     <div id="result" class="result-message" style="display: none;"></div>
-    
+
     <div id="name-input-container" style="display: none;" class="hall-of-fame">
-        <h4 style="margin: 0 0 8px 0; color: #8e44ad;">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
+        <h4 style="margin: 0 0 8px 0; color: #8e44ad;" data-i18n="congratsStreak">🏆 축하합니다! 10연승 이상 기록 달성!</h4>
         <p style="margin: 0 0 10px 0; font-size: 14px;">명예의 전당 등록 이름 (미입력 시 Anonymous):</p>
         <div class="name-input-box">
-            <input type="text" id="player-name-input" maxlength="20" placeholder="Anonymous (최대 20자)" onkeydown="if(event.key==='Enter') saveRecord()">
-            <button id="btn-save-record" onclick="saveRecord()">기록 등록</button>
+            <input type="text" id="player-name-input" maxlength="20" data-i18n-placeholder="inputNamePlaceholder" placeholder="Anonymous (최대 20자)" onkeydown="if(event.key==='Enter') saveRecord()">
+            <button id="btn-save-record" onclick="saveRecord()" data-i18n="btnSaveRecord">기록 등록</button>
         </div>
     </div>
 </div>
 
 <div class="card hall-of-fame">
-    <h3>🏆 연승 모드 글로벌 명예의 전당 (Top 10)</h3>
-    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;">
+    <h3 data-i18n="hallOfFameTitle">🏆 연승 모드 글로벌 명예의 전당 (Top 10)</h3>
+    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;" data-i18n="hallOfFameSubtitle">
         🌐 Google Sheets 연동 글로벌 실시간 리더보드입니다.
     </p>
     <div id="leaderboard-content">
@@ -124,16 +106,40 @@
     </div>
 </div>
 
-<!-- ⚡ 안내 모달 -->
-<div class="modal-overlay" id="streak-modal">
+<div class="modal-overlay" id="streak-modal" style="display: none;">
     <div class="modal-content">
-        <h2>⚡ 어려움 연승 모드</h2>
+        <h2 data-i18n="modalTitle">⚡ 어려움 연승 모드</h2>
         <div class="modal-body">
-            ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br><br>
-            🏆 <b>글로벌 명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 전 세계 리더보드에 저장됩니다.<br><br>
-            ✏️ <b>이름 설정:</b> 이름을 입력하지 않으면 <b>Anonymous</b>로 등록됩니다.
+            <p data-i18n="modalTimeRule">⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.</p>
+            <p data-i18n="modalHofRule">🏆 <b>글로벌 명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 전 세계 리더보드에 저장됩니다.</p>
+            <p data-i18n="modalNameRule">✏️ <b>이름 설정:</b> 이름을 입력하지 않으면 <b>Anonymous</b>로 등록됩니다.</p>
         </div>
-        <button class="modal-btn" onclick="startStreakModeAfterNotice()">도전 시작하기</button>
+        <button class="modal-btn" onclick="startStreakMode()" data-i18n="modalStartBtn">도전 시작하기</button>
+    </div>
+</div>
+
+<div id="hidden-analyzer" class="card" style="display: none; border: 2px dashed #8e44ad; background-color: #fcf8ff;">
+    <h3 style="color: #8e44ad; margin-top:0;">🔓 히든 패 분석기 (13장 자유 조합)</h3>
+    <div style="margin-bottom: 12px;">
+        <p style="font-weight: bold; margin-bottom: 6px;">1. 숫자 버튼을 눌러 손패 구성 (최대 13장):</p>
+        <div class="selection-grid" id="custom-tile-buttons" style="margin: 10px 0;"></div>
+    </div>
+    <div style="margin-bottom: 15px;">
+        <p style="font-weight: bold; margin-bottom: 6px;">2. 또는 숫자 직접 입력 (예: 1112223334445):</p>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="custom-text-input" placeholder="1~9 숫자 입력" style="flex:1; padding:8px; border-radius:6px; border:1px solid #ccc;">
+            <button onclick="applyCustomTextInput()" style="padding:8px 15px; background:#8e44ad; color:white; border:none; border-radius:6px; cursor:pointer;">적용</button>
+        </div>
+    </div>
+    <div style="margin-bottom: 15px;">
+        <p style="font-weight: bold; margin-bottom: 6px;">현재 구성된 손패:</p>
+        <div class="hand-container-wrapper">
+            <div id="custom-hand-container" class="hand-display"></div>
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="clearCustomHand()" style="flex:1; padding:10px; background:#e74c3c; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">초기화</button>
+        <button onclick="analyzeCustomHand()" style="flex:2; padding:10px; background:#27ae60; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">분석하기</button>
     </div>
 </div>
 
