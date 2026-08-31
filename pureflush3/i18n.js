@@ -1,9 +1,9 @@
 const TRANSLATIONS = {
     ko: {
         title: "청일색 텐파이 대기패 퀴즈",
-        loading: "📦 Regular.zip 패키지를 읽어오는 중입니다...",
+        loading: "📦 마작패 패키지를 읽어오는 중입니다...",
         loadingSuccess: "✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.",
-        loadingError: "❌ Regular.zip 로딩 실패! index.html과 같은 폴더에 있는지 확인해주세요.",
+        loadingError: "❌ 마작패 로딩 실패! 파일이 같은 폴더에 있는지 확인해주세요.",
         modeEasy: "🌱 쉬움",
         modeNormal: "🌿 보통",
         modeHard: "🔥 어려움",
@@ -59,9 +59,9 @@ const TRANSLATIONS = {
     },
     ja: {
         title: "清一色 聴牌 待ち牌クイズ",
-        loading: "📦 Regular.zip パッケージを読み込み 중...",
+        loading: "📦 麻雀牌 パッケージを読み込み 중...",
         loadingSuccess: "✅ 牌の読み込み完了！モードを選択してください。",
-        loadingError: "❌ Regular.zip の読み込み失敗！ファイルを確認してください。",
+        loadingError: "❌ 麻雀牌 の読み込み失敗！ファイルを確認してください。",
         modeEasy: "🌱 初級",
         modeNormal: "🌿 中級",
         modeHard: "🔥 上級",
@@ -111,10 +111,10 @@ const TRANSLATIONS = {
         }
     },
     zh_CN: {
-        title: "清一色 听牌 听牌 Quiz",
-        loading: "📦 正在加载 Regular.zip 资源包...",
+        title: "清一色 听牌 听什么 猜谜",
+        loading: "📦 正在加载 麻将牌 资源包...",
         loadingSuccess: "✅ 麻将牌加载完成！请选择模式。",
-        loadingError: "❌ Regular.zip 加载失败！请检查文件是否存在。",
+        loadingError: "❌ 麻将牌 加载失败！请检查文件是否存在。",
         modeEasy: "🌱 简单",
         modeNormal: "🌿 普通",
         modeHard: "🔥 困难",
@@ -164,10 +164,10 @@ const TRANSLATIONS = {
         }
     },
     zh_TW: {
-        title: "清一色 聽牌 聽牌 Quiz",
-        loading: "📦 正在載入 Regular.zip 資源包...",
+        title: "清一色 聽牌 聽什麼 猜謎",
+        loading: "📦 正在載入 麻將牌 資源包...",
         loadingSuccess: "✅ 麻將牌載入完成！請選擇模式。",
-        loadingError: "❌ Regular.zip 載入失敗！請確認檔案是否存在。",
+        loadingError: "❌ 麻將牌 載入失敗！請確認檔案是否存在。",
         modeEasy: "🌱 簡單",
         modeNormal: "🌿 普通",
         modeHard: "🔥 困難",
@@ -218,9 +218,9 @@ const TRANSLATIONS = {
     },
     en: {
         title: "Chinitsu Tenpai Waiting Tile Quiz",
-        loading: "📦 Loading Regular.zip package...",
+        loading: "📦 Loading Mahjong tiles package...",
         loadingSuccess: "✅ Tile resources loaded! Choose a game mode.",
-        loadingError: "❌ Failed to load Regular.zip! Please check the file location.",
+        loadingError: "❌ Failed to load Mahjong tiles! Please check the file location.",
         modeEasy: "🌱 Easy",
         modeNormal: "🌿 Normal",
         modeHard: "🔥 Hard",
