@@ -62,7 +62,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const response = await fetch('Regular.zip');
-        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
+        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다..');
         
         const arrayBuffer = await response.arrayBuffer();
         zipInstance = await JSZip.loadAsync(arrayBuffer);
