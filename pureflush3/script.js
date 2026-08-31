@@ -204,7 +204,8 @@ function loadLeaderboard() {
             ul.innerHTML = '';
 
             if (top10.length === 0) {
-                ul.innerHTML = '<li style="text-align:center; padding: 10px; color:#7f8c8d;">-</li>';
+               // loadLeaderboard 함수 내부 ul.innerHTML 초기화 교체
+               ul.innerHTML = `<li style="text-align:center; padding: 10px; color:#7f8c8d;">${t('hallOfFameLoading')}</li>`;
                 return;
             }
 
@@ -366,7 +367,7 @@ async function updateCustomHandDisplay() {
     container.innerHTML = '';
 
     if (customHand.length === 0) {
-        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">Select 1~9 tiles or enter numbers.</span>`;
+        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">${t('analyzerEmptyHint')}</span>`;
         return;
     }
 
