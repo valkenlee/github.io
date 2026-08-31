@@ -499,13 +499,7 @@ function updateModeUI() {
     if (activeBtn) activeBtn.classList.add('active');
 
     const infoBox = document.getElementById('mode-info-box');
-
-   console.log('1. currentLang:', typeof currentLang !== 'undefined' ? currentLang : '미정의');
-    console.log('2. currentMode:', currentMode);
-    console.log('3. t() 호출 결과:', t(`descriptions.${currentMode}`));
-    console.log('4. infoBox 요소:', infoBox);
-
-   
+  
     infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
     infoBox.style.display = 'block';
 
