@@ -3,7 +3,7 @@ const TRANSLATIONS = {
         title: "청일색 텐파이 대기패 퀴즈",
         loading: "📦 마작패 패키지를 읽어오는 중입니다...",
         loadingSuccess: "✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.",
-        loadingError: "❌ 마작패 로딩 실패! 파일이 같은 폴더에 있는지 확인해주세요.",
+        loadingError: "❌ 마작패 로딩 실패! 파일이 같은 폴더에 있는지 확인해 주세요.",
         modeEasy: "🌱 쉬움",
         modeNormal: "🌿 보통",
         modeHard: "🔥 어려움",
@@ -24,7 +24,7 @@ const TRANSLATIONS = {
         
         // 역/대기 형태 태그 및 용어
         ryanpeikouNotice: "💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다.",
-        chiitoiNotice: "💡 이 문제는 청일색과 치또이즈(七対子)가 조합된 단기대기 문제입니다.",
+        chiitoiNotice: "💡 이 문제는 청일색과 치또이(七対子)가 조합된 단기대기 문제입니다.",
         waitRyanmen: "양면",
         waitTanki: "단기",
         waitShanpon: "샤보",
@@ -37,7 +37,7 @@ const TRANSLATIONS = {
         timeout: "⏰ 시간 초과로 실패했습니다!",
         actualWaits: "실제 오름패",
         theoreticalWaits: "이론상 대기패",
-        maxedNotice: "(※ {tiles}번 패는 오름패 형태이지만 4장을 모두 가지고 있어 오를 수 없음)",
+        maxedNotice: "(※ {tiles}번 패는 오름패 형태이지만 4장을 모두 사용 중이어서 완성할 수 없음)",
         
         // 설명 상자
         explanationTitle: "🔍 대기패별 대기 유형 및 손패 구조 해설",
@@ -51,7 +51,7 @@ const TRANSLATIONS = {
 
         // 난이도 설명
         descriptions: {
-            easy: "📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇개인지도 알려 줍니다.<br>• 제출 후 대기 유형 및 세부 분해 해설을 제공합니다.",
+            easy: "📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇 개인지도 알려 줍니다.<br>• 제출 후 대기 유형 및 세부 분해 해설을 제공합니다.",
             normal: "📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 대기 유형과 세부 분해 해설을 제공합니다.",
             hard: "📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.",
             streak: "📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 별도의 패 분해 해설이 제공되지 않고 빠른 진행을 지원합니다."
@@ -59,29 +59,29 @@ const TRANSLATIONS = {
     },
     ja: {
         title: "清一色 聴牌 待ち牌クイズ",
-        loading: "📦 麻雀牌 パッケージを読み込み 중...",
+        loading: "📦 麻雀牌のリソースを読み込んでいます...",
         loadingSuccess: "✅ 牌の読み込み完了！モードを選択してください。",
-        loadingError: "❌ 麻雀牌 の読み込み失敗！ファイルを確認してください。",
+        loadingError: "❌ 麻雀牌の読み込み失敗！ファイルが同じフォルダにあるか確認してください。",
         modeEasy: "🌱 初級",
         modeNormal: "🌿 中級",
         modeHard: "🔥 上級",
         modeStreak: "⚡ 連勝モード",
-        hintEasy: "💡 ヒント: アガリ牌は全部で {count} つあります。",
+        hintEasy: "💡 ヒント: アガリ牌は全部で {count} 個あります。",
         streakCount: "🔥 現在 {count} 連勝中",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "アガリ牌（待ち牌）となる数字をすべて選択してください:",
         shortcutHint: "(ショートカット: 1~9, Enter)",
         btnSubmit: "回答する",
-        btnNextStreak: "次の連勝問題へ",
+        btnNextStreak: "次の問題へ",
         btnNextSame: "同じ難易度で再挑戦",
         btnSaveRecord: "記録を登録",
         hallOfFameTitle: "🏆 連勝モード グローバル殿堂 (Top 10)",
-        hallOfFameSubtitle: "🌐 Google スプレッドシート連携グローバルリーダーボード",
-        congratsStreak: "🏆 おめでとうございます！10連勝達成！",
+        hallOfFameSubtitle: "🌐 Google スプレッドシート連携のリアルタイムリーダーボードです。",
+        congratsStreak: "🏆 おめでとうございます！10連勝以上達成！",
         inputNamePlaceholder: "Anonymous (最大20文字)",
         
-        ryanpeikouNotice: "💡 二盃口の形が含まれている問題です。",
-        chiitoiNotice: "💡 清一色・七対子の単騎待ち問題です。",
+        ryanpeikouNotice: "💡 二盃口（リャンペーコー）の形が含まれている問題です。",
+        chiitoiNotice: "💡 清一色と七対子（チートイツ）が複合した単騎待ち問題です。",
         waitRyanmen: "両面",
         waitTanki: "単騎",
         waitShanpon: "シャボ",
@@ -91,7 +91,7 @@ const TRANSLATIONS = {
         correct: "🎉 正解です！",
         incorrect: "❌ 不正解です。",
         timeout: "⏰ 制限時間切れです！",
-        actualWaits: "実際の待ち牌",
+        actualWaits: "実際のアガリ牌",
         theoreticalWaits: "理論上の待ち牌",
         maxedNotice: "(※ {tiles} は手牌で4枚使用中のためアガれません)",
         
@@ -99,42 +99,42 @@ const TRANSLATIONS = {
         
         modalTitle: "⚡ 上級 連勝モード",
         modalTimeRule: "⏱️ <b>60秒制限:</b> 1問につき60秒以内に回答してください。",
-        modalHofRule: "🏆 <b>殿堂入り:</b> <b>10連勝以上</b>でリーダーボードに記録できます。",
-        modalNameRule: "✏️ <b>名前設定:</b> 未入力の場合は <b>Anonymous</b> となります。",
+        modalHofRule: "🏆 <b>殿堂入り:</b> <b>10連勝以上</b>でグローバルリーダーボードに記録されます。",
+        modalNameRule: "✏️ <b>名前設定:</b> 未入力の場合は <b>Anonymous</b> として登録されます。",
         modalStartBtn: "挑戦を開始する",
 
         descriptions: {
-            easy: "📌 <b>🌱 初級モード:</b><br>• アガリ牌が1〜2個の簡単な問題です。待ち牌の数も表示されます。<br>• 回答後に待ちの形と解説が表示されます。",
-            normal: "📌 <b>🌿 中級モード:</b><br>• 2つ待ちを中心に, 基本的な多面張が出題されます。<br>• 回答後に詳細な解説が表示されます。",
-            hard: "📌 <b>🔥 上級モード:</b><br>• 複雑な多面張問題が出題されます。<br>• 回答後にすべての分解パターンを解説します。",
-            streak: "📌 <b>⚡ 連勝モードルール:</b><br>• ⏱️ <b>60秒制限:</b> 1問60秒以内。<br>• ⚡ 解説なしのテンポ重視モードです。"
+            easy: "📌 <b>🌱 初級モード:</b><br>• アガリ牌が1〜2個の簡単な問題です。待ち牌の数も表示されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
+            normal: "📌 <b>🌿 中級モード:</b><br>• 主に2つ待ちを中心とした問題が出題されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
+            hard: "📌 <b>🔥 上級モード:</b><br>• 複雑な多面張（多面待ち）問題が出題されます。<br>• 回答後に多様な待ちの形と分解パターンをすべて解説します。",
+            streak: "📌 <b>⚡ 連勝モードルール:</b><br>• ⏱️ <b>60秒制限:</b> 1問につき60秒以内に回答してください。<br>• ⚡ 解説は表示されず、テンポ重視のモードです。"
         }
     },
     zh_CN: {
         title: "清一色 听牌 听什么 猜谜",
-        loading: "📦 正在加载 麻将牌 资源包...",
-        loadingSuccess: "✅ 麻将牌加载完成！请选择模式。",
-        loadingError: "❌ 麻将牌 加载失败！请检查文件是否存在。",
+        loading: "📦 正在加载麻将牌资源...",
+        loadingSuccess: "✅ 麻将牌加载完成！请选择游戏模式。",
+        loadingError: "❌ 麻将牌加载失败！请检查文件是否在同一目录下。",
         modeEasy: "🌱 简单",
         modeNormal: "🌿 普通",
         modeHard: "🔥 困难",
         modeStreak: "⚡ 连胜模式",
-        hintEasy: "💡 提示: 共有 {count} 个和牌。",
+        hintEasy: "💡 提示: 共有 {count} 个和牌（听牌）。",
         streakCount: "🔥 当前 {count} 连胜",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "请选择所有可以和牌（听牌）的数字:",
         shortcutHint: "(快捷键: 1~9, Enter)",
         btnSubmit: "提交并查看答案",
         btnNextStreak: "进入下一题",
-        btnNextSame: "再来一题",
+        btnNextSame: "同难度再来一题",
         btnSaveRecord: "提交成绩",
         hallOfFameTitle: "🏆 连胜模式 全球名人堂 (Top 10)",
-        hallOfFameSubtitle: "🌐 基于 Google Sheets 的实时排行榜",
-        congratsStreak: "🏆 恭喜达成 10 连胜以上！",
+        hallOfFameSubtitle: "🌐 基于 Google Sheets 绑定的实时全球排行榜。",
+        congratsStreak: "🏆 恭喜！达成 10 连胜以上纪录！",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
-        ryanpeikouNotice: "💡 本题包含两盃口牌型。",
-        chiitoiNotice: "💡 本题为清一色七对子单骑听牌。",
+        ryanpeikouNotice: "💡 本题包含两杯口牌型。",
+        chiitoiNotice: "💡 本题为清一色与七对子复合的单骑听牌。",
         waitRyanmen: "两面",
         waitTanki: "单骑",
         waitShanpon: "双碰",
@@ -144,50 +144,50 @@ const TRANSLATIONS = {
         correct: "🎉 回答正确！",
         incorrect: "❌ 回答错误。",
         timeout: "⏰ 时间到！",
-        actualWaits: "实际听牌",
+        actualWaits: "实际和牌",
         theoreticalWaits: "理论听牌",
-        maxedNotice: "(※ {tiles} 已经被手牌使用4张，无法和牌)",
+        maxedNotice: "(※ {tiles} 已经被手牌使用4张，无法完成和牌)",
         
         explanationTitle: "🔍 各听牌类型及手牌结构解析",
         
         modalTitle: "⚡ 困难 连胜模式",
         modalTimeRule: "⏱️ <b>60秒限时:</b> 每题须在60秒内完成。",
-        modalHofRule: "🏆 <b>全球名人堂:</b> 达到 <b>10连胜以上</b> 可登榜。",
+        modalHofRule: "🏆 <b>全球名人堂:</b> 达到 <b>10连胜以上</b> 即可登榜。",
         modalNameRule: "✏️ <b>玩家名称:</b> 未输入时默认显示为 <b>Anonymous</b>。",
         modalStartBtn: "开始挑战",
 
         descriptions: {
-            easy: "📌 <b>🌱 简单模式:</b><br>• 仅有 1~2 个听牌，并会提示听牌数量。<br>• 提交后提供详细拆解说明。",
-            normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 个听牌为主的常见牌型。<br>• 提交后提供详细拆解说明。",
-            hard: "📌 <b>🔥 困难模式:</b><br>• 复杂的复杂多面听牌型。<br>• 提交后分析所有可能组合。",
-            streak: "📌 <b>⚡ 连胜模式规则:</b><br>• ⏱️ <b>60秒限时:</b> 快速答题。<br>• ⚡ 不提供详细拆解，方便快速进行。"
+            easy: "📌 <b>🌱 简单模式:</b><br>• 仅有 1~2 个和牌的简单题目，并提示和牌数量。<br>• 提交后提供听牌类型及详细拆解说明。",
+            normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 个和牌为主的常见听牌型。<br>• 提交后提供听牌类型及详细拆解说明。",
+            hard: "📌 <b>🔥 困难模式:</b><br>• 复杂的多面听牌型。<br>• 提交后分析所有可能组合与听牌类型。",
+            streak: "📌 <b>⚡ 连胜模式规则:</b><br>• ⏱️ <b>60秒限时:</b> 每题须在60秒内完成。<br>• ⚡ 不提供手牌拆解，方便快速挑战。"
         }
     },
     zh_TW: {
         title: "清一色 聽牌 聽什麼 猜謎",
-        loading: "📦 正在載入 麻將牌 資源包...",
-        loadingSuccess: "✅ 麻將牌載入完成！請選擇模式。",
-        loadingError: "❌ 麻將牌 載入失敗！請確認檔案是否存在。",
+        loading: "📦 正在載入麻將牌資源...",
+        loadingSuccess: "✅ 麻將牌載入完成！請選擇遊戲模式。",
+        loadingError: "❌ 麻將牌載入失敗！請確認檔案是否在同一資料夾。",
         modeEasy: "🌱 簡單",
         modeNormal: "🌿 普通",
         modeHard: "🔥 困難",
         modeStreak: "⚡ 連勝模式",
-        hintEasy: "💡 提示: 共有 {count} 個胡牌。",
+        hintEasy: "💡 提示: 共有 {count} 個胡牌（聽牌）。",
         streakCount: "🔥 當前 {count} 連勝",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "請選擇所有可以胡牌（聽牌）的數字:",
         shortcutHint: "(快捷鍵: 1~9, Enter)",
         btnSubmit: "提交並確認答案",
         btnNextStreak: "進入下一題",
-        btnNextSame: "再挑戰一題",
+        btnNextSame: "同難度再挑戰一題",
         btnSaveRecord: "送出紀錄",
         hallOfFameTitle: "🏆 連勝模式 全球名人堂 (Top 10)",
-        hallOfFameSubtitle: "🌐 基於 Google Sheets 的即時排行榜",
-        congratsStreak: "🏆 恭喜達成 10 連勝以上！",
+        hallOfFameSubtitle: "🌐 基於 Google Sheets 連結的即時全球排行榜。",
+        congratsStreak: "🏆 恭喜！達成 10 連勝以上紀錄！",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
         ryanpeikouNotice: "💡 本題包含兩盃口牌型。",
-        chiitoiNotice: "💡 本題為清一色七對子單騎聽牌。",
+        chiitoiNotice: "💡 本題為清一色與七對子複合的單騎聽牌。",
         waitRyanmen: "兩面",
         waitTanki: "單騎",
         waitShanpon: "雙碰",
@@ -197,30 +197,30 @@ const TRANSLATIONS = {
         correct: "🎉 回答正確！",
         incorrect: "❌ 回答錯誤。",
         timeout: "⏰ 時間到！",
-        actualWaits: "實際聽牌",
+        actualWaits: "實際胡牌",
         theoreticalWaits: "理論聽牌",
-        maxedNotice: "(※ {tiles} 已經手牌使用4張，無法胡牌)",
+        maxedNotice: "(※ {tiles} 已經在手牌中使用4張，無法完成胡牌)",
         
         explanationTitle: "🔍 各聽牌類型及手牌結構解析",
         
         modalTitle: "⚡ 困難 連勝模式",
         modalTimeRule: "⏱️ <b>60秒限時:</b> 每題須在60秒內完成。",
-        modalHofRule: "🏆 <b>全球名人堂:</b> 達到 <b>10連勝以上</b> 可登榜。",
+        modalHofRule: "🏆 <b>全球名人堂:</b> 達到 <b>10連勝以上</b> 即可登榜。",
         modalNameRule: "✏️ <b>玩家名稱:</b> 未輸入時預設顯示為 <b>Anonymous</b>。",
         modalStartBtn: "開始挑戰",
 
         descriptions: {
-            easy: "📌 <b>🌱 簡單模式:</b><br>• 僅有 1~2 個聽牌，並會提示聽牌數量。<br>• 提交後提供詳細拆解說明。",
-            normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 個聽牌為主的常見牌型。<br>• 提交後 provide 詳細拆解說明。",
-            hard: "📌 <b>🔥 困難模式:</b><br>• 複雜的複雜多面聽牌型。<br>• 提交後分析所有可能組合。",
-            streak: "📌 <b>⚡ 連勝模式規則:</b><br>• ⏱️ <b>60秒限時:</b> 快速答題。<br>• ⚡ 不提供詳細拆解，方便快速進行。"
+            easy: "📌 <b>🌱 簡單模式:</b><br>• 僅有 1~2 個胡牌的簡單題目，並提示胡牌數量。<br>• 提交後提供聽牌類型及詳細拆分說明。",
+            normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 個胡牌為主的常見聽牌型。<br>• 提交後 provide 詳細拆分說明。",
+            hard: "📌 <b>🔥 困難模式:</b><br>• 複雜的多面聽牌型。<br>• 提交後分析所有可能組合與聽牌類型。",
+            streak: "📌 <b>⚡ 連勝模式規則:</b><br>• ⏱️ <b>60秒限時:</b> 每題須在60秒內完成。<br>• ⚡ 不提供手牌拆分，方便快速挑戰。"
         }
     },
     en: {
         title: "Chinitsu Tenpai Waiting Tile Quiz",
-        loading: "📦 Loading Mahjong tiles package...",
-        loadingSuccess: "✅ Tile resources loaded! Choose a game mode.",
-        loadingError: "❌ Failed to load Mahjong tiles! Please check the file location.",
+        loading: "📦 Loading Mahjong tile resources...",
+        loadingSuccess: "✅ Tile resources loaded! Select a game mode.",
+        loadingError: "❌ Failed to load Mahjong tiles! Check if files are in the same folder.",
         modeEasy: "🌱 Easy",
         modeNormal: "🌿 Normal",
         modeHard: "🔥 Hard",
@@ -232,15 +232,15 @@ const TRANSLATIONS = {
         shortcutHint: "(Shortcuts: 1-9, Enter)",
         btnSubmit: "Submit Answer",
         btnNextStreak: "Next Challenge",
-        btnNextSame: "New Question",
+        btnNextSame: "Try Another Question",
         btnSaveRecord: "Submit Score",
         hallOfFameTitle: "🏆 Global Hall of Fame (Top 10)",
         hallOfFameSubtitle: "🌐 Live global leaderboard synced via Google Sheets.",
-        congratsStreak: "🏆 Congratulations! You achieved 10+ streaks!",
-        inputNamePlaceholder: "Anonymous (Max 20 chars)",
+        congratsStreak: "🏆 Congratulations! You achieved a 10+ win streak!",
+        inputNamePlaceholder: "Anonymous(Max 20 ch)",
         
-        ryanpeikouNotice: "💡 This hand contains a Ryanpeikou (Two Double Pung) structure.",
-        chiitoiNotice: "💡 This hand is a Chiitoitsu (Seven Pairs) Tanki wait.",
+        ryanpeikouNotice: "💡 This hand contains a Ryanpeikou (Two Double Pungs) pattern.",
+        chiitoiNotice: "💡 This hand is a combination of Chinitsu and Chiitoitsu (Seven Pairs) Tanki wait.",
         waitRyanmen: "Ryanmen (Two-sided)",
         waitTanki: "Tanki (Single)",
         waitShanpon: "Shanpon (Dual-pair)",
@@ -252,7 +252,7 @@ const TRANSLATIONS = {
         timeout: "⏰ Time's up!",
         actualWaits: "Winning Tiles",
         theoreticalWaits: "Theoretical Waits",
-        maxedNotice: "(※ Tile {tiles} is maxed out with 4 copies in hand)",
+        maxedNotice: "(※ Tile {tiles} is maxed out with 4 copies in hand, so it cannot complete the hand)",
         
         explanationTitle: "🔍 Decomposition & Wait Analysis",
         
@@ -263,10 +263,10 @@ const TRANSLATIONS = {
         modalStartBtn: "Start Challenge",
 
         descriptions: {
-            easy: "📌 <b>🌱 Easy Mode:</b><br>• Simple hands with 1-2 winning tiles. Shows tile count hint.<br>• Provides detailed hand breakdowns after submission.",
-            normal: "📌 <b>🌿 Normal Mode:</b><br>• standard hands, mostly 2 winning tiles.<br>• Provides detailed hand breakdowns after submission.",
-            hard: "📌 <b>🔥 Hard Mode:</b><br>• Complex multi-sided waits.<br>• Full structure and decomposition analysis provided.",
-            streak: "📌 <b>⚡ Streak Mode Rules:</b><br>• ⏱️ <b>60s Time Limit:</b> Fast-paced quiz.<br>• ⚡ Explanations disabled for fast gameplay."
+            easy: "📌 <b>🌱 Easy Mode:</b><br>• Simple hands with 1-2 winning tiles. Displays the tile count hint.<br>• Provides detailed hand decompositions and wait types after submission.",
+            normal: "📌 <b>🌿 Normal Mode:</b><br>• Standard hands, mostly with 2 winning tiles.<br>• Provides detailed hand decompositions and wait types after submission.",
+            hard: "📌 <b>🔥 Hard Mode:</b><br>• Complex multi-sided waits.<br>• Provides full structural decompositions and wait type analysis.",
+            streak: "📌 <b>⚡ Streak Mode Rules:</b><br>• ⏱️ <b>60s Time Limit:</b> Solve each puzzle within 60 seconds.<br>• ⚡ Fast-paced mode with no explanations provided."
         }
     }
 };
