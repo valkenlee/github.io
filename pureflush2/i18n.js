@@ -12,6 +12,7 @@ const TRANSLATIONS = {
         streakCount: "🔥 현재 {count}연승 중",
         timerSeconds: "⏱️ {count}초",
         quizInstruction: "오름패(대기패)가 되는 숫자를 모두 선택하세요:",
+        quizInstruction_best: "오름패(대기패)가 되는 숫자를 하나만 선택하세요:",
         shortcutHint: "(단축키: 1~9, Enter)",
         btnSubmit: "제출 및 정답 확인",
         btnNextStreak: "다음 연승 문제로 이동",
@@ -19,9 +20,21 @@ const TRANSLATIONS = {
         btnSaveRecord: "기록 등록",
         hallOfFameTitle: "🏆 연승 모드 글로벌 명예의 전당 (Top 10)",
         hallOfFameSubtitle: "🌐 Google Sheets 연동 글로벌 실시간 리더보드입니다.",
+        hallOfFameLoading: "기록을 불러오는 중...",
         congratsStreak: "🏆 축하합니다! 10연승 이상 기록 달성!",
+        inputNameNotice: "명예의 전당 등록 이름 (미입력 시 Anonymous):",
         inputNamePlaceholder: "Anonymous (최대 20자)",
         
+        // 히든 분석기
+        analyzerTitle: "🕵️‍♂️ 히든 패 분석기 (자유 패 입력)",
+        analyzerInputLabel: "⌨️ 숫자 직접 입력 (예: 1112345678999):",
+        analyzerInputPlaceholder: "숫자 13자리 입력",
+        analyzerApplyBtn: "입력 반영",
+        analyzerCopyBtn: "문제 복사",
+        analyzerEmptyHint: "1~9 패 선택 버튼을 누르거나 숫자를 입력하세요.",
+        analyzerClearBtn: "전체 삭제",
+        analyzerAnalyzeBtn: "🔍 대기패 및 해설 계산하기",
+
         // 역/대기 형태 태그 및 용어
         ryanpeikouNotice: "💡 이 문제는 량페코(兩盃口) 형태가 포함된 문제입니다.",
         chiitoiNotice: "💡 이 문제는 청일색과 치또이(七対子)가 조합된 단기대기 문제입니다.",
@@ -49,13 +62,60 @@ const TRANSLATIONS = {
         modalNameRule: "✏️ <b>이름 설정:</b> 이름을 입력하지 않으면 <b>Anonymous</b>로 등록됩니다.",
         modalStartBtn: "도전 시작하기",
 
-        // 난이도 설명
+        modeBest: "🏆 최고의 오름패",
+        quizInstructionBest: "가장 높은 판수(최고의 역)를 만드는 오름패를 선택하세요:",
+        bestModeNotice: "💡 최고 판수가 되는 패를 골라주세요! (동점일 경우 그중 하나만 맞아도 정답 처리됩니다)",
+
+        alertSelectTile: "오름패를 최소 1개 이상 선택해 주세요.",
+        bestReportHeaderTitle: "1~9 오름패 판수 상세 분석 리포트",
+        bestReportCondition: "(조건: 리치 1판 + 멘젠쯔모 1판 기본 적용)",
+        bestReportOptimalChoice: "[최적의 선택]",
+        bestResultCorrectMsg: "선택하신 [{tile}]번 패는 최고의 판수(<b>{score}</b>)를 만드는 최적의 패입니다!",
+        bestResultIncorrectMsg: "선택하신 [{tile}]번 패는 최고 판수가 아닙니다.<br>👉 가장 높은 판수를 얻는 패: <b>[ {bestTiles} ]</b> ({score})",
+
         descriptions: {
             easy: "📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇 개인지도 알려 줍니다.<br>• 제출 후 대기 유형 및 세부 분해 해설을 제공합니다.",
             normal: "📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 대기 유형과 세부 분해 해설을 제공합니다.",
             hard: "📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.",
-            streak: "📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 별도의 패 분해 해설이 제공되지 않고 빠른 진행을 지원합니다."
+            streak: "📌 <b>⚡ 어려움 연승 모드 규칙:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• ⚡ 별도의 패 분해 해설이 제공되지 않고 빠른 진행을 지원합니다.",
+            best: "📌 <b>🏆 최고의 오름패 모드:</b><br>• 오름패 중 가장 높은 판수(역)를 만드는 패를 맞추는 모드입니다.<br>• '리치'와 '멘젠쯔모'를 가정하지만, 도라, 적도라는 무시합니다. <br>• 동점인 패가 여러개일 경우는 아무거나 맞추어도 정답입니다. <br>• 제출 후 1~9 오름패별 판수 상세 분석 리포트를 제공합니다."
+        },
+
+        yaku: {
+            chinitsu: "청일색",
+            reach: "리치",
+            tsumo: "멘젠쯔모",
+            tanyao: "단요구",
+            pinfu: "핑후",
+            iipeikou: "이페코",
+            ittsu: "일기통관",
+            junchan: "순전대쌍구",
+            chiitoi: "치이토이츠",
+            ryanpeikou: "량페코",
+            toitoi: "또이또이",
+            sanankou: "삼암각",
+            suuankou: "사암각",
+            suuankouTanki: "사암각 단기",
+            chuuren: "구련보등",
+            junseiChuuren: "순정구련보등",
+            ryuuisou: "녹일색",
+            chinroto: "청로두"
+        },
+        bestReport: {
+            yakumanFormat: "{count}배 역만",
+            yakuman: "역만",
+            han: "{count}판",
+            invalid4Tiles: "0판 [오답: 이미 손패에 4장 존재]",
+            invalidNoYaku: "0판 [오답: 역 미성립]",
+            labelBest: "🏆 [최고 정답]",
+            labelValid: "⭕ [화료 가능]",
+            labelInvalid: "❌ [화료 불가]",
+            errInvalidHand: "올바르지 않은 손패 또는 오름패 입력입니다.",
+            errMax4Tiles: "동일한 패가 4개를 초과할 수 없습니다.",
+            errNotChinitsu: "청일색 화료패가 아닙니다 (오름패 불일치 또는 텐파이 아님)."
         }
+
+
     },
     ja: {
         title: "清一色 聴牌 待ち牌クイズ",
@@ -70,6 +130,7 @@ const TRANSLATIONS = {
         streakCount: "🔥 現在 {count} 連勝中",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "アガリ牌（待ち牌）となる数字をすべて選択してください:",
+        quizInstruction_best: "上がりの待ち牌になる数字を1つだけ選んでください",
         shortcutHint: "(ショートカット: 1~9, Enter)",
         btnSubmit: "回答する",
         btnNextStreak: "次の問題へ",
@@ -77,9 +138,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "記録を登録",
         hallOfFameTitle: "🏆 連勝モード グローバル殿堂 (Top 10)",
         hallOfFameSubtitle: "🌐 Google スプレッドシート連携のリアルタイムリーダーボードです。",
+        hallOfFameLoading: "記録を読み込んでいます...",
         congratsStreak: "🏆 おめでとうございます！10連勝以上達成！",
+        inputNameNotice: "殿堂入り登録名 (未入力の場合は Anonymous):",
         inputNamePlaceholder: "Anonymous (最大20文字)",
         
+        analyzerTitle: "🕵️‍♂️ 手牌アナライザー（自由入力）",
+        analyzerInputLabel: "⌨️ 数字直接入力 (例: 1112345678999):",
+        analyzerInputPlaceholder: "数字13桁を入力",
+        analyzerApplyBtn: "反映",
+        analyzerCopyBtn: "問題をコピー",
+        analyzerEmptyHint: "1〜9のボタンを押すか、数字を入力してください。",
+        analyzerClearBtn: "すべて消去",
+        analyzerAnalyzeBtn: "🔍 待ち牌と解説を計算",
+
         ryanpeikouNotice: "💡 二盃口（リャンペーコー）の形が含まれている問題です。",
         chiitoiNotice: "💡 清一色と七対子（チートイツ）が複合した単騎待ち問題です。",
         waitRyanmen: "両面",
@@ -103,12 +175,59 @@ const TRANSLATIONS = {
         modalNameRule: "✏️ <b>名前設定:</b> 未入力の場合は <b>Anonymous</b> として登録されます。",
         modalStartBtn: "挑戦を開始する",
 
+        modeBest: "🏆 最高のあがり牌",
+        quizInstructionBest: "最も高い翻数（最高の役）を作るあがり牌を選択してください：",
+        bestModeNotice: "💡 最高翻数になる牌を選んでください！（同点の場合はそのうちどれか1つでも正解となります）",
+
+        alertSelectTile: "あがり牌を少なくとも1つ選択してください。",
+        bestReportHeaderTitle: "1~9 あがり牌 翻数詳細分析レポート",
+        bestReportCondition: "(条件: リーチ1翻 + 門前清自摸和1翻 基本適用)",
+        bestReportOptimalChoice: "[最適な選択]",
+        bestResultCorrectMsg: "選択した [{tile}] 番の牌は最高翻数(<b>{score}</b>)を作る最適な牌です！",
+        bestResultIncorrectMsg: "選択した [{tile}] 番の牌は最高翻数ではありません。<br>👉 最も高い翻数を得られる牌: <b>[ {bestTiles} ]</b> ({score})",
+
         descriptions: {
             easy: "📌 <b>🌱 初級モード:</b><br>• アガリ牌が1〜2個の簡単な問題です。待ち牌の数も表示されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
             normal: "📌 <b>🌿 中級モード:</b><br>• 主に2つ待ちを中心とした問題が出題されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
             hard: "📌 <b>🔥 上級モード:</b><br>• 複雑な多面張（多面待ち）問題が出題されます。<br>• 回答後に多様な待ちの形と分解パターンをすべて解説します。",
-            streak: "📌 <b>⚡ 連勝モードルール:</b><br>• ⏱️ <b>60秒制限:</b> 1問につき60秒以内に回答してください。<br>• ⚡ 解説は表示されず、テンポ重視のモードです。"
+            streak: "📌 <b>⚡ 連勝モードルール:</b><br>• ⏱️ <b>60秒制限:</b> 1問につき60秒以内に回答してください。<br>• ⚡ 解説は表示されず、テンポ重視のモードです。",
+        best: "📌 <b>🏆 最高あがり牌モード:</b><br>• あがり牌の中で最も翻数（役）が高くなる牌を当てるモードです。<br>• 「リーチ」と「門前清自摸和」を仮定しますが、ドラ・赤ドラは無視します。<br>• 同点の牌が複数ある場合は、どれを選んでも正解となります。<br>• 提出後、1〜9のあがり牌ごとの翻数詳細分析レポートを提供します。"
+        },
+
+        yaku: {
+            chinitsu: "清一色",
+            reach: "リーチ",
+            tsumo: "門前清自摸和",
+            tanyao: "断幺九",
+            pinfu: "平和",
+            iipeikou: "一盃口",
+            ittsu: "一気通貫",
+            junchan: "純全帯幺九",
+            chiitoi: "七対子",
+            ryanpeikou: "二盃口",
+            toitoi: "対々和",
+            sanankou: "三暗刻",
+            suuankou: "四暗刻",
+            suuankouTanki: "四暗刻単騎",
+            chuuren: "九蓮宝燈",
+            junseiChuuren: "純正九蓮宝燈",
+            ryuuisou: "緑一色",
+            chinroto: "清老頭"
+        },
+        bestReport: {
+            yakumanFormat: "{count}倍役満",
+            yakuman: "役満",
+            han: "{count}翻",
+            invalid4Tiles: "0翻 [不正解: 手牌に4枚使用中]",
+            invalidNoYaku: "0翻 [不正解: 役なし]",
+            labelBest: "🏆 [最高正解]",
+            labelValid: "⭕ [和了可能]",
+            labelInvalid: "❌ [和了不可]",
+            errInvalidHand: "不正な手牌またはアガリ牌の入力です。",
+            errMax4Tiles: "同じ牌を4枚を超えて使用することはできません。",
+            errNotChinitsu: "清一色の和了牌ではありません。"
         }
+
     },
     zh_CN: {
         title: "清一色 听牌 听什么 猜谜",
@@ -123,6 +242,7 @@ const TRANSLATIONS = {
         streakCount: "🔥 当前 {count} 连胜",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "请选择所有可以和牌（听牌）的数字:",
+        quizInstruction_best: "请仅选择一个能成为听牌的数字",
         shortcutHint: "(快捷键: 1~9, Enter)",
         btnSubmit: "提交并查看答案",
         btnNextStreak: "进入下一题",
@@ -130,9 +250,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "提交成绩",
         hallOfFameTitle: "🏆 连胜模式 全球名人堂 (Top 10)",
         hallOfFameSubtitle: "🌐 基于 Google Sheets 绑定的实时全球排行榜。",
+        hallOfFameLoading: "正在加载纪录...",
         congratsStreak: "🏆 恭喜！达成 10 连胜以上纪录！",
+        inputNameNotice: "名人堂登记名称 (未输入时为 Anonymous):",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
+        analyzerTitle: "🕵️‍♂️ 隐藏手牌分析器（自由输入）",
+        analyzerInputLabel: "⌨️ 直接输入数字 (例: 1112345678999):",
+        analyzerInputPlaceholder: "输入13位数字",
+        analyzerApplyBtn: "应用",
+        analyzerCopyBtn: "复制题目",
+        analyzerEmptyHint: "请点击1~9按钮或输入数字。",
+        analyzerClearBtn: "全部清除",
+        analyzerAnalyzeBtn: "🔍 计算听牌与解析",
+
         ryanpeikouNotice: "💡 本题包含两杯口牌型。",
         chiitoiNotice: "💡 本题为清一色与七对子复合的单骑听牌。",
         waitRyanmen: "两面",
@@ -156,11 +287,56 @@ const TRANSLATIONS = {
         modalNameRule: "✏️ <b>玩家名称:</b> 未输入时默认显示为 <b>Anonymous</b>。",
         modalStartBtn: "开始挑战",
 
+        modeBest: "🏆 最佳和牌",
+        quizInstructionBest: "请选择能组成最高番数（最佳番型）的和牌：",
+        bestModeNotice: "💡 请选择番数最高的牌！（若存在同番数的情况，选择其中任意一张均算正确）",
+
+        alertSelectTile: "请至少选择一张和牌。",
+        bestReportHeaderTitle: "1~9 和牌番数详细分析报告",
+        bestReportCondition: "(条件: 默认应用 立直1番 + 门前清自摸和1番)",
+        bestReportOptimalChoice: "[最佳选择]",
+        bestResultCorrectMsg: "您选择的 [{tile}] 号牌是能够组成最高番数(<b>{score}</b>)的最佳和牌！",
+        bestResultIncorrectMsg: "您选择的 [{tile}] 号牌不是最高番数。<br>👉 番数最高的和牌为: <b>[ {bestTiles} ]</b> ({score})",
+
         descriptions: {
             easy: "📌 <b>🌱 简单模式:</b><br>• 仅有 1~2 个和牌的简单题目，并提示和牌数量。<br>• 提交后提供听牌类型及详细拆解说明。",
             normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 个和牌为主的常见听牌型。<br>• 提交后提供听牌类型及详细拆解说明。",
             hard: "📌 <b>🔥 困难模式:</b><br>• 复杂的多面听牌型。<br>• 提交后分析所有可能组合与听牌类型。",
-            streak: "📌 <b>⚡ 连胜模式规则:</b><br>• ⏱️ <b>60秒限时:</b> 每题须在60秒内完成。<br>• ⚡ 不提供手牌拆解，方便快速挑战。"
+            streak: "📌 <b>⚡ 连胜模式规则:</b><br>• ⏱️ <b>60秒限时:</b> 每题须在60秒内完成。<br>• ⚡ 不提供手牌拆解，方便快速挑战。",
+            best: "📌 <b>🏆 最高和牌模式：</b><br>• 在所有和牌中，猜出能组成最高番数（役）的牌的模式。<br>• 默认假设“立直”与“门前清自摸和”，但忽略宝牌（Dora）和红宝牌。<br>• 若存在多张同番数的牌，选择其中任意一张均算正确。<br>• 提交后，将提供1~9各和牌的番数详细分析报告。"
+        },
+        yaku: {
+            chinitsu: "清一色",
+            reach: "立直",
+            tsumo: "门前清自摸和",
+            tanyao: "断幺九",
+            pinfu: "平和",
+            iipeikou: "一杯口",
+            ittsu: "一气通贯",
+            junchan: "纯全带幺九",
+            chiitoi: "七对子",
+            ryanpeikou: "两杯口",
+            toitoi: "对对和",
+            sanankou: "三暗刻",
+            suuankou: "四暗刻",
+            suuankouTanki: "四暗刻单骑",
+            chuuren: "九莲宝灯",
+            junseiChuuren: "纯正九莲宝灯",
+            ryuuisou: "绿一色",
+            chinroto: "清老头"
+        },
+        bestReport: {
+            yakumanFormat: "{count}倍役满",
+            yakuman: "役满",
+            han: "{count}番",
+            invalid4Tiles: "0番 [错误: 手牌已使用4张]",
+            invalidNoYaku: "0番 [错误: 无役]",
+            labelBest: "🏆 [最佳答案]",
+            labelValid: "⭕ [可和牌]",
+            labelInvalid: "❌ [不可和牌]",
+            errInvalidHand: "手牌或和牌输入不正确。",
+            errMax4Tiles: "同一张牌不能超过4张。",
+            errNotChinitsu: "非清一色和牌（和牌不匹配或未听牌）。"
         }
     },
     zh_TW: {
@@ -175,7 +351,8 @@ const TRANSLATIONS = {
         hintEasy: "💡 提示: 共有 {count} 個胡牌（聽牌）。",
         streakCount: "🔥 當前 {count} 連勝",
         timerSeconds: "⏱️ {count}秒",
-        quizInstruction: "請選擇所有可以胡牌（聽牌）的數字:",
+        quizInstruction: "請選擇所有可以胡牌（聽牌）的數字",
+        quizInstruction_best: "請僅選擇一個能成為聽牌的數字",
         shortcutHint: "(快捷鍵: 1~9, Enter)",
         btnSubmit: "提交並確認答案",
         btnNextStreak: "進入下一題",
@@ -183,9 +360,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "送出紀錄",
         hallOfFameTitle: "🏆 連勝模式 全球名人堂 (Top 10)",
         hallOfFameSubtitle: "🌐 基於 Google Sheets 連結的即時全球排行榜。",
+        hallOfFameLoading: "正在載入紀錄...",
         congratsStreak: "🏆 恭喜！達成 10 連勝以上紀錄！",
+        inputNameNotice: "名人堂登記名稱 (未輸入時為 Anonymous):",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
+        analyzerTitle: "🕵️‍♂️ 隱藏手牌分析器（自由輸入）",
+        analyzerInputLabel: "⌨️ 直接輸入數字 (例: 1112345678999):",
+        analyzerInputPlaceholder: "輸入13位數字",
+        analyzerApplyBtn: "套用",
+        analyzerCopyBtn: "複製題目",
+        analyzerEmptyHint: "請點擊1~9按鈕或輸入數字。",
+        analyzerClearBtn: "全部清除",
+        analyzerAnalyzeBtn: "🔍 計算聽牌與解析",
+
         ryanpeikouNotice: "💡 本題包含兩盃口牌型。",
         chiitoiNotice: "💡 本題為清一色與七對子複合的單騎聽牌。",
         waitRyanmen: "兩面",
@@ -209,11 +397,56 @@ const TRANSLATIONS = {
         modalNameRule: "✏️ <b>玩家名稱:</b> 未輸入時預設顯示為 <b>Anonymous</b>。",
         modalStartBtn: "開始挑戰",
 
+        modeBest: "🏆 最佳胡牌",
+        quizInstructionBest: "請選擇能組成最高番數（最佳番型）的胡牌：",
+        bestModeNotice: "💡 請選擇番數最高的牌！（若存在同番數的情況，選擇其中任意一張均算正確）",
+
+        alertSelectTile: "請至少選擇一張胡牌。",
+        bestReportHeaderTitle: "1~9 胡牌番數詳細分析報告",
+        bestReportCondition: "(條件: 預設套用 立直1番 + 門前清自摸和1番)",
+        bestReportOptimalChoice: "[最佳選擇]",
+        bestResultCorrectMsg: "您選擇的 [{tile}] 號牌是能夠組成最高番數(<b>{score}</b>)的最佳胡牌！",
+        bestResultIncorrectMsg: "您選擇的 [{tile}] 號牌不是最高番數。<br>👉 番數最高的胡牌為: <b>[ {bestTiles} ]</b> ({score})",
+
         descriptions: {
-            easy: "📌 <b>🌱 簡單模式:</b><br>• 僅有 1~2 個胡牌的簡單題目，並提示胡牌數量。<br>• 提交後提供聽牌類型及詳細拆分說明。",
+            easy: "📌 <b>🌱 簡單模式:</b><br>• 僅有 1~2 個胡牌的簡單題目，並提示胡牌數量。<br>• 提交後 provide 聽牌類型及詳細拆分說明。",
             normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 個胡牌為主的常見聽牌型。<br>• 提交後 provide 詳細拆分說明。",
-            hard: "📌 <b>🔥 困難模式:</b><br>• 複雜的多面聽牌型。<br>• 提交後分析所有可能組合與聽牌類型。",
-            streak: "📌 <b>⚡ 連勝模式規則:</b><br>• ⏱️ <b>60秒限時:</b> 每題須在60秒內完成。<br>• ⚡ 不提供手牌拆分，方便快速挑戰。"
+            hard: "📌 <b>🔥 困難模式:</b><br>• 複雜的多面聽牌型。<br>• 提交後 analyze 所有可能組合與聽牌類型。",
+            streak: "📌 <b>⚡ 連勝模式規則:</b><br>• ⏱️ <b>60秒限時:</b> 每題須在60秒內完成。<br>• ⚡ 不 provide 手牌拆分，方便快速挑戰。",
+            best: "📌 <b>🏆 最高和牌模式：</b><br>• 在所有和牌中，猜出能組成最高番數（役）的牌的模式。<br>• 預設假設「立直」與「門前清自摸和」，但忽略寶牌（Dora）和紅寶牌。<br>• 若存在多張同番數的牌，選擇其中任意一張均算正確。<br>• 提交後，將提供1~9各和牌的番數詳細分析報告。"
+        },
+        yaku: {
+            chinitsu: "清一色",
+            reach: "立直",
+            tsumo: "門前清自摸和",
+            tanyao: "斷幺九",
+            pinfu: "平和",
+            iipeikou: "一杯口",
+            ittsu: "一氣通貫",
+            junchan: "純全帶幺九",
+            chiitoi: "七對子",
+            ryanpeikou: "兩盃口",
+            toitoi: "對對和",
+            sanankou: "三暗刻",
+            suuankou: "四暗刻",
+            suuankouTanki: "四暗刻單騎",
+            chuuren: "九蓮寶燈",
+            junseiChuuren: "純正九蓮寶燈",
+            ryuuisou: "綠一色",
+            chinroto: "清老頭"
+        },
+        bestReport: {
+            yakumanFormat: "{count}倍役滿",
+            yakuman: "役滿",
+            han: "{count}番",
+            invalid4Tiles: "0番 [錯誤: 手牌已使用4張]",
+            invalidNoYaku: "0番 [錯誤: 無役]",
+            labelBest: "🏆 [最佳答案]",
+            labelValid: "⭕ [可胡牌]",
+            labelInvalid: "❌ [不可胡牌]",
+            errInvalidHand: "手牌或胡牌輸入不正確。",
+            errMax4Tiles: "同一張牌不能超過4張。",
+            errNotChinitsu: "非清一色胡牌（胡牌不匹配或未聽牌）。"
         }
     },
     en: {
@@ -228,7 +461,8 @@ const TRANSLATIONS = {
         hintEasy: "💡 Hint: There are {count} winning tile(s).",
         streakCount: "🔥 Current Streak: {count}",
         timerSeconds: "⏱️ {count}s",
-        quizInstruction: "Select all tile numbers that complete the hand:",
+        quizInstruction: "Select all tile numbers that complete the hand",
+        quizInstruction_best: "Select only one number that completes the winning tile",
         shortcutHint: "(Shortcuts: 1-9, Enter)",
         btnSubmit: "Submit Answer",
         btnNextStreak: "Next Challenge",
@@ -236,9 +470,20 @@ const TRANSLATIONS = {
         btnSaveRecord: "Submit Score",
         hallOfFameTitle: "🏆 Global Hall of Fame (Top 10)",
         hallOfFameSubtitle: "🌐 Live global leaderboard synced via Google Sheets.",
+        hallOfFameLoading: "Loading records...",
         congratsStreak: "🏆 Congratulations! You achieved a 10+ win streak!",
+        inputNameNotice: "Leaderboard display name (Default: Anonymous):",
         inputNamePlaceholder: "Anonymous(Max 20 ch)",
         
+        analyzerTitle: "🕵️‍♂️ Hidden Analyzer (Custom Hand Input)",
+        analyzerInputLabel: "⌨️ Direct Number Input (e.g. 1112345678999):",
+        analyzerInputPlaceholder: "Enter 13 digits",
+        analyzerApplyBtn: "Apply",
+        analyzerCopyBtn: "Copy Quiz",
+        analyzerEmptyHint: "Select 1-9 buttons or enter numbers.",
+        analyzerClearBtn: "Clear All",
+        analyzerAnalyzeBtn: "🔍 Analyze Wait Tiles & Breakdown",
+
         ryanpeikouNotice: "💡 This hand contains a Ryanpeikou (Two Double Pungs) pattern.",
         chiitoiNotice: "💡 This hand is a combination of Chinitsu and Chiitoitsu (Seven Pairs) Tanki wait.",
         waitRyanmen: "Ryanmen (Two-sided)",
@@ -262,11 +507,57 @@ const TRANSLATIONS = {
         modalNameRule: "✏️ <b>Name Option:</b> Leaving it blank registers as <b>Anonymous</b>.",
         modalStartBtn: "Start Challenge",
 
+        modeBest: "🏆 Best Winning Tile",
+        quizInstructionBest: "Select the winning tile that forms the highest han (best Yaku):",
+        bestModeNotice: "💡 Pick the tile that yields the highest han! (If there is a tie, selecting any of them will be counted as correct)",
+
+        alertSelectTile: "Please select at least one winning tile.",
+        bestReportHeaderTitle: "1–9 Winning Tile Han Analysis Report",
+        bestReportCondition: "(Condition: Default applies Riichi 1 Han + Menzen Tsumo 1 Han)",
+        bestReportOptimalChoice: "[Optimal Choice]",
+        bestResultCorrectMsg: "Tile [{tile}] is the optimal tile that yields the highest hand value (<b>{score}</b>)!",
+        bestResultIncorrectMsg: "Tile [{tile}] does not yield the highest score.<br>👉 Highest scoring tile(s): <b>[ {bestTiles} ]</b> ({score})",
+
         descriptions: {
             easy: "📌 <b>🌱 Easy Mode:</b><br>• Simple hands with 1-2 winning tiles. Displays the tile count hint.<br>• Provides detailed hand decompositions and wait types after submission.",
             normal: "📌 <b>🌿 Normal Mode:</b><br>• Standard hands, mostly with 2 winning tiles.<br>• Provides detailed hand decompositions and wait types after submission.",
             hard: "📌 <b>🔥 Hard Mode:</b><br>• Complex multi-sided waits.<br>• Provides full structural decompositions and wait type analysis.",
-            streak: "📌 <b>⚡ Streak Mode Rules:</b><br>• ⏱️ <b>60s Time Limit:</b> Solve each puzzle within 60 seconds.<br>• ⚡ Fast-paced mode with no explanations provided."
+            streak: "📌 <b>⚡ Streak Mode Rules:</b><br>• ⏱️ <b>60s Time Limit:</b> Solve each puzzle within 60 seconds.<br>• ⚡ Fast-paced mode with no explanations provided.",
+            best: "📌 <b>🏆 Best Winning Tile Mode:</b><br>• A mode where you guess the winning tile that forms the highest fan (hand value).<br>• Assumes 'Riichi' and 'Menzen Tsumo' (Fully Concealed Hand), but ignores Dora and Red Dora.<br>• If there are multiple tiles with the same highest score, any of them will be counted as correct.<br>• After submission, a detailed analysis report of fan counts for winning tiles 1–9 will be provided. "
+            },
+
+        yaku: {
+            chinitsu: "Chinitsu",
+            reach: "Riichi",
+            tsumo: "Menzen Tsumo",
+            tanyao: "Tanyao",
+            pinfu: "Pinfu",
+            iipeikou: "Iipeikou",
+            ittsu: "Ittsu",
+            junchan: "Junchan",
+            chiitoi: "Chiitoitsu",
+            ryanpeikou: "Ryanpeikou",
+            toitoi: "Toitoi",
+            sanankou: "Sanankou",
+            suuankou: "Suuankou",
+            suuankouTanki: "Suuankou Tanki",
+            chuuren: "Chuuren Pouton",
+            junseiChuuren: "Junsei Chuuren Pouton",
+            ryuuisou: "Ryuuisou",
+            chinroto: "Chinroto"
+        },
+        bestReport: {
+            yakumanFormat: "{count}x Yakuman",
+            yakuman: "Yakuman",
+            han: "{count} Han",
+            invalid4Tiles: "0 Han [Incorrect: 4 tiles already in hand]",
+            invalidNoYaku: "0 Han [Incorrect: No Yaku]",
+            labelBest: "🏆 [Best Answer]",
+            labelValid: "⭕ [Valid Win]",
+            labelInvalid: "❌ [Invalid]",
+            errInvalidHand: "Invalid hand or winning tile input.",
+            errMax4Tiles: "Cannot exceed 4 copies of the same tile.",
+            errNotChinitsu: "Not a valid Chinitsu winning hand."
         }
     }
 };
@@ -282,14 +573,44 @@ function setLanguage(lang) {
 }
 
 function t(key, params = {}) {
-    let text = TRANSLATIONS[currentLang]?.[key] || TRANSLATIONS['ko']?.[key] || key;
+    const getNestedValue = (obj, path) => {
+        if (!obj || !path) return undefined;
+
+        const keys = String(path).split('.');
+        let current = obj;
+
+        for (const k of keys) {
+            if (current && typeof current === 'object' && k in current) {
+                current = current[k];
+            } else {
+                return undefined;
+            }
+        }
+        return current;
+    };
+
+    // 현재 언어에서 찾기 -> 없으면 한국어(ko)에서 찾기
+    let text = getNestedValue(TRANSLATIONS[currentLang], key) ||
+               getNestedValue(TRANSLATIONS['ko'], key);
+
+    // 찾지 못했거나 결과가 문자열이 아닌 경우(객체 그대로 반환 방지)
+    if (typeof text !== 'string') {
+        console.warn(`[i18n] 번역 키를 찾을 수 없습니다: "${key}"`);
+        return key;
+    }
+
+    // {count} 등 파라미터 치환
     Object.keys(params).forEach(p => {
-        text = text.replace(`{${p}}`, params[p]);
+        text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
     });
+
     return text;
 }
 
 function applyTranslations() {
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) langSelect.value = currentLang;
+
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         el.innerHTML = t(key);
@@ -300,3 +621,5 @@ function applyTranslations() {
         el.placeholder = t(key);
     });
 }
+
+document.addEventListener('DOMContentLoaded', applyTranslations);
