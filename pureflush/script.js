@@ -56,7 +56,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const response = await fetch('Regular.zip');
-        if (!response.ok) throw new Error('Regular.zip 파일을 찾을 수 없습니다.');
+        if (!response.ok) throw new Error('마작패 파일을 찾을 수 없습니다.');
         
         const arrayBuffer = await response.arrayBuffer();
         zipInstance = await JSZip.loadAsync(arrayBuffer);
@@ -261,201 +261,6 @@ function formatTimestamp(rawStr) {
     return str;
 }
 
-/* -------------------------------------------------------------
-   🔒 히든 패 분석기 트리거
-------------------------------------------------------------- */
-function isWrappedEnvironment() {
-    return Boolean(
-        window.__IS_WRAPPED__ === true ||
-        window.location.href.includes('wrapped=true') ||
-        Array.from(document.scripts).some(s => s.src && s.src.includes('wrapped=true'))
-    );
-}
-
-function initTitleClickTrigger() {
-    const mainTitle = document.getElementById('title-icon');
-    if (!mainTitle) return;
-
-    mainTitle.addEventListener('click', () => {
-        if (!isWrappedEnvironment()) return;
-
-        titleClickCount++;
-        clearTimeout(titleClickTimer);
-
-        if (titleClickCount >= 5) {
-            titleClickCount = 0;
-            const analyzer = document.getElementById('hidden-analyzer');
-            if (analyzer) {
-                if (analyzer.style.display === 'none' || analyzer.style.display === '') {
-                    analyzer.style.display = 'block';
-                    pickRandomNextSuit();
-                    updateCustomHandDisplay();
-                    alert('🔓 Hidden Analyzer Mode Enabled');
-                } else {
-                    analyzer.style.display = 'none';
-                }
-            }
-        } else {
-            titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 2000);
-        }
-    });
-}
-
-/* -------------------------------------------------------------
-   히든 분석기 및 퀴즈 로직
-------------------------------------------------------------- */
-function pickRandomNextSuit() {
-    const available = SUITS.filter(s => s.code !== customSuitCode);
-    const chosen = available[Math.floor(Math.random() * available.length)];
-    customSuitCode = chosen.code;
-}
-
-function renderCustomButtons() {
-    const grid = document.getElementById('custom-tile-buttons');
-    if (!grid) return;
-    grid.innerHTML = '';
-    for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'btn-number';
-        btn.innerText = `${i}`;
-        btn.onclick = () => addCustomTile(i);
-        grid.appendChild(btn);
-    }
-}
-
-function addCustomTile(num) {
-    if (customHand.length >= 13) {
-        alert('Max 13 tiles');
-        return;
-    }
-    const count = customHand.filter(x => x === num).length;
-    if (count >= 4) {
-        alert(`Max 4 tiles for (${num})`);
-        return;
-    }
-
-    customHand.push(num);
-    customHand.sort((a, b) => a - b);
-    updateCustomHandDisplay();
-}
-
-function applyCustomTextInput() {
-    const input = document.getElementById('custom-text-input').value.trim();
-    if (!/^[1-9]{1,13}$/.test(input)) {
-        alert('Enter 1-9 digits (max 13)');
-        return;
-    }
-
-    let counts = Array(10).fill(0);
-    let newHand = [];
-    for (let char of input) {
-        let n = parseInt(char);
-        counts[n]++;
-        if (counts[n] > 4) {
-            alert(`Max 4 tiles for (${n})`);
-            return;
-        }
-        newHand.push(n);
-    }
-
-    pickRandomNextSuit();
-    customHand = newHand.sort((a, b) => a - b);
-    updateCustomHandDisplay();
-}
-
-async function updateCustomHandDisplay() {
-    const container = document.getElementById('custom-hand-container');
-    container.innerHTML = '';
-
-    if (customHand.length === 0) {
-        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">${t('analyzerEmptyHint')}</span>`;
-        return;
-    }
-
-    for (let i = 0; i < customHand.length; i++) {
-        const num = customHand[i];
-        const img = document.createElement('img');
-        img.src = await getTileImageSrc(customSuitCode, num);
-        img.className = 'tile-img';
-        img.style.cursor = 'pointer';
-        img.title = 'Click to remove';
-        img.onclick = () => removeCustomTile(i);
-        container.appendChild(img);
-    }
-}
-
-function removeCustomTile(index) {
-    customHand.splice(index, 1);
-    updateCustomHandDisplay();
-}
-
-function clearCustomHand() {
-    customHand = [];
-    document.getElementById('custom-text-input').value = '';
-    document.getElementById('custom-result').style.display = 'none';
-    pickRandomNextSuit();
-    updateCustomHandDisplay();
-}
-
-function analyzeCustomHand() {
-    if (customHand.length !== 13) {
-        alert(`Hand must contain 13 tiles. (Current: ${customHand.length})`);
-        return;
-    }
-
-    const resultData = getWinningTiles(customHand);
-    const resultDiv = document.getElementById('custom-result');
-    resultDiv.style.display = 'block';
-
-    const savedHand = [...currentHand];
-    const savedWaits = [...winningTiles];
-    const savedMaxed = [...maxedOutWinningTiles];
-    const savedDecomps = { ...winningDecompositions };
-    const savedChiitoi = isChiitoiHand;
-    const savedRyan = isRyanpeikouHand;
-    const savedMode = currentMode;
-
-    currentHand = [...customHand];
-    winningTiles = resultData.waits;
-    maxedOutWinningTiles = resultData.maxedOut;
-    winningDecompositions = resultData.decomps;
-    isChiitoiHand = resultData.isChiitoi;
-    isRyanpeikouHand = resultData.isRyanpeikou;
-    currentMode = 'hard'; 
-
-    let actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '-';
-    let tagNotice = '';
-    if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('ryanpeikouNotice')}</div><br>`;
-    } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">${t('chiitoiNotice')}</div><br>`;
-    }
-
-    let htmlStr = '';
-    if (maxedOutWinningTiles.length > 0) {
-        const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        htmlStr = `${tagNotice}<b>${t('actualWaits')}:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>${t('theoreticalWaits')}:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
-    } else {
-        htmlStr = `${tagNotice}<b>${t('actualWaits')}:</b> [ ${actualStr} ]`;
-    }
-
-    if (winningTiles.length > 0 || maxedOutWinningTiles.length > 0) {
-        htmlStr += renderDecompositionExplanation();
-        resultDiv.className = 'result-message correct';
-    } else {
-        resultDiv.className = 'result-message incorrect';
-    }
-
-    resultDiv.innerHTML = htmlStr;
-
-    currentHand = savedHand;
-    winningTiles = savedWaits;
-    maxedOutWinningTiles = savedMaxed;
-    winningDecompositions = savedDecomps;
-    isChiitoiHand = savedChiitoi;
-    isRyanpeikouHand = savedRyan;
-    currentMode = savedMode;
-}
 
 async function getTileImageSrc(suitCode, num) {
     const targetName = `${suitCode}${num}.svg`;
@@ -499,8 +304,15 @@ function updateModeUI() {
     const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
     if (activeBtn) activeBtn.classList.add('active');
 
+    // 📌 quizInstruction 안내문구 갱신 로직 추가
+    const instructionElem = document.getElementById('quiz-instruction');
+    if (instructionElem) {
+        const key = (currentMode === 'best') ? 'quizInstruction_best' : 'quizInstruction';
+        instructionElem.innerText = t(key);
+    }
+
     const infoBox = document.getElementById('mode-info-box');
-  
+
     infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
     infoBox.style.display = 'block';
 
@@ -530,6 +342,9 @@ function generateQuiz() {
     let targetDifficulty = currentMode;
     if (currentMode === 'streak') {
         targetDifficulty = Math.random() < 0.2 ? 'normal' : 'hard';
+    } else if (currentMode === 'best') {
+        r = Math.random();
+	targetDifficulty = r < 0.2 ? 'easy' : (r < 0.5 ? 'normal' : 'hard');
     }
 
     let hand = [];
@@ -1077,18 +892,47 @@ function renderButtons() {
 
 function toggleSelect(num, btn) {
     if (isSubmitted) return;
-    if (selectedTiles.has(num)) {
-        selectedTiles.delete(num);
-        btn.classList.remove('selected');
-    } else {
-        selectedTiles.add(num);
-        btn.classList.add('selected');
+
+    const isAlreadySelected = selectedTiles.has(num);
+
+    // best 모드일 경우: 단일 선택 동작
+    if (currentMode === 'best') {
+        // 1. 기존에 선택되어 있던 모든 버튼의 selected 클래스 제거
+        document.querySelectorAll('.btn-number.selected').forEach(b => b.classList.remove('selected'));
+        // 2. Set 데이터 초기화
+        selectedTiles.clear();
+
+        // 3. 이미 선택되었던 것을 다시 누른 게 아니라면 -> 새 번호만 선택
+        if (!isAlreadySelected) {
+            selectedTiles.add(num);
+            btn.classList.add('selected');
+        }
+    }
+    // 기존 다중 선택 모드
+    else {
+        if (isAlreadySelected) {
+            selectedTiles.delete(num);
+            btn.classList.remove('selected');
+        } else {
+            selectedTiles.add(num);
+            btn.classList.add('selected');
+        }
     }
 }
 
 function handleSubmitOrNext() {
     if (isSubmitted) { generateQuiz(); return; }
-    if (selectedTiles.size === 0) return;
+
+    const resultDiv = document.getElementById('result');
+    // 패를 선택하지 않은 경우: #result 영역에 경고 메시지 표시 후 중단
+    if (!selectedTiles || selectedTiles.size === 0) {
+        if (resultDiv) {
+            resultDiv.className = 'result-message incorrect';
+            resultDiv.innerHTML = `⚠️ <b>${t('alertSelectTile', '오름패를 최소 1개 이상 선택해 주세요.')}</b>`;
+            resultDiv.style.display = 'block';
+        }
+        return;
+    }
 
     clearInterval(timerInterval);
     const userAnswers = Array.from(selectedTiles).sort((a, b) => a - b);
@@ -1101,7 +945,6 @@ function handleSubmitOrNext() {
                                 userAnswers.every((val, idx) => val === theoreticalList[idx]);
 
     const isCorrect = isCorrectActual || isCorrectTheoretical;
-    const resultDiv = document.getElementById('result');
     resultDiv.style.display = 'block';
 
     const answerText = getAnswerString();
@@ -1154,14 +997,3 @@ function copyCurrentQuizToCustom() {
 
     updateCustomHandDisplay();
 }
-
-function initApp() {
-    // 저장된 언어 불러오기 또는 select 요소의 기본값 가져오기
-    const currentLang = localStorage.getItem('preferred_language') || document.getElementById('lang-select').value;
-
-   console.log("lang select - ", currentLang);   
-    // 언어 설정 및 광고 표시 업데이트
-    setLanguage(currentLang);
-}
-
-window.onload = initApp;
