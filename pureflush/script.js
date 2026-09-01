@@ -1154,3 +1154,14 @@ function copyCurrentQuizToCustom() {
 
     updateCustomHandDisplay();
 }
+
+function initApp() {
+    // 저장된 언어 불러오기 또는 select 요소의 기본값 가져오기
+    const currentLang = localStorage.getItem('preferred_language') || document.getElementById('lang-select').value;
+
+   console.log("lang select - ", currentLang);   
+    // 언어 설정 및 광고 표시 업데이트
+    setLanguage(currentLang);
+}
+
+window.onload = initApp;

@@ -328,11 +328,26 @@ const TRANSLATIONS = {
 
 let currentLang = localStorage.getItem('app_lang') || 'ko';
 
+function updateAdVisibility(selectedLang) {
+  const ad1Container = document.querySelector('.area_ad1');
+  const ad2Container = document.querySelector('.area_ad2');   
+  
+  // 한국어가 아닌 경우에만 광고 표시
+  if (selectedLang !== 'ko' && selectedLang !== 'ko_KR') {
+    ad1Container.style.display = 'block';
+    ad2Container.style.display = 'block';     
+  } else {
+    ad1Container.style.display = 'none';
+    ad2Container.style.display = 'none';     
+  }
+}
+
 function setLanguage(lang) {
     if (!TRANSLATIONS[lang]) return;
     currentLang = lang;
     localStorage.setItem('app_lang', lang);
     applyTranslations();
+    updateAdVisibility(lang);    
     if (typeof updateModeUI === 'function') updateModeUI();
 }
 
