@@ -232,6 +232,38 @@ let discardNewCard = null;
 
 // 버림패 퀴즈 문제 생성
 function generateDiscardQuiz() {
+
+    // 1. 실행 중인 streak 타이머 정지 (타이머 변수명에 맞게 확인)
+    if (typeof timer !== 'undefined' && timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+    if (typeof timerId !== 'undefined' && timerId) {
+        clearInterval(timerId);
+        timerId = null;
+    }
+
+    // 2. 다른 모드 전용 UI 요소 숨김 처리
+    const hintElem = document.getElementById('easy-hint');
+    const streakElem = document.getElementById('streak-display');
+    const timerElem = document.getElementById('timer-display');
+    const timerGaugeContainer = document.getElementById('timer-gauge-container');
+    const modeInfoBox = document.getElementById('mode-info-box');
+
+    if (hintElem) hintElem.style.display = 'none';
+    if (streakElem) streakElem.style.display = 'none';
+    if (timerElem) timerElem.style.display = 'none';
+    if (timerGaugeContainer) timerGaugeContainer.style.display = 'none';
+    if (modeInfoBox) modeInfoBox.style.display = 'none';
+
+    // 3. 이전 결과창 및 버튼 상태 초기화
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) {
+        resultDiv.style.display = 'none';
+        resultDiv.innerHTML = '';
+    }
+	
+    // Discard Quiz 생성
     const quizArea = document.getElementById('quiz-area');
     if (quizArea) quizArea.style.display = 'block';
 
