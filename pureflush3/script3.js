@@ -248,13 +248,11 @@ function generateDiscardQuiz() {
     const streakElem = document.getElementById('streak-display');
     const timerElem = document.getElementById('timer-display');
     const timerGaugeContainer = document.getElementById('timer-gauge-container');
-    const modeInfoBox = document.getElementById('mode-info-box');
 
     if (hintElem) hintElem.style.display = 'none';
     if (streakElem) streakElem.style.display = 'none';
     if (timerElem) timerElem.style.display = 'none';
     if (timerGaugeContainer) timerGaugeContainer.style.display = 'none';
-    if (modeInfoBox) modeInfoBox.style.display = 'none';
 
     // 3. 이전 결과창 및 버튼 상태 초기화
     const resultDiv = document.getElementById('result');
