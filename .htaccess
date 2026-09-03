@@ -1,0 +1,40 @@
+# ----------------------------------------------------------------------
+# 1. HTTP 보안 헤더 설정 (Security Headers)
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Unrecognized feature 경고를 방지하기 위해 attribution-reporting 제외
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+    
+    # 클릭재킹(Clickjacking) 방지
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # MIME 타입 스니핑 방지
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Referrer 정보 노출 최소화
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 2. 브라우저 캐시 설정 (정적 파일 성능 최적화)
+# ----------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # SVG, 이미지는 1주일 캐싱
+    ExpiresByType image/svg+xml "access plus 1 week"
+    ExpiresByType image/jpeg "access plus 1 week"
+    ExpiresByType image/png "access plus 1 week"
+    ExpiresByType image/gif "access plus 1 week"
+    
+    # CSS 및 JS는 최신 반영을 위해 корот 하게 지정 또는 캐시 제외
+    ExpiresByType text/css "access plus 1 day"
+    ExpiresByType application/javascript "access plus 1 day"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 3. 인코딩 및 기본 설정
+# ----------------------------------------------------------------------
+# 기본 텍스트 파일 UTF-8 설정
+AddDefaultCharset UTF-8
+

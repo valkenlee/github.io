@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마작 청일색 텐파이 대기패 퀴즈 (v0.5)</title>
+
+    <script> 
+        window.MAIN_VER = "0.6"; 
+        window.JS_VER = "0.1g"; 
+
+        // 문서 타이틀 동적 적용
+        document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
+    </script>
+
+    <title>마작 청일색 텐파이 대기패 퀴즈</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=1.0.2">
 
     <!-- PapaParse: CSV 데이터를 JSON으로 변환해주는 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -36,7 +45,9 @@
 <div class="header-container">
     <h1 style="user-select: none;">
         <span id="title-icon" style="cursor: pointer;">🀄</span> 
-        <span data-i18n="title">청일색 텐파이 대기패 퀴즈</span> (v0.5)
+        <span data-i18n="title">청일색 텐파이 대기패 퀴즈</span>
+	<span id="app-version"></span>
+        <script> document.getElementById('app-version').textContent = `(v${window.MAIN_VER})`; </script>
     </h1>
     <div class="lang-select-wrapper">
         <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
@@ -58,8 +69,9 @@
 		<button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" data-i18n="modeEasy">🌱 쉬움</button>
 		<button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" data-i18n="modeNormal">🌿 보통</button>
 		<button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" data-i18n="modeHard">🔥 어려움</button>
+		<button id="btn-mode-best" class="btn-diff btn-best" onclick="selectMode('best')" data-i18n="modeBest">🏆 최고의 오름패</button>
+		<button id="btn-mode-discard" class="btn-diff btn-discard" onclick="selectMode('discard')" data-i18n="modeDiscard">🀄 무엇을 버릴까?</button>
 		<button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" data-i18n="modeStreak">⚡ 연승 모드</button>
-		<button id="btn-mode-best" class="btn-diff btn-best" onclick="selectMode('best')" style="background-color: #8e44ad; color: white;" data-i18n="modeBest">🏆 최고의 오름패</button>
 	</div>
 
     <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
@@ -78,9 +90,21 @@
     </div>
     
     <div class="hand-container-wrapper" id="main-hand-wrapper">
+        <!-- 손패 조작 컨트롤바 -->
+        <div class="hand-controls">
+            <div class="control-group">
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" title="축소">🔍-</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" title="확대">🔍+</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-line-toggle">줄 바꿈 (1줄/2줄)</button>
+            </div>
+            <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset">초기화 🔄</button>
+	</div>
+        <!-- 손패 출력 영역 -->
         <div class="hand-display" id="hand-container"></div>
     </div>
 </div>
+
+
 
 <!-- 🔒 히든 패 분석기 영역 -->
 <div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; background: #faf5ff;">
@@ -120,6 +144,8 @@
         <small style="font-size:12px; font-weight:normal; color:#666;" data-i18n="shortcutHint">(단축키: 1~9, Enter)</small>
     </h3>
     <div class="selection-grid" id="selection-buttons"></div>
+    <div class="discard-selection-grid" id="discard-selection-buttons" style="display: none;"></div>
+
     <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()" data-i18n="btnSubmit">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
     
@@ -142,19 +168,6 @@
         <ul class="record-list" id="record-list-ul">
             <li style="text-align:center; padding: 10px; color:#7f8c8d;" data-i18n="hallOfFameLoading">기록을 불러오는 중...</li>
         </ul>
-    </div>
-</div>
-
-<!-- ⚡ 안내 모달 -->
-<div class="modal-overlay" id="streak-modal">
-    <div class="modal-content">
-        <h2 data-i18n="modalTitle">⚡ 어려움 연승 모드</h2>
-        <div class="modal-body">
-            <span data-i18n="modalTimeRule">⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.</span><br><br>
-            <span data-i18n="modalHofRule">🏆 <b>글로벌 명예의 전당:</b> <b>10연승 이상</b>을 기록할 경우 전 세계 리더보드에 저장됩니다.</span><br><br>
-            <span data-i18n="modalNameRule">✏️ <b>이름 설정:</b> 이름을 입력하지 않으면 <b>Anonymous</b>로 등록됩니다.</span>
-        </div>
-        <button class="modal-btn" onclick="startStreakModeAfterNotice()" data-i18n="modalStartBtn">도전 시작하기</button>
     </div>
 </div>
 
@@ -183,12 +196,35 @@
 </div>
 <!-- ⬆️ 여기에 카카오 애드핏 광고 코드를 넣으시면 됩니다 ⬆️ -->
 
+<script>
+    // CSS 동적 로드 함수
+    function loadCSS(href) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `${href}?v=${window.JS_VER}`;
+        document.head.appendChild(link);
+    }
 
-<script src="lang_tran.js?v=1.0.0"></script>
-<script src="script.js?v=1.0.0"></script>
-<script src="script_hidden.js?v=1.0.0"></script>
-<script src="check_best_pan.js?v=1.0.0"></script>
-<script src="script_best.js?v=1.0.0"></script>
+    // 동적 스크립트 로더 함수
+    function loadScript(src) {
+        const script = document.createElement('script');
+        script.src = `${src}?v=${window.JS_VER}`;
+        script.async = false; // 실행 순서 보장
+        document.head.appendChild(script);
+    }
+
+    // 스크립트 로드 호출
+    loadCSS('style.css');
+
+    loadScript('script_loadimg.js');
+    loadScript('lang_tran.js');
+    loadScript('script.js');
+    loadScript('script_hidden.js');
+    loadScript('check_best_pan.js');
+    loadScript('script_best.js');
+    loadScript('script3.js');
+    loadScript('script_ads.js');
+</script>
 
     
 </body>

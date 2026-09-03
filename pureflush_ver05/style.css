@@ -28,17 +28,6 @@ h1 {
     gap: 10px;
     margin-top: 10px;
 }
-/* 난이도/모드 버튼 그룹 (PC & 모바일 반응형 Grid) */
-.difficulty-group {
-    display: grid;
-    /* 1. 버튼의 최소 너비를 180px로 지정하여, 공간이 부족하면 자동으로 줄바꿈
-       2. PC(950px 카드) 기준 1글래스당 약 3~4개의 버튼이 한 라인에 들어감
-    */
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-}
-
 .btn-diff {
     width: 100%;
     padding: 14px 4px;
@@ -51,28 +40,6 @@ h1 {
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
-
-/* 모바일 화면 (가로 폭 600px 이하) 최적화 */
-@media (max-width: 600px) {
-    .difficulty-group {
-        /* 모바일에서는 최소 너비를 100px로 줄여
-           화면 크기에 따라 한 줄에 1개, 2개, 3개까지 자동 유연 배치
-        */
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 6px;
-    }
-
-    .btn-diff {
-        font-size: 13px;
-        padding: 10px 2px;
-        /* 긴 텍스트가 들어가도 버튼 밖으로 넘치지 않도록 방지 */
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-
 .btn-diff:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
 .btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; transform: none; } 
 .btn-diff.active { outline: 3px solid #3498db; outline-offset: 2px; }
@@ -81,7 +48,6 @@ h1 {
 .btn-normal { background-color: #e67e22; }
 .btn-hard { background-color: #c0392b; }
 .btn-streak { background-color: #8e44ad; }
-.btn-best { background-color: #e84393; }
 
 .btn-submit {
     width: 100%;
@@ -154,11 +120,10 @@ h1 {
 
 .hand-container-wrapper {
     width: 100%;
-    padding: 20px 10px;
+    padding: 12px 5px;
     background: #2b542c;
     border-radius: 8px;
-    margin-top: 25px;
-    margin-bottom: 25px;
+    margin-top: 15px;
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
     box-sizing: border-box;
 }
@@ -169,8 +134,6 @@ h1 {
     gap: 4px;
     flex-wrap: wrap;
     min-height: 50px;
-    margin-top: 25px;
-    margin-bottom: 25px;
 }
 
 /* 입체 마작패 스타일 */
@@ -562,174 +525,3 @@ h1 {
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
-
-
-/* ==========================================================
-   🀄 무엇을 버릴까? (타패 모드) 신규 스타일
-   ========================================================== */
-
-/* 난이도 버튼 그룹 5열/자율 그리드 교체 (버튼이 늘어남에 따른 대응) */
-.difficulty-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-}
-
-/* 무엇을 버릴까? 버튼 색상 (청록 계열 지정) */
-.btn-discard {
-    background-color: #16a085;
-}
-.btn-discard:hover:not(:disabled) {
-    background-color: #1abc9c;
-}
-
-/* 14패 버리기 전용 선택 그리드 */
-.discard-selection-grid {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin: 20px 0;
-    padding: 10px;
-    background-color: #f1f2f6;
-    border-radius: 8px;
-    border: 1px solid #dfe4ea;
-}
-
-/* 버릴 패 선택 전용 버튼 */
-.btn-discard-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 8px;
-    background-color: #ffffff;
-    border: 2px solid #ced4da;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.btn-discard-tile:hover {
-    border-color: #16a085;
-    background-color: #e8f8f5;
-    transform: translateY(-2px);
-}
-
-/* 선택된 타패 버튼 강조 */
-.btn-discard-tile.selected {
-    background-color: #e74c3c !important;
-    border-color: #c0392b !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-    transform: translateY(0);
-}
-
-.btn-discard-tile.selected span {
-    color: #ffffff !important;
-}
-
-/* 모바일 반응형 처리 */
-@media (max-width: 600px) {
-    .difficulty-group {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .discard-selection-grid {
-        gap: 3px;
-        padding: 6px;
-    }
-    .btn-discard-tile {
-        padding: 4px 2px;
-    }
-}
-
-
-/* 손패 상단 컨트롤바 */
-.hand-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 0 4px;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.control-group {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-}
-
-.btn-hand-ctrl {
-    background-color: #34495e;
-    color: #ffffff;
-    border: 1px solid #5d6d7e;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-}
-
-.btn-hand-ctrl:hover {
-    background-color: #2c3e50;
-}
-
-.btn-hand-ctrl:active {
-    transform: scale(0.95);
-}
-
-.btn-hand-ctrl.btn-reset {
-    background-color: #7f8c8d;
-}
-
-/* ==========================================================
-   🀄 손패 중앙 정렬 전용 스타일
-   ========================================================== */
-
-/* 기본 손패 영역 (스케일 변수 및 중앙 정렬 기본값) */
-.hand-display {
-    --tile-scale: 1;
-    display: flex !important;
-    justify-content: center !important; /* 가로 중앙 정렬 */
-    align-items: center !important;     /* 세로 중앙 정렬 */
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 마작패 크기 스케일 조정 연동 */
-.hand-display .tile-img {
-    width: calc(44px * var(--tile-scale)) !important;
-    height: calc(60px * var(--tile-scale)) !important;
-    transition: width 0.15s ease, height 0.15s ease;
-}
-
-/* 1줄 출력 모드 (줄바꿈 없이 중앙 정렬 유지 + 넘칠 경우 스크롤) */
-.hand-display.single-line {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    /* 스크롤 생성 시 내부 항목들이 좌측으로 붙지 않고 중앙을 지키도록 설정 */
-    margin: 0 auto;
-    width: max-content;
-    max-width: 100%;
-}
-
-/* 2줄 출력 모드 (줄바꿈 허용하며 각 줄 모두 중앙 정렬) */
-.hand-display.multi-line {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-}
-
-/* 모바일 전용 미세 조정 */
-@media (max-width: 600px) {
-    .hand-display .tile-img {
-        width: calc(clamp(22px, 6.8vw, 36px) * var(--tile-scale)) !important;
-        height: auto !important;
-    }
-}
-
-

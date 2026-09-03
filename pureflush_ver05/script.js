@@ -1,8 +1,11 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-31)
    ============================================================= */
-const APP_VERSION = window.MAIN_VER || "0.0";
+const APP_VERSION = "0.4.4";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
+
+let zipInstance = null;
+const tileSvgCache = {};
 
 const SUITS = [
     { code: 'Man', name: '만자패' },
@@ -50,6 +53,23 @@ window.addEventListener('DOMContentLoaded', async () => {
             handleSubmitOrNext();
         }
     });
+
+    try {
+        const response = await fetch('Regular.zip');
+        if (!response.ok) throw new Error('마작패 파일을 찾을 수 없습니다.');
+        
+        const arrayBuffer = await response.arrayBuffer();
+        zipInstance = await JSZip.loadAsync(arrayBuffer);
+        
+        document.getElementById('status-msg').style.color = '#27ae60';
+        document.getElementById('status-msg').innerText = t('loadingSuccess');
+        
+        document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
+    } catch (err) {
+        document.getElementById('status-msg').style.color = '#e74c3c';
+        document.getElementById('status-msg').innerText = t('loadingError');
+        console.error(err);
+    }
 });
 
 
@@ -242,11 +262,40 @@ function formatTimestamp(rawStr) {
 }
 
 
+async function getTileImageSrc(suitCode, num) {
+    const targetName = `${suitCode}${num}.svg`;
+    const cacheKey = `${suitCode}${num}`;
+    if (tileSvgCache[cacheKey]) return tileSvgCache[cacheKey];
+
+    let targetFile = null;
+    zipInstance.forEach((relativePath, file) => {
+        if (relativePath.endsWith(targetName)) targetFile = file;
+    });
+
+    if (targetFile) {
+        const text = await targetFile.async('string');
+        const blob = new Blob([text], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        tileSvgCache[cacheKey] = url;
+        return url;
+    }
+    return '';
+}
 
 function selectMode(mode) {
     if (currentMode !== mode) streakCount = 0;
     currentMode = mode;
 
+    if (mode === 'streak' && !sessionStorage.getItem('streak_notice_shown')) {
+        document.getElementById('streak-modal').style.display = 'flex';
+    } else {
+        generateQuiz();
+    }
+}
+
+function startStreakModeAfterNotice() {
+    sessionStorage.setItem('streak_notice_shown', 'true');
+    document.getElementById('streak-modal').style.display = 'none';
     generateQuiz();
 }
 
@@ -255,39 +304,27 @@ function updateModeUI() {
     const activeBtn = document.getElementById(`btn-mode-${currentMode}`);
     if (activeBtn) activeBtn.classList.add('active');
 
-    // 📌 quizInstruction 안내문구 갱신 로직
+    // 📌 quizInstruction 안내문구 갱신 로직 추가
     const instructionElem = document.getElementById('quiz-instruction');
     if (instructionElem) {
-        let key = 'quizInstruction';
-        if (currentMode === 'best')
-            key = 'quizInstruction_best';
-        else if (currentMode === 'discard')
-            key = 'quizInstruction_discard';
-        instructionElem.innerHTML = t(key);
+        const key = (currentMode === 'best') ? 'quizInstruction_best' : 'quizInstruction';
+        instructionElem.innerText = t(key);
     }
 
     const infoBox = document.getElementById('mode-info-box');
 
-    // streak 모드일 경우 안내 문구 구성
-    if (currentMode === 'streak') {
-        const streakDesc = t('descriptions.streak') ||
-            `⚡ <b>어려움 연승 모드</b><br>` +
-            `⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>` +
-            `🏆 <b>글로벌 명예의 전당:</b> 10연승 이상 달성 시 전 세계 리더보드에 저장할 수 있습니다.<br>` +
-            `✏️ <b>이름 설정:</b> 미입력 시 Anonymous로 등록됩니다.`;
+    infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
+    infoBox.style.display = 'block';
 
-        infoBox.innerHTML = streakDesc;
+    if (currentMode === 'streak') {
         infoBox.style.backgroundColor = '#f5ee2e15';
         infoBox.style.borderColor = '#8e44ad';
         infoBox.style.color = '#4a235a';
     } else {
-        infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
         infoBox.style.backgroundColor = '#f8f9fa';
         infoBox.style.borderColor = '#ced4da';
         infoBox.style.color = '#2c3e50';
     }
-
-    infoBox.style.display = 'block';
 }
 
 function generateQuiz() {
