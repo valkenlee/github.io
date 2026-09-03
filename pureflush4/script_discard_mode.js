@@ -1,5 +1,5 @@
 /**
- * 청일색/수패 손패 분석 및 버림패 모드 연동 스크립트 (script3.js)
+ * 청일색/수패 손패 분석 및 버림패 모드 연동 스크립트 (script_discard_mode.js)
  */
 
 // 안전하게 수색(Suit) 코드('Man', 'Pin', 'Sou')를 가져오는 헬퍼 함수
@@ -232,6 +232,7 @@ let discardNewCard = null;
 
 // 버림패 퀴즈 문제 생성
 function generateDiscardQuiz() {
+    isSubmitted = false; // 📌 제출 상태 초기화 추가
 
     // 1. 실행 중인 streak 타이머 정지 (타이머 변수명에 맞게 확인)
     if (typeof timer !== 'undefined' && timer) {
@@ -288,6 +289,14 @@ function generateDiscardQuiz() {
 
     renderHandWithDrawnCard();
     renderDiscardButtons();
+
+	// generateDiscardQuiz() 최하단에 추가
+	const submitBtn = document.getElementById('btn-submit');
+	if (submitBtn) {
+		submitBtn.innerText = typeof t === 'function' ? t('btnSubmit') : '제출';
+		submitBtn.style.backgroundColor = '#2980b9';
+	}
+	selectedTiles.clear();
 }
 
 // 쯔모패(14번째 패) 출력
@@ -313,6 +322,11 @@ async function renderHandWithDrawnCard() {
         img.style.marginLeft = '12px';
         img.alt = `${suitCode}${discardNewCard}`;
         container.appendChild(img);
+    }
+    
+    // 레이아웃 스케일 및 줄 적용 (script_gameboard.js 연동)
+    if (typeof updateHandDisplayLayout === 'function') {
+        updateHandDisplayLayout();
     }
 }
 
@@ -456,133 +470,13 @@ function handleDiscardModeSubmit() {
             resultDiv.innerHTML = `❌ <b>오답입니다.</b><br>선택하신 [<b>${userChoice}</b>]번 패는 최선의 선택이 아닙니다.<br>👉 최적의 버림패: <b>[ ${bestDiscardTiles.join(', ')} ]</b> (${maxWaitCount}장 대기)${html}`;
         }
 
-        if (btnSubmit) btnSubmit.innerText = tr('btnNextSame', '다음 문제');
-    } else {
-        isSubmitted = false;
-        if (resultDiv) resultDiv.style.display = 'none';
-        if (btnSubmit) btnSubmit.innerText = tr('btnSubmit', '제출');
-        if (typeof generateQuiz === 'function') generateQuiz();
-    }
-}
-
-// 기존 메인 스크립트 이벤트 Hook 연동
-(function initDiscardHooks() {
-    const rawSubmit = window.handleSubmitOrNext;
-    window.handleSubmitOrNext = function() {
-        if (typeof currentMode !== 'undefined' && currentMode === 'discard') {
-            handleDiscardModeSubmit();
-        } else if (typeof rawSubmit === 'function') {
-            rawSubmit.apply(this, arguments);
+        if (btnSubmit) {
+            btnSubmit.innerText = tr('btnNextSame', '다음 문제');
+            btnSubmit.style.backgroundColor = '#27ae60';
         }
-    };
-
-    const rawGenerateQuiz = window.generateQuiz;
-    window.generateQuiz = function() {
-        if (typeof currentMode !== 'undefined' && currentMode === 'discard') {
-            if (typeof updateModeUI === 'function') updateModeUI();
-            
-            const quizArea = document.getElementById('quiz-area');
-            if (quizArea) quizArea.style.display = 'block';
-
-            generateDiscardQuiz();
-            if (typeof selectedTiles !== 'undefined' && selectedTiles.clear) {
-                selectedTiles.clear();
-            }
-        } else if (typeof rawGenerateQuiz === 'function') {
-            rawGenerateQuiz.apply(this, arguments);
-        }
-    };
-})();
-
-// =================================================================
-// 손패 디스플레이 컨트롤 (확대/축소 / 1줄·2줄 전환 / 방향 감지 / 초기화)
-// =================================================================
-let handScale = 1.0;          // 패 크기 비율 (0.6 ~ 1.5)
-let isMultiLine = false;      // true: 2줄, false: 1줄
-let userHasCustomized = false; // 사용자가 직접 조작했는지 여부
-
-// 현재 화면 상태에 맞춰 기본 줄 수 설정 (사용자가 안 건드렸을 때만)
-function applyAutoLineMode() {
-    if (userHasCustomized) return; // 사용자가 수동 변경했으면 자동 전환 건너뜀
-
-    const isPortraitMobile = window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches;
-    // 세로 모드 모바일이면 2줄, PC/가로 모드면 1줄이 기본
-    isMultiLine = isPortraitMobile;
-    updateHandDisplayLayout();
-}
-
-// UI 클래스 및 스케일 CSS 변수 업데이트
-function updateHandDisplayLayout() {
-    const container = document.getElementById('hand-container');
-    if (!container) return;
-
-    // 1줄 / 2줄 클래스 토글
-    if (isMultiLine) {
-        container.classList.remove('single-line');
-        container.classList.add('multi-line');
     } else {
-        container.classList.remove('multi-line');
-        container.classList.add('single-line');
+        // 📌 이미 제출된 상태에서 클릭 시 다음 퀴즈 생성
+        generateQuiz();
     }
-
-    // 확대/축소 비율 적용
-    container.style.setProperty('--tile-scale', handScale);
 }
 
-// 이벤트 리스너 바인딩
-function initHandControls() {
-    const btnZoomOut = document.getElementById('btn-zoom-out');
-    const btnZoomIn = document.getElementById('btn-zoom-in');
-    const btnLineToggle = document.getElementById('btn-line-toggle');
-    const btnReset = document.getElementById('btn-hand-reset');
-
-    // 축소 버튼
-    if (btnZoomOut) {
-        btnZoomOut.addEventListener('click', () => {
-            if (handScale > 0.6) {
-                handScale = parseFloat((handScale - 0.1).toFixed(1));
-                userHasCustomized = true;
-                updateHandDisplayLayout();
-            }
-        });
-    }
-
-    // 확대 버튼
-    if (btnZoomIn) {
-        btnZoomIn.addEventListener('click', () => {
-            if (handScale < 1.6) {
-                handScale = parseFloat((handScale + 0.1).toFixed(1));
-                userHasCustomized = true;
-                updateHandDisplayLayout();
-            }
-        });
-    }
-
-    // 1줄 / 2줄 전환 버튼
-    if (btnLineToggle) {
-        btnLineToggle.addEventListener('click', () => {
-            isMultiLine = !isMultiLine;
-            userHasCustomized = true;
-            updateHandDisplayLayout();
-        });
-    }
-
-    // 디폴트 초기화 버튼
-    if (btnReset) {
-        btnReset.addEventListener('click', () => {
-            userHasCustomized = false;
-            handScale = 1.0;
-            applyAutoLineMode(); // 자동 줄모드로 재설정 및 적용
-        });
-    }
-
-    // 화면 방향 변경 및 해상도 변경 감지
-    window.addEventListener('resize', applyAutoLineMode);
-    window.addEventListener('orientationchange', applyAutoLineMode);
-
-    // 최초 실행 시 기본 배치 설정
-    applyAutoLineMode();
-}
-
-// DOM 로드 완료 후 실행
-document.addEventListener('DOMContentLoaded', initHandControls);

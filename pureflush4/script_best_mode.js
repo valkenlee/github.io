@@ -1,10 +1,14 @@
 /**
+ * 최고의 오름패 (Best Winning Tile) 모드 확장 및 인터페이스 연동 스크립트
+ */
+ 
+/**
  * 청일색 화료 패의 역과 판수를 계산하는 함수 (i18n 호환)
  */
 function calc_pan(suit, hand, card, reach, win_card) {
   // 1. 입력값 정규화 및 유효성 검사
   const suitNum = Number(suit);
-  const handArr = (typeof hand === "string" ? hand.split("") : hand)
+  const handArr = (typeof hand === "string" ? hand.split("") : (Array.isArray(hand) ? hand : String(hand).split("")))
     .map(Number)
     .sort((a, b) => a - b);
   const winTile = Number(card);
@@ -330,7 +334,8 @@ function getDetailedYakuList(yakuKeys) {
  * 손패에 대해 1~9 오름패 각각의 판수 분석 및 최적의 선택 확인 함수
  */
 function check_best_pan(suit, hand, card, reach, win_card) {
-  const handArr = (typeof hand === "string" ? hand.split("") : hand).map(Number);
+  // hand 형태(문자열/배열) 대응
+  const handArr = (typeof hand === "string" ? hand.split("") : (Array.isArray(hand) ? hand : String(hand).split(""))).map(Number);
   const selectedTile = Number(card);
 
   const handCounts = Array(10).fill(0);
@@ -351,7 +356,7 @@ function check_best_pan(suit, hand, card, reach, win_card) {
       continue;
     }
 
-    const res = calc_pan(suit, hand, tile, reach, win_card);
+    const res = calc_pan(suit, handArr, tile, reach, win_card);
 
     if (!res.isValid) {
       results.push({
@@ -418,4 +423,103 @@ function check_best_pan(suit, hand, card, reach, win_card) {
     isUserBestChoice: bestTiles.includes(selectedTile),
     analysis: results
   };
+}
+
+
+// 1. 최고 판수 분석 텍스트 생성 및 UI 강조 처리 함수
+function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1, winCard = 1) {
+  if (typeof check_best_pan !== 'function') {
+    console.error('check_best_pan 함수를 찾을 수 없습니다.');
+    return { html: '', isUserCorrect: false, bestTiles: [], maxScore: 0 };
+  }
+
+  const resultData = check_best_pan(suitNum, handArr, userSelectedTile, reach, winCard);
+  const bestTiles = resultData.bestTiles || [];
+  const maxScore = resultData.maxScore || 0;
+
+  // t() 호출 보장 헬퍼
+  const translate = (key, opt) => (typeof t === 'function' ? t(key, opt) : key);
+
+  let html = `<div class="explanation-box" style="margin-top:15px; text-align:left;">`;
+  html += `<h4>📊 ${translate('bestReportHeaderTitle')}</h4>`;
+  html += `<p style="font-size:13px; color:#555; margin-bottom:10px;">${translate('bestReportCondition')}</p>`;
+  html += `<ul style="list-style:none; padding:0; margin:0; font-family:monospace, monospace; font-size:14px; line-height:1.8;">`;
+
+  if (resultData.analysis && Array.isArray(resultData.analysis)) {
+    resultData.analysis.forEach((item) => {
+      const isBest = bestTiles.includes(item.tile) && maxScore > 0;
+      const isValid = item.isValid;
+
+      if (isBest) {
+        // 🏆 1. 최고 정답 패 강조 (배경 초록색 계열 + 진한 텍스트 + 테두리)
+        html += `<li class="report-item best" style="font-weight:bold; color:#1e8449; background-color:#e8f8f5; padding:6px 10px; border-radius:4px; margin-bottom:4px; border:1px solid #2ecc71;">`;
+        html += `🏆 <b>${item.tile}</b> : ${item.text} <b>${translate('bestReportOptimalChoice')}</b>`;
+        html += `</li>`;
+      } else if (isValid) {
+        // ⭕ 2. 일반 청일색 화료 가능 패 (배경 파란색 계열 + 유효 강조)
+        html += `<li class="report-item valid" style="font-weight:bold; color:#2980b9; background-color:#ebf5fb; padding:4px 8px; border-radius:4px; margin-bottom:4px; border-left:4px solid #3498db;">`;
+        html += `⭕ <b>${item.tile}</b> : ${item.text}`;
+        html += `</li>`;
+      } else {
+        // ❌ 3. 화료 불가 패 (역 미성립 또는 4장 존재 - 흐린 회색 + 취소선)
+        html += `<li class="report-item invalid" style="color:#a6acaf; background-color:#f4f6f7; padding:4px 8px; border-radius:4px; margin-bottom:4px; text-decoration:line-through;">`;
+        html += `❌ <b>${item.tile}</b> : ${item.text}`;
+        html += `</li>`;
+      }
+    });
+  }
+
+  html += `</ul></div>`;
+  return { html, isUserCorrect: resultData.isUserBestChoice, bestTiles, maxScore };
+}
+
+// 2. "최고의 오름패" 모드 제출 및 결과 처리
+function handleBestModeSubmit() {
+  const resultDiv = document.getElementById('result');
+  const btnSubmit = document.getElementById('btn-submit');
+  const translate = (key, opt) => (typeof t === 'function' ? t(key, opt) : key);
+
+  if (!isSubmitted) {
+    if (!selectedTiles || selectedTiles.size === 0) {
+      if (resultDiv) {
+         resultDiv.className = 'result-message incorrect';
+         resultDiv.innerHTML = `⚠️ <b>${translate('alertSelectTile')}</b>`;
+         resultDiv.style.display = 'block';
+      }
+      return;
+    }
+
+    isSubmitted = true;
+    
+    const userChoice = Array.from(selectedTiles)[0];
+    const suitNum = currentSuitObj.code === 'Man' ? 1 : (currentSuitObj.code === 'Pin' ? 2 : 3);
+    
+    const { html, isUserCorrect, bestTiles, maxScore } = renderBestPanAnalysisHTML(
+      suitNum,
+      currentHand,
+      userChoice,
+      1,
+      1
+    );
+
+    resultDiv.style.display = 'block';
+    
+    const displayScore = maxScore >= 13 ? translate('bestReport.yakuman') : translate('bestReport.han', { count: maxScore });
+
+    if (isUserCorrect) {
+      resultDiv.className = 'result-message correct';
+      resultDiv.innerHTML = `🎉 <b>${translate('correct')}</b><br>${translate('bestResultCorrectMsg', { tile: userChoice, score: displayScore })}${html}`;
+    } else {
+      resultDiv.className = 'result-message incorrect';
+      resultDiv.innerHTML = `❌ <b>${translate('incorrect')}</b><br>${translate('bestResultIncorrectMsg', { tile: userChoice, bestTiles: bestTiles.join(', '), score: displayScore })}${html}`;
+    }
+
+    if (btnSubmit) {
+      btnSubmit.innerText = translate('btnNextSame');
+      btnSubmit.style.backgroundColor = '#27ae60';
+    }
+  } else {
+    // 📌 이미 제출된 상태에서 클릭 시 다음 퀴즈 생성
+    generateQuiz();
+  }
 }
