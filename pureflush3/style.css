@@ -81,6 +81,7 @@ h1 {
 .btn-normal { background-color: #e67e22; }
 .btn-hard { background-color: #c0392b; }
 .btn-streak { background-color: #8e44ad; }
+.btn-best { background-color: #e84393; }
 
 .btn-submit {
     width: 100%;
@@ -153,10 +154,11 @@ h1 {
 
 .hand-container-wrapper {
     width: 100%;
-    padding: 12px 5px;
+    padding: 20px 10px;
     background: #2b542c;
     border-radius: 8px;
-    margin-top: 15px;
+    margin-top: 25px;
+    margin-bottom: 25px;
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
     box-sizing: border-box;
 }
@@ -167,6 +169,8 @@ h1 {
     gap: 4px;
     flex-wrap: wrap;
     min-height: 50px;
+    margin-top: 25px;
+    margin-bottom: 25px;
 }
 
 /* 입체 마작패 스타일 */
@@ -647,7 +651,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 20px;
     padding: 0 4px;
     gap: 6px;
     flex-wrap: wrap;
