@@ -831,6 +831,7 @@ function canFormTwoIdenticalChowPairs(counts) {
 async function renderHand() {
     const container = document.getElementById('hand-container');
     container.innerHTML = '';
+
     for (const num of currentHand) {
         const img = document.createElement('img');
         img.src = await getTileImageSrc(currentSuitObj.code, num);
