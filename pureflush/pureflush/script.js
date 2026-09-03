@@ -33,6 +33,26 @@ let titleClickTimer = null;
 let customHand = [];
 let customSuitCode = 'Man';
 
+window.addEventListener('DOMContentLoaded', async () => {
+    loadLeaderboard(); 
+    initTitleClickTrigger();
+    renderCustomButtons();
+    updateModeUI();   
+    
+    window.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT') return;
+        if (e.key >= '1' && e.key <= '9') {
+            if (isSubmitted) return; 
+            const num = parseInt(e.key);
+            const btn = document.getElementById(`btn-num-${num}`);
+            if (btn) toggleSelect(num, btn);
+        } else if (e.key === 'Enter') {
+            handleSubmitOrNext();
+        }
+    });
+});
+
+
 // ==========================================
 // Google Apps Script API 설정
 // ==========================================
@@ -44,7 +64,6 @@ const GAS_CONFIG = {
     // 3. 구글 시트 웹 게시 CSV URL
     csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTnJU4yDCDyeZZCmpkbogFP62WF_AcmsitYv6YBufHxY2qafrzmqXjvOHUrAsGp0sjeK-FBAptasrpq/pub?gid=1559316332&single=true&output=csv"
 };
-
 
 /* -------------------------------------------------------------
    📊 HMAC 서명 생성 및 Apps Script 기록 저장 (Write)
@@ -75,8 +94,6 @@ function saveRecord() {
         signature: signature
     };
 
-    console.log('[DEBUG] [saveRecord] Sending payload:', payload);
-
     // Google Apps Script Web App으로 JSON 데이터 전송
     fetch(GAS_CONFIG.apiUrl, {
         method: 'POST',
@@ -86,12 +103,8 @@ function saveRecord() {
         },
         body: JSON.stringify(payload)
     })
-    .then(res => {
-        console.log('[DEBUG] [saveRecord] HTTP Status:', res.status);
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
-        console.log('[DEBUG] [saveRecord] GAS Response:', data);
         if (data.result === 'success') {
             alert(`🎉 ${playerName} (${streak})`);
             document.getElementById('name-input-container').style.display = 'none';
@@ -103,7 +116,7 @@ function saveRecord() {
     })
     .catch(err => {
         alert('Error');
-        console.error('[DEBUG] [saveRecord] Error:', err);
+        console.error(err);
     })
     .finally(() => {
         saveBtn.disabled = false;
@@ -115,132 +128,86 @@ function saveRecord() {
    📊 구글 시트 실시간 리더보드 조회 (Read)
 ------------------------------------------------------------- */
 function loadLeaderboard() {
-    console.group('[DEBUG] Leaderboard Loading Process');
-    console.log('GAS Config CSV URL:', GAS_CONFIG.csvUrl);
-
     if (!GAS_CONFIG.csvUrl || GAS_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
-        console.error('[DEBUG] Invalid CSV URL configuration.');
         document.getElementById('record-list-ul').innerHTML = 
             '<li style="text-align:center; padding:10px; color:#e74c3c;">CSV URL Error</li>';
-        console.groupEnd();
         return;
     }
 
     const fetchUrl = `${GAS_CONFIG.csvUrl}&t=${Date.now()}`;
-    console.log('Fetching CSV from:', fetchUrl);
 
-    // fetch를 통해 CSV 데이터 수신 후 파싱 진행
-    fetch(fetchUrl)
-        .then(response => {
-            console.log('CSV Fetch HTTP Status:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP Error Status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(csvText => {
-            console.log('Raw CSV Data Received (length):', csvText.length);
+    Papa.parse(fetchUrl, {
+        download: true,
+        header: false,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const rows = results.data;
+            const userRecordsMap = new Map();
 
-            Papa.parse(csvText, {
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    console.log('PapaParse complete. Total rows:', results.data.length);
-                    if (results.errors && results.errors.length > 0) {
-                        console.warn('PapaParse warnings/errors:', results.errors);
-                    }
+            rows.forEach((row, index) => {
+                if (!row || row.length < 3) return;
 
-                    const rows = results.data;
-                    const userRecordsMap = new Map();
-                    let filteredRowCount = 0;
+                let rawTimestamp = String(row[0] || '').trim();
+                let name = String(row[1] || '').trim();
+                let streak = parseInt(row[2], 10);
 
-                    rows.forEach((row, index) => {
-                        if (!row || row.length < 3) return;
+                if (
+                    rawTimestamp.includes('타임스탬프') || 
+                    rawTimestamp.includes('Timestamp') || 
+                    name.includes('Name') || 
+                    isNaN(streak)
+                ) {
+                    return;
+                }
 
-                        let rawTimestamp = String(row[0] || '').trim();
-                        let name = String(row[1] || '').trim();
-                        let streak = parseInt(row[2], 10);
+                if (!name) name = 'Anonymous';
 
-                        if (
-                            rawTimestamp.includes('타임스탬프') || 
-                            rawTimestamp.includes('Timestamp') || 
-                            name.includes('Name') || 
-                            isNaN(streak)
-                        ) {
-                            return;
+                if (streak >= 10) {
+                    const formattedDate = formatTimestamp(rawTimestamp);
+                    const dateOnly = formattedDate.split(' ')[0] || formattedDate;
+                    const uniqueKey = `${name}_${dateOnly}`;
+                    
+                    if (userRecordsMap.has(uniqueKey)) {
+                        if (streak > userRecordsMap.get(uniqueKey).streak) {
+                            userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
                         }
-
-                        if (!name) name = 'Anonymous';
-
-                        if (streak >= 10) {
-                            filteredRowCount++;
-                            const formattedDate = formatTimestamp(rawTimestamp);
-                            const dateOnly = formattedDate.split(' ')[0] || formattedDate;
-                            const uniqueKey = `${name}_${dateOnly}`;
-                            
-                            if (userRecordsMap.has(uniqueKey)) {
-                                if (streak > userRecordsMap.get(uniqueKey).streak) {
-                                    userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
-                                }
-                            } else {
-                                userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
-                            }
-                        }
-                    });
-
-                    console.log(`Valid records extracted: ${filteredRowCount}, Unique aggregated: ${userRecordsMap.size}`);
-
-                    let parsedRecords = Array.from(userRecordsMap.values());
-                    parsedRecords.sort((a, b) => b.streak - a.streak);
-
-                    const top10 = parsedRecords.slice(0, 10);
-                    console.log('Top 10 Records:', top10);
-
-                    const ul = document.getElementById('record-list-ul');
-                    if (!ul) {
-                        console.error('Element #record-list-ul not found in DOM.');
-                        console.groupEnd();
-                        return;
+                    } else {
+                        userRecordsMap.set(uniqueKey, { name, streak, date: formattedDate });
                     }
-
-                    ul.innerHTML = '';
-
-                    if (top10.length === 0) {
-                        console.warn('No records matched the criteria (streak >= 10).');
-                        ul.innerHTML = `<li style="text-align:center; padding: 10px; color:#7f8c8d;">${typeof t === 'function' ? t('hallOfFameLoading') : '기록이 없습니다.'}</li>`;
-                        console.groupEnd();
-                        return;
-                    }
-
-                    top10.forEach((rec, idx) => {
-                        const li = document.createElement('li');
-                        li.className = 'record-item';
-                        li.innerHTML = `
-                            <span class="record-rank">${idx + 1}</span>
-                            <span class="record-name">${escapeHtml(rec.name)}</span>
-                            <span class="record-score">${rec.streak}</span>
-                            <span class="record-date" style="font-size: 11px; color: #888; white-space: nowrap;">${rec.date}</span>
-                        `;
-                        ul.appendChild(li);
-                    });
-
-                    console.log('Leaderboard rendered successfully.');
-                    console.groupEnd();
-                },
-                error: function(err) {
-                    console.error('PapaParse execution error:', err);
-                    document.getElementById('record-list-ul').innerHTML = 
-                        '<li style="text-align:center; padding: 10px; color:#7f8c8d;">Parse Error</li>';
-                    console.groupEnd();
                 }
             });
-        })
-        .catch(err => {
-            console.error('Fetch / Network Error:', err);
+
+            let parsedRecords = Array.from(userRecordsMap.values());
+            parsedRecords.sort((a, b) => b.streak - a.streak);
+
+            const top10 = parsedRecords.slice(0, 10);
+            const ul = document.getElementById('record-list-ul');
+            ul.innerHTML = '';
+
+            if (top10.length === 0) {
+               // loadLeaderboard 함수 내부 ul.innerHTML 초기화 교체
+               ul.innerHTML = `<li style="text-align:center; padding: 10px; color:#7f8c8d;">${t('hallOfFameLoading')}</li>`;
+                return;
+            }
+
+            top10.forEach((rec, idx) => {
+                const li = document.createElement('li');
+                li.className = 'record-item';
+                li.innerHTML = `
+                    <span class="record-rank">${idx + 1}</span>
+                    <span class="record-name">${escapeHtml(rec.name)}</span>
+                    <span class="record-score">${rec.streak}</span>
+                    <span class="record-date" style="font-size: 11px; color: #888; white-space: nowrap;">${rec.date}</span>
+                `;
+                ul.appendChild(li);
+            });
+        },
+        error: function(err) {
+            console.error("Leaderboard error:", err);
             document.getElementById('record-list-ul').innerHTML = 
-                '<li style="text-align:center; padding: 10px; color:#7f8c8d;">Network Error</li>';
-            console.groupEnd();
-        });
+                '<li style="text-align:center; padding: 10px; color:#7f8c8d;">Error</li>';
+        }
+    });
 }
 
 function formatTimestamp(rawStr) {
@@ -864,6 +831,7 @@ function canFormTwoIdenticalChowPairs(counts) {
 async function renderHand() {
     const container = document.getElementById('hand-container');
     container.innerHTML = '';
+
     for (const num of currentHand) {
         const img = document.createElement('img');
         img.src = await getTileImageSrc(currentSuitObj.code, num);
@@ -992,42 +960,4 @@ function copyCurrentQuizToCustom() {
     if (textInput) textInput.value = customHand.join('');
 
     updateCustomHandDisplay();
-}
-
-/* ==========================================
-   📌 앱 초기화 함수 정의
-   ========================================== */
-async function initApp() {
-    console.log('[DEBUG] App Initialization Started');
-    loadLeaderboard();
-    initTitleClickTrigger();
-    renderCustomButtons();
-    updateModeUI();
-
-    window.addEventListener('keydown', (e) => {
-        if (document.activeElement.tagName === 'INPUT') return;
-        if (e.key >= '1' && e.key <= '9') {
-            if (isSubmitted) return;
-            const num = parseInt(e.key);
-            const btn = document.getElementById(`btn-num-${num}`);
-            if (btn) toggleSelect(num, btn);
-        } else if (e.key === 'Enter') {
-            handleSubmitOrNext();
-        }
-    });
-}
-
-/* ==========================================
-   📌 initApp() 자동으로 실행하기 (script.js 최하단에 배치)
-   ========================================== */
-if (document.readyState === 'loading') {
-    // 아직 DOM을 읽는 중이라면 이벤트 대기
-    window.addEventListener('DOMContentLoaded', () => {
-        console.log('[DEBUG] DOMContentLoaded fired!');
-        initApp();
-    });
-} else {
-    // 이미 DOM 완성을 마친 상태라면 즉시 실행
-    console.log('[DEBUG] DOM already loaded, running initApp immediately.');
-    initApp();
 }

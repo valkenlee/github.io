@@ -314,6 +314,9 @@ async function renderHandWithDrawnCard() {
         img.alt = `${suitCode}${discardNewCard}`;
         container.appendChild(img);
     }
+
+	// ★ 손패를 새로 그린 후 현재 레이아웃 및 확대/축소 스케일 즉시 재적용
+    updateHandDisplayLayout();
 }
 
 // style.css의 .selection-grid 및 .btn-number 스타일 규격을 따르도록 수정된 버튼 생성 함수
@@ -516,17 +519,17 @@ function updateHandDisplayLayout() {
     const container = document.getElementById('hand-container');
     if (!container) return;
 
-    // 1줄 / 2줄 클래스 토글
-    if (isMultiLine) {
-        container.classList.remove('single-line');
-        container.classList.add('multi-line');
-    } else {
-        container.classList.remove('multi-line');
-        container.classList.add('single-line');
-    }
-
-    // 확대/축소 비율 적용
+    // CSS 변수 업데이트
     container.style.setProperty('--tile-scale', handScale);
+
+    // 줄바꿈 설정(1줄/2줄) 클래스 토글
+    if (isMultiLine) {
+        container.classList.add('multi-line');
+        container.classList.remove('single-line');
+    } else {
+        container.classList.add('single-line');
+        container.classList.remove('multi-line');
+    }
 }
 
 // 이벤트 리스너 바인딩
@@ -584,5 +587,11 @@ function initHandControls() {
     applyAutoLineMode();
 }
 
-// DOM 로드 완료 후 실행
-document.addEventListener('DOMContentLoaded', initHandControls);
+
+// 단순 addEventListener 대신 readyState 체크 후 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHandControls);
+} else {
+    // 이미 DOM 로드가 완료된 경우 즉시 실행
+    initHandControls();
+}

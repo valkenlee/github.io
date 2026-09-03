@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script> 
-        window.MAIN_VER = "0.6b"; 
-        window.JS_VER = "0.1"; 
+        window.MAIN_VER = "0.6a"; 
+        window.JS_VER = "0.1c"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -14,7 +14,6 @@
 
     <title>마작 청일색 텐파이 대기패 퀴즈</title>
 
-    <!-- jszip -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <!-- PapaParse: CSV 데이터를 JSON으로 변환해주는 라이브러리 -->
@@ -32,12 +31,12 @@
       });
     </script>
 
-    <!-- crypto -->
+    <!-- index.html의 <head> 내부에 추가 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-    <!-- ads -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023"
     crossorigin="anonymous"></script>
+
 
 </head>
 <body>
@@ -190,7 +189,7 @@
 <!-- ⬇️ 여기에 카카오 애드핏 광고 코드를 넣으시면 됩니다 ⬇️ -->
 <div class="area_ad2" style="text-align: right; margin: 30px 0;"
 	<ins class="kakao_ad_area" style="display:none;"
-	data-ad-unit = "DAN-lXwbvMYNnoA9RRWh"
+	data-ad-unit = "DAN-tNouyGfSZC9Zn8XJ"
 	data-ad-width = "300"
 	data-ad-height = "250"></ins>
 	<script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
@@ -224,6 +223,7 @@
     loadScript('check_best_pan.js');
     loadScript('script_best.js');
     loadScript('script3.js');
+    loadScript('script_debug.js');
     loadScript('script_ads.js');
 </script>
 

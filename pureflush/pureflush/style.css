@@ -701,11 +701,36 @@ h1 {
     box-sizing: border-box;
 }
 
-/* 마작패 크기 스케일 조정 연동 */
+/* 기존 .hand-display .tile-img 내 !important 제거 및 수정 */
 .hand-display .tile-img {
-    width: calc(44px * var(--tile-scale)) !important;
-    height: calc(60px * var(--tile-scale)) !important;
+    /* 기존 width/height !important 선언 제거 */
+    background-color: #fdfbf7;
+    border: 1px solid #d1ccc0;
+    border-radius: 5px;
+    box-shadow:
+        inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.15),
+        1px 2px 4px rgba(0, 0, 0, 0.3);
+    padding: 2px 1px;
+    box-sizing: border-box;
+    object-fit: contain;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+/* hand-container 내부 이미지의 스케일 통합 처리 */
+#hand-container .tile-img {
+    width: calc(44px * var(--tile-scale, 1)) !important;
+    height: calc(60px * var(--tile-scale, 1)) !important;
     transition: width 0.15s ease, height 0.15s ease;
+}
+
+/* 모바일 전용 미세 조정 */
+@media (max-width: 600px) {
+    #hand-container .tile-img {
+        width: calc(clamp(22px, 6.8vw, 36px) * var(--tile-scale, 1)) !important;
+        height: auto !important;
+    }
 }
 
 /* 1줄 출력 모드 (줄바꿈 없이 중앙 정렬 유지 + 넘칠 경우 스크롤) */
@@ -724,12 +749,21 @@ h1 {
     justify-content: center !important;
 }
 
-/* 모바일 전용 미세 조정 */
-@media (max-width: 600px) {
-    .hand-display .tile-img {
-        width: calc(clamp(22px, 6.8vw, 36px) * var(--tile-scale)) !important;
-        height: auto !important;
-    }
+#hand-container {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(2px * var(--tile-scale, 1));
 }
 
+#hand-container img {
+  /* JS의 style.width 강제 부여와의 충돌을 막기 위해 !important 제거 */
+  width: calc(44px * var(--tile-scale, 1));
+  height: auto;
+  transition: width 0.15s ease; /* 크기 변경 시 부드러운 전환 효과 */
+}
+
+/* 쯔모패 간격 분리 예시 */
+#hand-container img.drawn-card {
+  margin-left: calc(10px * var(--tile-scale, 1));
+}
 
