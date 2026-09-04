@@ -2,6 +2,14 @@
    📌 generateQuiz 관련 모듈 (script_generatequiz.js)
    ============================================================= */
 
+function changeSuit() {
+    let availableSuits = SUITS;
+    if (currentSuitObj) {
+        availableSuits = SUITS.filter(suit => suit.code !== currentSuitObj.code);
+    }
+    currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
+}
+
 /**
  * 퀴즈를 생성하고 관련 제반 상태 및 UI를 업데이트합니다.
  */
@@ -11,6 +19,8 @@ function generateQuiz() {
 
     updateModeUI();
 
+    changeSuit();
+
     // 📌 discard 모드일 경우 discard 전용 생성 함수로 전달
     if (currentMode === 'discard') {
         if (typeof generateDiscardQuiz === 'function') {
@@ -19,11 +29,6 @@ function generateQuiz() {
         return;
     }
 
-    let availableSuits = SUITS;
-    if (currentSuitObj) {
-        availableSuits = SUITS.filter(suit => suit.code !== currentSuitObj.code);
-    }
-    currentSuitObj = availableSuits[Math.floor(Math.random() * availableSuits.length)];
 
     let targetDifficulty = currentMode;
     if (currentMode === 'streak') {
