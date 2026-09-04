@@ -1,0 +1,172 @@
+.hand-container-wrapper {
+    width: 100%;
+    padding: 20px 10px;
+    background: #2b542c;
+    border-radius: 8px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+}
+
+.hand-display {
+    --tile-scale: 1;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px;
+    flex-wrap: wrap;
+    min-height: 50px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.hand-display .tile-img {
+    width: calc(44px * var(--tile-scale)) !important;
+    height: calc(60px * var(--tile-scale)) !important;
+    transition: width 0.15s ease, height 0.15s ease;
+}
+
+.hand-display.single-line {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    margin: 0 auto;
+    width: max-content;
+    max-width: 100%;
+}
+
+.hand-display.multi-line {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+}
+
+/* 입체 마작패 스타일 */
+.tile-img {
+    width: 44px;
+    height: 60px;
+    background-color: #fdfbf7;
+    border: 1px solid #d1ccc0;
+    border-radius: 5px;
+    box-shadow: 
+        inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.15),
+        1px 2px 4px rgba(0, 0, 0, 0.3);
+    padding: 2px 1px;
+    box-sizing: border-box;
+    object-fit: contain;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+/* 숫자 선택 버튼 그리드 */
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.btn-number {
+    padding: 12px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #bdc3c7;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-number.selected {
+    background-color: #e74c3c;
+    color: white;
+    border-color: #c0392b;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 타패 선택 그리드 */
+.discard-selection-grid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f1f2f6;
+    border-radius: 8px;
+    border: 1px solid #dfe4ea;
+}
+
+.btn-discard-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    background-color: #ffffff;
+    border: 2px solid #ced4da;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-discard-tile:hover {
+    border-color: #16a085;
+    background-color: #e8f8f5;
+    transform: translateY(-2px);
+}
+
+.btn-discard-tile.selected {
+    background-color: #e74c3c !important;
+    border-color: #c0392b !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    transform: translateY(0);
+}
+
+.btn-discard-tile.selected span {
+    color: #ffffff !important;
+}
+
+/* 손패 컨트롤 */
+.hand-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 4px;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.btn-hand-ctrl {
+    background-color: #34495e;
+    color: #ffffff;
+    border: 1px solid #5d6d7e;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-hand-ctrl:hover { background-color: #2c3e50; }
+.btn-hand-ctrl:active { transform: scale(0.95); }
+.btn-hand-ctrl.btn-reset { background-color: #7f8c8d; }
+
+@media (max-width: 600px) {
+    .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
+    .hand-display { gap: 2px; }
+    .selection-grid { gap: 4px; }
+    .btn-number { padding: 10px 0; font-size: 16px; }
+}

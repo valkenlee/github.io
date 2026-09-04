@@ -190,34 +190,36 @@
   <div id="customLegend" class="legend-custom"></div>
   <button id="resetBtn" class="reset-btn" style="display: none;">전체 선택 해제</button>
 
-  
-<!-- ⬇️ 여기에 구글 애드센스 광고 코드를 넣으시면 됩니다 ⬇️ -->
-<div class="area_ad1" style="text-align: left; margin: 30px 0;"
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023"
-       crossorigin="anonymous"></script>
-  <!-- valken.net 300x250 -->
-  <ins class="adsbygoogle"
-       style="display:inline-block;width:300px;height:250px"
-       data-ad-client="ca-pub-9689426453798023"
-       data-ad-slot="2975777961"></ins>
-  <script>
-       (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-<!-- ⬆️ 여기에 구글 애드센스 광고 코드를 넣으시면 됩니다 ⬆️ -->
+    <!-- 광고 통합 컨테이너 -->
+    <div class="ad-container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin: 30px 0;">
+      <!-- 왼쪽: 구글 애드센스 (300x250) -->
+      <div class="area_ad1" style="flex: 0 0 auto;">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:300px;height:250px"
+             data-ad-client="ca-pub-9689426453798023"
+             data-ad-slot="2975777961"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
 
-<!-- ⬇️ 여기에 카카오 애드핏 광고 코드를 넣으시면 됩니다 ⬇️ -->
-<div class="area_ad2" style="text-align: right; margin: 30px 0;"
-	<ins class="kakao_ad_area" style="display:none;"
-	data-ad-unit = "DAN-tNouyGfSZC9Zn8XJ"
-	data-ad-width = "300"
-	data-ad-height = "250"></ins>
-	<script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
+      <!-- 오른쪽: 카카오 애드핏 (300x250) -->
+      <div class="area_ad2" style="width: 300px; height: 250px; flex: 0 0 auto; display: flex; justify-content: flex-end;">
+        <ins class="kakao_ad_area" style="display:none;"
+             data-ad-unit="DAN-lXwbvMYNnoA9RRWh"
+             data-ad-width="300"
+             data-ad-height="250"></ins>
+        <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
+      </div>
+
+    </div>
+    <!-- 광고 통합 컨테이너 끝 -->
+
 </div>
-<!-- ⬆️ 여기에 카카오 애드핏 광고 코드를 넣으시면 됩니다 ⬆️ -->
+  
 
   
-</div>
 
 <script>
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRazPhuL7YdPpRSDT0LS9vMDOahNJuQoU59q1pHY9fkMR6NbyB8RZ9IbjFyoubV4NWuLRIp9M93EaF3/pub?gid=1260501516&single=true&output=csv";
