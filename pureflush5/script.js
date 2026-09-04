@@ -1,48 +1,7 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-31)
    ============================================================= */
-const APP_VERSION = window.MAIN_VER || "0.0";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
-
-const SUITS = [
-    { code: 'Man', name: '만자패' },
-    { code: 'Pin', name: '통자패' },
-    { code: 'Sou', name: '삭자패' }
-];
-
-// 📌 1. MODE_ID_MAP 상수를 파일 상단(함수들 바깥)에 전역 변수로 정의
-const MODE_ID_MAP = {
-    'easy': 'mode1',
-    'normal': 'mode2',
-    'hard': 'mode3',
-    'best': 'mode4',
-    'discard': 'mode5',
-    'streak': 'mode6'
-};
-
-let currentSuitObj = null;
-let currentHand = [];
-let winningTiles = [];
-let maxedOutWinningTiles = [];
-let winningDecompositions = {}; 
-let isChiitoiHand = false;     
-let isRyanpeikouHand = false; 
-let selectedTiles = new Set();
-
-let currentMode = 'normal';
-let isSubmitted = false;
-
-let streakCount = 0;
-let timerInterval = null;
-let timeLeft = 60;
-let pendingRecordStreak = 0;
-
-// 🔒 히든 모드 변수
-let titleClickCount = 0;
-let titleClickTimer = null;
-let customHand = [];
-let customSuitCode = 'Man';
-
 
 /**
  * 특정 모드의 playCount 를 1 증가시키는 함수

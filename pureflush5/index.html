@@ -6,7 +6,7 @@
 
     <script> 
         window.MAIN_VER = "0.8"; 
-        window.JS_VER = "0.1e"; 
+        window.JS_VER = "0.1c"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -258,7 +258,11 @@
     // 스크립트 로드 호출
     loadCSS('style.css');
 
-    loadScript('lang_tran.js');
+    loadScript('script_global.js');
+    loadScript('lang_tran_const.js');
+    loadScript('script_id_const.js');
+
+    loadScript('script_lang.js');
     loadScript('script_loadimg.js');
     loadScript('script_gameboard.js');
     loadScript('script_leaderboard.js');
