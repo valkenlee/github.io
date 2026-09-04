@@ -39,6 +39,7 @@ const TRANSLATIONS = {
             maxScore: "최고 기록",
             btnChangeId: "PID 변경",
             btnResetStats: "기록 삭제",
+            btnClose: "닫기",
             confirmReset: "정말로 모든 게임 기록을 삭제하시겠습니까?"
         },
 
@@ -173,6 +174,7 @@ const TRANSLATIONS = {
             maxScore: "最高記録",
             btnChangeId: "PID変更",
             btnResetStats: "記録削除",
+            btnClose: "Close",
             confirmReset: "本当にすべてのゲーム記録を削除しますか？"
         },
 
@@ -302,6 +304,7 @@ const TRANSLATIONS = {
             maxScore: "最高纪录",
             btnChangeId: "更改PID",
             btnResetStats: "清除战绩",
+            btnClose: "Close",
             confirmReset: "确定要删除所有游戏记录吗？"
         },
 
@@ -430,6 +433,7 @@ const TRANSLATIONS = {
             maxScore: "最高紀錄",
             btnChangeId: "變更PID",
             btnResetStats: "清除戰績",
+            btnClose: "Close",
             confirmReset: "確定要刪除所有遊戲紀錄嗎？"
         },
 
@@ -558,6 +562,7 @@ const TRANSLATIONS = {
             maxScore: "Best Record",
             btnChangeId: "Change PID",
             btnResetStats: "Reset Data",
+            btnClose: "Close",
             confirmReset: "Are you sure you want to delete all game records?"
         },
 
