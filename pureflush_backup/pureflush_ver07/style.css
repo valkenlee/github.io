@@ -388,14 +388,29 @@ h1 {
     justify-content: center;
     align-items: center;
 }
-
-
-/* 📌 테이블을 감싸는 바디 영역 배경색 어둡게 고정 */
-.modal-body {
-    padding: 15px 20px;
-    background-color: #2c3e50 !important; /* 내부 흰색 배경 제거 */
+.modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 440px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    text-align: center;
+    animation: fadeIn 0.2s ease-out;
 }
-
+.modal-content h2 {
+    margin-top: 0;
+    color: #8e44ad;
+}
+.modal-body {
+    text-align: left;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
 .modal-btn {
     width: 100%;
     padding: 12px;
@@ -438,15 +453,6 @@ h1 {
 .header-container h1 {
     margin: 0;
 }
-
-/* 📌 오른쪽 컨트롤 컨테이너 (언어 선택 & MY ID) */
-.header-right-controls {
-    display: flex;
-    flex-direction: column; /* 위에서 아래로 세로 배치 */
-    align-items: flex-end;  /* 🌟 두 요소 모두 우측 정렬 (Right Align) */
-    gap: 8px;               /* 언어 선택과 MY ID 사이의 간격 */
-}
-
 .lang-select-wrapper {
     display: flex;
     align-items: center;
@@ -726,187 +732,4 @@ h1 {
     }
 }
 
-/* 상단 유저 ID 표시 영역 */
-.user-info-bar {
-    text-align: right;
-    font-size: 13px;
-    color: #ecf0f1;
-    margin-bottom: 10px;
-    padding: 6px 12px;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 6px;
-    display: inline-block;
-    float: right; /* 또는 flex로 상단에 정렬 */
-}
 
-.user-info-bar strong {
-    color: #f1c40f; /* 눈에 잘 띄는 황금색/노란색 계열 */
-    font-family: 'Courier New', Courier, monospace; /* 고정폭 폰트로 깔끔하게 표시 */
-    letter-spacing: 0.5px;
-}
-
-/* ID 변경 & 기록 삭제 버튼 공통 스타일 */
-.btn-change-id,
-.btn-reset-stats {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 68px;          /* 두 버튼 가로 크기 통일 */
-    height: 26px;             /* 두 버튼 세로 크기 통일 */
-    padding: 4px 8px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-.btn-change-id:active,
-.btn-reset-stats:active {
-    transform: scale(0.96);   /* 클릭할 때 누름 효과 */
-}
-
-/* ID 변경 버튼 색상 (파란색 계열) */
-.btn-change-id {
-    background-color: #3498db;
-}
-
-.btn-change-id:hover {
-    background-color: #2980b9;
-}
-
-/* 기록 삭제 버튼 색상 (붉은색 계열) */
-.btn-reset-stats {
-    background-color: #e74c3c;
-}
-
-.btn-reset-stats:hover {
-    background-color: #c0392b;
-}
-
-
-/* 기록 버튼 스타일 */
-.btn-stats {
-    margin-left: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    color: #ffffff;
-    background-color: #27ae60;
-    border: 1px solid #2ecc71;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.btn-stats:hover {
-    background-color: #219150;
-}
-
-/* 모달 오버레이 (배경 어둡게) */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-/* 📌 모달 창 본체 (어두운 배경 + 명확한 글자색 고정) */
-.modal-content {
-    background-color: #2c3e50 !important; /* 모달 내부 배경색 (어두운 네이비) */
-    color: #ffffff !important;           /* 기본 글자색 (흰색) */
-    width: 90%;
-    max-width: 800px;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    overflow: hidden;
-}
-
-/* 모달 헤더 */
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    background-color: #1a252f !important; /* 상단 헤더 배경색 */
-    border-bottom: 1px solid #34495e;
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 16px;
-    color: #ffffff !important;           /* 헤더 제목 글자색 */
-}
-
-
-.modal-header strong {
-    color: #f1c40f; /* 눈에 잘 띄는 황금색/노란색 계열 */
-    font-family: 'Courier New', Courier, monospace; /* 고정폭 폰트로 깔끔하게 표시 */
-    letter-spacing: 0.5px;
-}
-
-.btn-close-modal {
-    background: none;
-    border: none;
-    color: #ffffff !important;           /* 닫기 버튼(X) 색상 */
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.modal-body {
-    padding: 15px 20px;
-}
-
-
-/* 기록 테이블 */
-.stats-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: center;
-    font-size: 13px;
-    color: #ffffff !important;
-    background-color: transparent !important;
-}
-
-.stats-table th, 
-.stats-table td {
-    padding: 10px 8px;
-    border-bottom: 1px solid #34495e;
-    background-color: transparent !important;
-}
-
-/* 테이블 헤더 */
-.stats-table th {
-    background-color: #34495e !important;
-    color: #f1c40f !important; /* 노란색 헤더 */
-    font-weight: bold;
-}
-
-/* 📌 텍스트 색상 (어두운 배경용) */
-.stats-table td {
-    color: #ffffff !important; /* 게임 모드명 및 숫자: 또렷한 흰색 */
-    font-weight: 500;
-}
-
-.stats-table td.txt-correct { 
-    color: #2ecc71 !important; /* 맞춤: 선명한 초록색 */
-    font-weight: bold;
-}
-
-.stats-table td.txt-wrong { 
-    color: #e74c3c !important; /* 틀림: 선명한 빨간색 */
-    font-weight: bold;
-}
-
-.stats-table td.txt-rate { 
-    color: #3498db !important; /* 정답률: 밝은 파란색 */
-    font-weight: bold; 
-}

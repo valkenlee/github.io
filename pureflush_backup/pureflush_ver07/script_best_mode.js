@@ -502,9 +502,6 @@ function handleBestModeSubmit() {
       1
     );
 
-    // 최고 오름패 모드 정답/오답 통계 반영
-    recordAnswerResult(isUserCorrect);
-
     resultDiv.style.display = 'block';
     
     const displayScore = maxScore >= 13 ? translate('bestReport.yakuman') : translate('bestReport.han', { count: maxScore });
@@ -523,7 +520,6 @@ function handleBestModeSubmit() {
     }
   } else {
     // 📌 이미 제출된 상태에서 클릭 시 다음 퀴즈 생성
-    incrementPlayCount(currentMode);
     generateQuiz();
   }
 }

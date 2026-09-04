@@ -1,27 +1,41 @@
 /* =============================================================
    📌 (Last Updated: 2026-08-31)
    ============================================================= */
+const APP_VERSION = window.MAIN_VER || "0.0";
 console.log(`[App Initialized] Version: ${APP_VERSION}`);
 
-/**
- * 특정 모드의 playCount 를 1 증가시키는 함수
- */
-function incrementPlayCount(modeKey) {
-    const stats = getUserStats();
-    const modeId = MODE_ID_MAP[modeKey];
+const SUITS = [
+    { code: 'Man', name: '만자패' },
+    { code: 'Pin', name: '통자패' },
+    { code: 'Sou', name: '삭자패' }
+];
 
-    if (modeId && stats[modeId]) {
-        stats[modeId].playCount = (stats[modeId].playCount || 0) + 1;
-        localStorage.setItem('mahjong_user_stats', JSON.stringify(stats));
-    }
-}
+let currentSuitObj = null;
+let currentHand = [];
+let winningTiles = [];
+let maxedOutWinningTiles = [];
+let winningDecompositions = {}; 
+let isChiitoiHand = false;     
+let isRyanpeikouHand = false; 
+let selectedTiles = new Set();
+
+let currentMode = 'normal';
+let isSubmitted = false;
+
+let streakCount = 0;
+let timerInterval = null;
+let timeLeft = 60;
+let pendingRecordStreak = 0;
+
+// 🔒 히든 모드 변수
+let titleClickCount = 0;
+let titleClickTimer = null;
+let customHand = [];
+let customSuitCode = 'Man';
 
 function selectMode(mode) {
     if (currentMode !== mode) streakCount = 0;
     currentMode = mode;
-
-    // 📌 해당 모드의 playCount 1 증가
-    incrementPlayCount(mode);
 
     generateQuiz();
 }
@@ -44,12 +58,60 @@ function updateModeUI() {
 
     const infoBox = document.getElementById('mode-info-box');
 
-    infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
-    infoBox.style.backgroundColor = '#f8f9fa';
-    infoBox.style.borderColor = '#ced4da';
-    infoBox.style.color = '#2c3e50';
+    // streak 모드일 경우 안내 문구 구성
+    if (currentMode === 'streak') {
+        const streakDesc = t('descriptions.streak') ||
+            `⚡ <b>어려움 연승 모드</b><br>` +
+            `⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>` +
+            `🏆 <b>글로벌 명예의 전당:</b> 10연승 이상 달성 시 전 세계 리더보드에 저장할 수 있습니다.<br>` +
+            `✏️ <b>이름 설정:</b> 미입력 시 Anonymous로 등록됩니다.`;
+
+        infoBox.innerHTML = streakDesc;
+        infoBox.style.backgroundColor = '#f5ee2e15';
+        infoBox.style.borderColor = '#8e44ad';
+        infoBox.style.color = '#4a235a';
+    } else {
+        infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
+        infoBox.style.backgroundColor = '#f8f9fa';
+        infoBox.style.borderColor = '#ced4da';
+        infoBox.style.color = '#2c3e50';
+    }
 
     infoBox.style.display = 'block';
+}
+
+
+function startTimer() {
+    timeLeft = 60;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            handleTimeout();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    document.getElementById('timer-display').innerText = t('timerSeconds', { count: timeLeft });
+    const percentage = Math.max(0, (timeLeft / 60) * 100);
+    document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
+}
+
+function handleTimeout() {
+    isSubmitted = true;
+    const resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'result-message incorrect';
+    resultDiv.innerHTML = `${t('timeout')}<br>👉 ${getAnswerString()}`;
+
+    checkStreakRecordAndReset();
+
+    const submitBtn = document.getElementById('btn-submit');
+    submitBtn.innerText = t('btnNextSame');
+    submitBtn.style.backgroundColor = '#8e44ad';
 }
 
 
@@ -70,97 +132,50 @@ async function renderHand() {
     }
 }
 
-/**
- * 선택 버튼 생성 함수 (모든 모드 공통 사용)
- */
 function renderButtons() {
     const grid = document.getElementById('selection-buttons');
-    if (!grid) return;
-    
-    grid.className = 'selection-grid';
     grid.innerHTML = '';
-
-    // discard 모드일 경우 손패(13장 + 쯔모패)에 포함된 패 카운트 계산
-    const handCounts = Array(10).fill(0);
-    if (currentMode === 'discard') {
-        if (Array.isArray(currentHand)) {
-            currentHand.forEach(num => handCounts[num]++);
-        }
-        if (typeof discardNewCard !== 'undefined' && discardNewCard) {
-            handCounts[discardNewCard]++;
-        }
-    }
-
     for (let i = 1; i <= 9; i++) {
         const btn = document.createElement('button');
-        btn.type = 'button';
         btn.className = 'btn-number';
         btn.id = `btn-num-${i}`;
         btn.innerText = `${i}`;
-
-        // discard 모드이고 손패에 없는 패인 경우 비활성화 처리
-        if (currentMode === 'discard' && handCounts[i] === 0) {
-            btn.disabled = true;
-            btn.style.opacity = '0.35';
-            btn.style.cursor = 'not-allowed';
-            btn.style.backgroundColor = '#e0e0e0';
-            btn.style.borderColor = '#ccc';
-        } else {
-            btn.onclick = () => toggleSelect(i, btn);
-        }
-
+        btn.onclick = () => toggleSelect(i, btn);
         grid.appendChild(btn);
     }
 }
 
-/**
- * 숫자 선택 토글 함수 (모든 모드 공통 사용)
- */
 function toggleSelect(num, btn) {
-    if (isSubmitted || (btn && btn.disabled)) return;
+    if (isSubmitted) return;
 
     const isAlreadySelected = selectedTiles.has(num);
 
-    // best 및 discard 모드: 단일 선택 동작
-    if (currentMode === 'best' || currentMode === 'discard') {
+    // best 모드일 경우: 단일 선택 동작
+    if (currentMode === 'best') {
+        // 1. 기존에 선택되어 있던 모든 버튼의 selected 클래스 제거
         document.querySelectorAll('.btn-number.selected').forEach(b => b.classList.remove('selected'));
+        // 2. Set 데이터 초기화
         selectedTiles.clear();
 
+        // 3. 이미 선택되었던 것을 다시 누른 게 아니라면 -> 새 번호만 선택
         if (!isAlreadySelected) {
             selectedTiles.add(num);
-            if (btn) btn.classList.add('selected');
+            btn.classList.add('selected');
         }
     }
-    // 다중 선택 모드 (easy, normal, hard, streak 등)
+    // 기존 다중 선택 모드
     else {
         if (isAlreadySelected) {
             selectedTiles.delete(num);
-            if (btn) btn.classList.remove('selected');
+            btn.classList.remove('selected');
         } else {
             selectedTiles.add(num);
-            if (btn) btn.classList.add('selected');
+            btn.classList.add('selected');
         }
     }
 }
 
-
-/**
- * 정답 여부에 따라 현재 모드의 correct / wrong 1 증가시키는 함수
- */
-function recordAnswerResult(isCorrect) {
-    const stats = getUserStats();
-    const modeId = MODE_ID_MAP[currentMode];
-
-    if (modeId && stats[modeId]) {
-        if (isCorrect) {
-            stats[modeId].correct = (stats[modeId].correct || 0) + 1;
-        } else {
-            stats[modeId].wrong = (stats[modeId].wrong || 0) + 1;
-        }
-        localStorage.setItem('mahjong_user_stats', JSON.stringify(stats));
-    }
-}
-
+// script.js
 function handleSubmitOrNext() {
     // 모드별 전용 처리 분기
     if (currentMode === 'discard' && typeof handleDiscardModeSubmit === 'function') {
@@ -173,12 +188,7 @@ function handleSubmitOrNext() {
     }
 
     // 기본(normal, easy, hard, streak) 제출 및 다음 문제 처리 로직
-    // 📌 이미 제출한 상태에서 버튼을 누른 경우 (새 문제 출제 시점)
-    if (isSubmitted) { 
-        incrementPlayCount(currentMode); // 다음 문제 시작 시 playCount 1 증가
-        generateQuiz(); 
-        return; 
-    }
+    if (isSubmitted) { generateQuiz(); return; }
 
     const resultDiv = document.getElementById('result');
     if (!selectedTiles || selectedTiles.size === 0) {
@@ -201,44 +211,37 @@ function handleSubmitOrNext() {
                                 userAnswers.every((val, idx) => val === theoreticalList[idx]);
 
     const isCorrect = isCorrectActual || isCorrectTheoretical;
-
-    // 📌 정답/오답 결과 통계 반영
-    recordAnswerResult(isCorrect);
-
     resultDiv.style.display = 'block';
 
     const answerText = getAnswerString();
 
     if (isCorrect) {
         resultDiv.className = 'result-message correct';
-        resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
+        if (currentMode === 'streak') {
+            streakCount++;
+            document.getElementById('streak-display').innerText = t('streakCount', { count: streakCount });
+            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
+        } else {
+            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
+        }
     } else {
         resultDiv.className = 'result-message incorrect';
         resultDiv.innerHTML = `${t('incorrect')}<br>👉 ${answerText}`;
+        if (currentMode === 'streak') checkStreakRecordAndReset();
     }
-
-    // 연승 모드에서 연승 관리 (script_streak_mode.js 함수 연동)
-    if (currentMode === 'streak') {
-        if (isCorrect) {
-            streakCount++;
-            const streakDisplay = document.getElementById('streak-display');
-            if (streakDisplay) {
-                streakDisplay.innerText = t('streakCount', { count: streakCount });
-            }
-            if (typeof processStreakResult === 'function') {
-                processStreakResult();
-            }
-        } else {
-            if (typeof checkStreakRecordAndReset === 'function') {
-                checkStreakRecordAndReset();
-            }
-        }
-    }   
 
     isSubmitted = true;
     const submitBtn = document.getElementById('btn-submit');
     submitBtn.innerText = currentMode === 'streak' ? t('btnNextStreak') : t('btnNextSame');
     submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
+}
+
+function checkStreakRecordAndReset() {
+    if (streakCount >= 10) {
+        pendingRecordStreak = streakCount;
+        document.getElementById('name-input-container').style.display = 'block';
+    }
+    streakCount = 0;
 }
 
 function copyCurrentQuizToCustom() {

@@ -288,15 +288,16 @@ function generateDiscardQuiz() {
     discardNewCard = newCard;
 
     renderHandWithDrawnCard();
-    renderDiscardButtons();
+    
+    // 공통 버튼 생성 함수 호출 (script.js의 renderButtons 사용)
+    renderButtons();
 
-	// generateDiscardQuiz() 최하단에 추가
-	const submitBtn = document.getElementById('btn-submit');
-	if (submitBtn) {
-		submitBtn.innerText = typeof t === 'function' ? t('btnSubmit') : '제출';
-		submitBtn.style.backgroundColor = '#2980b9';
-	}
-	selectedTiles.clear();
+    const submitBtn = document.getElementById('btn-submit');
+    if (submitBtn) {
+        submitBtn.innerText = typeof t === 'function' ? t('btnSubmit') : '제출';
+        submitBtn.style.backgroundColor = '#2980b9';
+    }
+    selectedTiles.clear();
 }
 
 // 쯔모패(14번째 패) 출력
@@ -327,60 +328,6 @@ async function renderHandWithDrawnCard() {
     // 레이아웃 스케일 및 줄 적용 (script_gameboard.js 연동)
     if (typeof updateHandDisplayLayout === 'function') {
         updateHandDisplayLayout();
-    }
-}
-
-// style.css의 .selection-grid 및 .btn-number 스타일 규격을 따르도록 수정된 버튼 생성 함수
-function renderDiscardButtons() {
-    const grid = document.getElementById('selection-buttons');
-    if (!grid) return;
-    
-    // selection-grid 클래스 지정
-    grid.className = 'selection-grid';
-    grid.innerHTML = '';
-
-    // 현재 14장에 포함된 패 카운트
-    const fullHandCounts = Array(10).fill(0);
-    if (Array.isArray(currentHand)) {
-        currentHand.forEach(num => fullHandCounts[num]++);
-    }
-    if (discardNewCard) {
-        fullHandCounts[discardNewCard]++;
-    }
-
-    for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        // style.css에 정의된 .btn-number 클래스 적용
-        btn.className = 'btn-number';
-        btn.innerText = i;
-        btn.dataset.number = i;
-
-        // 손패에 없는 패인 경우: 비활성화 처리
-        if (fullHandCounts[i] === 0) {
-            btn.disabled = true;
-            btn.style.opacity = '0.35';
-            btn.style.cursor = 'not-allowed';
-            btn.style.backgroundColor = '#e0e0e0';
-            btn.style.borderColor = '#ccc';
-        } else {
-            // 손패에 존재하는 패인 경우 단일 선택 클릭 이벤트 연결
-            btn.addEventListener('click', () => {
-                if (typeof isSubmitted !== 'undefined' && isSubmitted) return;
-
-                const allBtns = grid.querySelectorAll('.btn-number');
-                allBtns.forEach(b => b.classList.remove('selected'));
-
-                btn.classList.add('selected');
-
-                if (typeof selectedTiles !== 'undefined') {
-                    selectedTiles.clear();
-                    selectedTiles.add(i);
-                }
-            });
-        }
-
-        grid.appendChild(btn);
     }
 }
 
@@ -460,6 +407,9 @@ function handleDiscardModeSubmit() {
             userChoice
         );
 
+        // 무엇을 버릴까? 모드 정답/오답 통계 반영
+        recordAnswerResult(isUserBest);
+
         resultDiv.style.display = 'block';
 
         if (isUserBest) {
@@ -476,6 +426,7 @@ function handleDiscardModeSubmit() {
         }
     } else {
         // 📌 이미 제출된 상태에서 클릭 시 다음 퀴즈 생성
+        incrementPlayCount(currentMode);
         generateQuiz();
     }
 }
