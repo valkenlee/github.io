@@ -70,45 +70,75 @@ async function renderHand() {
     }
 }
 
+/**
+ * 선택 버튼 생성 함수 (모든 모드 공통 사용)
+ */
 function renderButtons() {
     const grid = document.getElementById('selection-buttons');
+    if (!grid) return;
+    
+    grid.className = 'selection-grid';
     grid.innerHTML = '';
+
+    // discard 모드일 경우 손패(13장 + 쯔모패)에 포함된 패 카운트 계산
+    const handCounts = Array(10).fill(0);
+    if (currentMode === 'discard') {
+        if (Array.isArray(currentHand)) {
+            currentHand.forEach(num => handCounts[num]++);
+        }
+        if (typeof discardNewCard !== 'undefined' && discardNewCard) {
+            handCounts[discardNewCard]++;
+        }
+    }
+
     for (let i = 1; i <= 9; i++) {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'btn-number';
         btn.id = `btn-num-${i}`;
         btn.innerText = `${i}`;
-        btn.onclick = () => toggleSelect(i, btn);
+
+        // discard 모드이고 손패에 없는 패인 경우 비활성화 처리
+        if (currentMode === 'discard' && handCounts[i] === 0) {
+            btn.disabled = true;
+            btn.style.opacity = '0.35';
+            btn.style.cursor = 'not-allowed';
+            btn.style.backgroundColor = '#e0e0e0';
+            btn.style.borderColor = '#ccc';
+        } else {
+            btn.onclick = () => toggleSelect(i, btn);
+        }
+
         grid.appendChild(btn);
     }
 }
 
+/**
+ * 숫자 선택 토글 함수 (모든 모드 공통 사용)
+ */
 function toggleSelect(num, btn) {
-    if (isSubmitted) return;
+    if (isSubmitted || (btn && btn.disabled)) return;
 
     const isAlreadySelected = selectedTiles.has(num);
 
-    // best 모드일 경우: 단일 선택 동작
-    if (currentMode === 'best') {
-        // 1. 기존에 선택되어 있던 모든 버튼의 selected 클래스 제거
+    // best 및 discard 모드: 단일 선택 동작
+    if (currentMode === 'best' || currentMode === 'discard') {
         document.querySelectorAll('.btn-number.selected').forEach(b => b.classList.remove('selected'));
-        // 2. Set 데이터 초기화
         selectedTiles.clear();
 
-        // 3. 이미 선택되었던 것을 다시 누른 게 아니라면 -> 새 번호만 선택
         if (!isAlreadySelected) {
             selectedTiles.add(num);
-            btn.classList.add('selected');
+            if (btn) btn.classList.add('selected');
         }
     }
-    // 기존 다중 선택 모드
+    // 다중 선택 모드 (easy, normal, hard, streak 등)
     else {
         if (isAlreadySelected) {
             selectedTiles.delete(num);
-            btn.classList.remove('selected');
+            if (btn) btn.classList.remove('selected');
         } else {
             selectedTiles.add(num);
-            btn.classList.add('selected');
+            if (btn) btn.classList.add('selected');
         }
     }
 }
