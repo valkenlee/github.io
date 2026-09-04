@@ -11,6 +11,29 @@ function changeSuit() {
 }
 
 /**
+ * 패(hand)가 지정된 난이도(mode) 조건에 적합한지 판별합니다.
+ * @param {string} mode - 난이도 ('easy', 'normal', 'hard')
+ * @param {Array<number>} hand - 13장의 패 Array
+ * @returns {boolean} 적합 여부
+ */
+function checkDifficulty(mode, hand) {
+    const resultData = getWinningTiles(hand);
+    const count = resultData.waits.length;
+
+    if (mode === 'easy') {
+        return count >= 1 && count <= 2;
+    } else if (mode === 'normal') {
+        return count >= 2 && count <= 4;
+    } else if (mode === 'hard') {
+        if (count >= 3 && count <= 9) return true;
+        if (count === 2 && Math.random() < 0.05) return true;
+        return false;
+    }
+
+    return false;
+}
+
+/**
  * 퀴즈 데이터를 계산하고 관련 전역 상태를 업데이트합니다.
  */
 function generateQuizData() {
@@ -36,22 +59,17 @@ function generateQuizData() {
     }
 
     let hand = [];
-    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: false };
 
+    // 적합한 난이도의 패가 나올 때까지 반복
     while (true) {
         hand = generateRandom13Tiles();
-        resultData = getWinningTiles(hand);
-        const count = resultData.waits.length;
-
-        if (targetDifficulty === 'easy') {
-            if (count >= 1 && count <= 2) break;
-        } else if (targetDifficulty === 'normal') {
-            if (count >= 2 && count <= 4) break;
-        } else if (targetDifficulty === 'hard') {
-            if (count >= 3 && count <= 9) break;
-            if (count === 2 && Math.random() < 0.05) break; 
+        if (checkDifficulty(targetDifficulty, hand)) {
+            break;
         }
     }
+
+    // 최종 확정된 패의 결과 데이터 계산
+    const resultData = getWinningTiles(hand);
 
     // 전역 상태 업데이트
     currentHand = hand;
@@ -119,17 +137,23 @@ function generateQuiz() {
 
 /**
  * 랜덤한 13장 패(1~9)를 생성합니다.
+ * 0~35 범위의 36개 슬롯 중 13개를 무작위로 추출한 뒤,
+ * (slot % 9) + 1 로 패 번호(1~9)를 산출합니다.
  */
 function generateRandom13Tiles() {
-    let counts = Array(10).fill(0);
-    let hand = [];
-    while (hand.length < 13) {
-        let num = Math.floor(Math.random() * 9) + 1;
-        if (counts[num] < 4) {
-            counts[num]++;
-            hand.push(num);
-        }
+    // 0부터 35까지의 슬롯 생성
+    const slots = Array.from({ length: 36 }, (_, i) => i);
+    
+    // Fisher-Yates 셔플로 슬롯 섞기
+    for (let i = slots.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [slots[i], slots[j]] = [slots[j], slots[i]];
     }
+
+    // 앞의 13개 슬롯을 가져와 % 9 연산 후 1~9 범위의 패 값으로 변환
+    const hand = slots.slice(0, 13).map(slot => (slot % 9) + 1);
+
+    // 오름차순 정렬 후 반환
     return hand.sort((a, b) => a - b);
 }
 
