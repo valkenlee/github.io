@@ -25,7 +25,23 @@ const TRANSLATIONS = {
         congratsStreak: "🏆 축하합니다! 10연승 이상 기록 달성!",
         inputNameNotice: "명예의 전당 등록 이름 (미입력 시 Anonymous):",
         inputNamePlaceholder: "Anonymous (최대 20자)",
-        
+
+        // 📊 나의 게임 기록 (그룹화)
+        stats: {
+            title: "📊 나의 게임 기록",
+            mode: "게임 모드",
+            plays: "게임 횟수",
+            correct: "맞춤",
+            wrong: "틀림",
+            unsubmitted: "미제출",
+            rate1: "정답률1",
+            rate2: "정답률2",
+            maxScore: "최고 기록",
+            btnChangeId: "ID 변경",
+            btnResetStats: "기록 삭제",
+            confirmReset: "정말로 모든 게임 기록을 삭제하시겠습니까?"
+        },
+
         // 히든 분석기
         analyzerTitle: "🕵️‍♂️ 히든 패 분석기 (자유 패 입력)",
         analyzerInputLabel: "⌨️ 숫자 직접 입력 (예: 1112345678999):",
@@ -144,7 +160,22 @@ const TRANSLATIONS = {
         congratsStreak: "🏆 おめでとうございます！10連勝以上達成！",
         inputNameNotice: "殿堂入り登録名 (未入力の場合は Anonymous):",
         inputNamePlaceholder: "Anonymous (最大20文字)",
-        
+
+        stats: {
+            title: "📊 個人戦績",
+            mode: "ゲームモード",
+            plays: "プレイ回数",
+            correct: "正解",
+            wrong: "不正解",
+            unsubmitted: "未提出",
+            rate1: "正解率1",
+            rate2: "正解率2",
+            maxScore: "最高記録",
+            btnChangeId: "ID変更",
+            btnResetStats: "記録削除",
+            confirmReset: "本当にすべてのゲーム記録を削除しますか？"
+        },
+
         analyzerTitle: "🕵️‍♂️ 手牌アナライザー（自由入力）",
         analyzerInputLabel: "⌨️ 数字直接入力 (例: 1112345678999):",
         analyzerInputPlaceholder: "数字13桁を入力",
@@ -258,7 +289,22 @@ const TRANSLATIONS = {
         congratsStreak: "🏆 恭喜！达成 10 连胜以上纪录！",
         inputNameNotice: "名人堂登记名称 (未输入时为 Anonymous):",
         inputNamePlaceholder: "Anonymous (最多20字)",
-        
+
+        stats: {
+            title: "📊 我的战绩",
+            mode: "游戏模式",
+            plays: "游戏次数",
+            correct: "答对",
+            wrong: "答错",
+            unsubmitted: "未提交",
+            rate1: "正确率1",
+            rate2: "正确率2",
+            maxScore: "最高纪录",
+            btnChangeId: "更改ID",
+            btnResetStats: "清除战绩",
+            confirmReset: "确定要删除所有游戏记录吗？"
+        },
+
         analyzerTitle: "🕵️‍♂️ 隐藏手牌分析器（自由输入）",
         analyzerInputLabel: "⌨️ 直接输入数字 (例: 1112345678999):",
         analyzerInputPlaceholder: "输入13位数字",
@@ -372,6 +418,21 @@ const TRANSLATIONS = {
         inputNameNotice: "名人堂登記名稱 (未輸入時為 Anonymous):",
         inputNamePlaceholder: "Anonymous (最多20字)",
         
+        stats: {
+            title: "📊 我的戰績",
+            mode: "遊戲模式",
+            plays: "遊戲次數",
+            correct: "答對",
+            wrong: "答錯",
+            unsubmitted: "未提交",
+            rate1: "正確率1",
+            rate2: "正確率2",
+            maxScore: "最高紀錄",
+            btnChangeId: "變更ID",
+            btnResetStats: "清除戰績",
+            confirmReset: "確定要刪除所有遊戲紀錄嗎？"
+        },
+
         analyzerTitle: "🕵️‍♂️ 隱藏手牌分析器（自由輸入）",
         analyzerInputLabel: "⌨️ 直接輸入數字 (例: 1112345678999):",
         analyzerInputPlaceholder: "輸入13位數字",
@@ -484,7 +545,22 @@ const TRANSLATIONS = {
         congratsStreak: "🏆 Congratulations! You achieved a 10+ win streak!",
         inputNameNotice: "Leaderboard display name (Default: Anonymous):",
         inputNamePlaceholder: "Anonymous (Max 20 ch)",
-        
+
+        stats: {
+            title: "📊 My Game Records",
+            mode: "Game Mode",
+            plays: "Plays",
+            correct: "Correct",
+            wrong: "Wrong",
+            unsubmitted: "Unsubmitted",
+            rate1: "Accuracy 1",
+            rate2: "Accuracy 2",
+            maxScore: "Best Record",
+            btnChangeId: "Change ID",
+            btnResetStats: "Reset Data",
+            confirmReset: "Are you sure you want to delete all game records?"
+        },
+
         analyzerTitle: "🕵️‍♂️ Hidden Analyzer (Custom Hand Input)",
         analyzerInputLabel: "⌨️ Direct Number Input (e.g. 1112345678999):",
         analyzerInputPlaceholder: "Enter 13 digits",

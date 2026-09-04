@@ -10,6 +10,16 @@ const SUITS = [
     { code: 'Sou', name: '삭자패' }
 ];
 
+// 📌 1. MODE_ID_MAP 상수를 파일 상단(함수들 바깥)에 전역 변수로 정의
+const MODE_ID_MAP = {
+    'easy': 'mode1',
+    'normal': 'mode2',
+    'hard': 'mode3',
+    'best': 'mode4',
+    'discard': 'mode5',
+    'streak': 'mode6'
+};
+
 let currentSuitObj = null;
 let currentHand = [];
 let winningTiles = [];
@@ -33,9 +43,26 @@ let titleClickTimer = null;
 let customHand = [];
 let customSuitCode = 'Man';
 
+
+/**
+ * 특정 모드의 playCount 를 1 증가시키는 함수
+ */
+function incrementPlayCount(modeKey) {
+    const stats = getUserStats();
+    const modeId = MODE_ID_MAP[modeKey];
+
+    if (modeId && stats[modeId]) {
+        stats[modeId].playCount = (stats[modeId].playCount || 0) + 1;
+        localStorage.setItem('mahjong_user_stats', JSON.stringify(stats));
+    }
+}
+
 function selectMode(mode) {
     if (currentMode !== mode) streakCount = 0;
     currentMode = mode;
+
+// 📌 해당 모드의 playCount 1 증가
+    incrementPlayCount(mode);
 
     generateQuiz();
 }
@@ -175,7 +202,24 @@ function toggleSelect(num, btn) {
     }
 }
 
-// script.js
+
+/**
+ * 정답 여부에 따라 현재 모드의 correct / wrong 1 증가시키는 함수
+ */
+function recordAnswerResult(isCorrect) {
+    const stats = getUserStats();
+    const modeId = MODE_ID_MAP[currentMode];
+
+    if (modeId && stats[modeId]) {
+        if (isCorrect) {
+            stats[modeId].correct = (stats[modeId].correct || 0) + 1;
+        } else {
+            stats[modeId].wrong = (stats[modeId].wrong || 0) + 1;
+        }
+        localStorage.setItem('mahjong_user_stats', JSON.stringify(stats));
+    }
+}
+
 function handleSubmitOrNext() {
     // 모드별 전용 처리 분기
     if (currentMode === 'discard' && typeof handleDiscardModeSubmit === 'function') {
@@ -188,7 +232,12 @@ function handleSubmitOrNext() {
     }
 
     // 기본(normal, easy, hard, streak) 제출 및 다음 문제 처리 로직
-    if (isSubmitted) { generateQuiz(); return; }
+    // 📌 이미 제출한 상태에서 버튼을 누른 경우 (새 문제 출제 시점)
+    if (isSubmitted) { 
+        incrementPlayCount(currentMode); // 다음 문제 시작 시 playCount 1 증가
+        generateQuiz(); 
+        return; 
+    }
 
     const resultDiv = document.getElementById('result');
     if (!selectedTiles || selectedTiles.size === 0) {
@@ -211,24 +260,33 @@ function handleSubmitOrNext() {
                                 userAnswers.every((val, idx) => val === theoreticalList[idx]);
 
     const isCorrect = isCorrectActual || isCorrectTheoretical;
+
+// 📌 정답/오답 결과 통계 반영
+    recordAnswerResult(isCorrect);
+
     resultDiv.style.display = 'block';
 
     const answerText = getAnswerString();
 
     if (isCorrect) {
         resultDiv.className = 'result-message correct';
-        if (currentMode === 'streak') {
-            streakCount++;
-            document.getElementById('streak-display').innerText = t('streakCount', { count: streakCount });
-            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
-        } else {
-            resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
-        }
+        resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
     } else {
         resultDiv.className = 'result-message incorrect';
         resultDiv.innerHTML = `${t('incorrect')}<br>👉 ${answerText}`;
-        if (currentMode === 'streak') checkStreakRecordAndReset();
     }
+
+    // 연승 모드에서 연승 관리.
+    if (currentMode === 'streak') {
+        if (isCorrect) {
+            streakCount++;
+            document.getElementById('streak-display').innerText = t('streakCount', { count: streakCount });
+            processStreakResult();
+        } else {
+            processStreakResult();
+            checkStreakRecordAndReset();
+        }
+    }   
 
     isSubmitted = true;
     const submitBtn = document.getElementById('btn-submit');
@@ -236,7 +294,30 @@ function handleSubmitOrNext() {
     submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
 }
 
+/**
+ * 연승 모드 전용 결과 기록 함수
+ * @param {boolean} isCorrect - 정답 여부
+ */
+function processStreakResult() {
+    const stats = getUserStats();
+    const modeId = MODE_ID_MAP['streak']; // 연승 모드의 ID ('mode6')
+
+    if (!stats[modeId]) {
+        stats[modeId] = { playCount: 0, correct: 0, wrong: 0, max: 0 };
+    }
+
+    if (streakCount > stats[modeId].max) {
+        stats[modeId].max = streakCount;
+    }
+
+    // 변경된 통계 데이터 localStorage에 저장
+    localStorage.setItem('mahjong_user_stats', JSON.stringify(stats));
+}
+
 function checkStreakRecordAndReset() {
+
+    processStreakResult();
+
     if (streakCount >= 10) {
         pendingRecordStreak = streakCount;
         document.getElementById('name-input-container').style.display = 'block';

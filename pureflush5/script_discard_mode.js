@@ -460,6 +460,9 @@ function handleDiscardModeSubmit() {
             userChoice
         );
 
+        // 무엇을 버릴까? 모드 정답/오답 통계 반영
+        recordAnswerResult(isUserBest);
+
         resultDiv.style.display = 'block';
 
         if (isUserBest) {
@@ -476,6 +479,7 @@ function handleDiscardModeSubmit() {
         }
     } else {
         // 📌 이미 제출된 상태에서 클릭 시 다음 퀴즈 생성
+        incrementPlayCount(currentMode);
         generateQuiz();
     }
 }

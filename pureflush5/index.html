@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script> 
-        window.MAIN_VER = "0.7"; 
-        window.JS_VER = "0.1d"; 
+        window.MAIN_VER = "0.8"; 
+        window.JS_VER = "0.1e"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -47,17 +47,58 @@
     <h1 style="user-select: none;">
         <span id="title-icon" style="cursor: pointer;">🀄</span> 
         <span data-i18n="title">청일색 텐파이 대기패 퀴즈</span>
-	<span id="app-version"></span>
+    	<span id="app-version"></span>
         <script> document.getElementById('app-version').textContent = `(v${window.MAIN_VER})`; </script>
     </h1>
-    <div class="lang-select-wrapper">
-        <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
-            <option value="ko">🇰🇷 한국어</option>
-            <option value="ja">🇯🇵 日本語</option>
-            <option value="zh_CN">🇨🇳 简体中文</option>
-            <option value="zh_TW">🇹🇼 繁體中文</option>
-            <option value="en">🇬🇧🇺🇸 English</option>
-        </select>
+    <div class="header-right-controls">
+	    <div class="lang-select-wrapper">
+		    <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
+			    <option value="ko">🇰🇷 한국어</option>
+			    <option value="ja">🇯🇵 日本語</option>
+			    <option value="zh_CN">🇨🇳 简体中文</option>
+			    <option value="zh_TW">🇹🇼 繁體中文</option>
+			    <option value="en">🇬🇧🇺🇸 English</option>
+		    </select>
+	    </div>
+        <div class="user-info-bar">
+            <span>🔑 PID: <strong id="user-id-display">불러오는 중...</strong></span>
+            <button type="button" class="btn-stats" onclick="openStatsModal()">기록</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- 📌 나의 기록 모달 (팝업) -->
+<div id="stats-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 data-i18n="stats.title">📊 나의 게임 기록</h2>
+            <div class="modal-header-actions" style="display: flex; gap: 6px; align-items: center; margin-left: auto; margin-right: 10px;">
+                <span>🔑 PID: <strong id="modal-user-id-display">불러오는 중...</strong></span>
+                <button type="button" class="btn-change-id" onclick="regenerateUserId()" data-i18n="stats.btnChangeId">ID 변경</button>
+                <button type="button" class="btn-reset-stats" onclick="resetUserStats()" data-i18n="stats.btnResetStats">기록 삭제</button>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeStatsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="stats.mode">게임 모드</th>
+                        <th data-i18n="stats.plays">게임 횟수</th>
+                        <th data-i18n="stats.correct">맞춤</th>
+                        <th data-i18n="stats.wrong">틀림</th>
+                        <th data-i18n="stats.unsubmitted">미제출</th>
+                        <th data-i18n="stats.rate1">정답률1</th>
+                        <th data-i18n="stats.rate2">정답률2</th>
+                        <th data-i18n="stats.maxScore">최고 기록</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-table-body">
+                    <!-- 자바스크립트로 동적 생성 -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -217,16 +258,17 @@
     // 스크립트 로드 호출
     loadCSS('style.css');
 
+    loadScript('lang_tran.js');
     loadScript('script_loadimg.js');
     loadScript('script_gameboard.js');
     loadScript('script_leaderboard.js');
     loadScript('script_generatequiz.js');
     loadScript('script_explanation.js');
-    loadScript('lang_tran.js');
     loadScript('script_best_mode.js');
     loadScript('script_discard_mode.js');
     loadScript('script_ads.js');
     loadScript('script_hidden.js');
+    loadScript('script_id.js');
 
     loadScript('script.js');
 </script>
