@@ -1,7 +1,7 @@
 /**
  * 최고의 오름패 (Best Winning Tile) 모드 확장 및 인터페이스 연동 스크립트
  */
- 
+
 /**
  * 청일색 화료 패의 역과 판수를 계산하는 함수 (i18n 호환)
  */
@@ -31,85 +31,32 @@ function calc_pan(suit, hand, card, reach, win_card) {
     }
   }
 
-  // 가능 분해 형태(4몸통 1머리) 탐색
-  const decompositions = findDecompositions(counts);
-
   // -----------------------------------------------------------------
-  // 2. 역만(Yakuman) 우선 검사
+  // 2. 역만(Yakuman) 검사 (script_yakuman.js 의 checkYakumanWin 연동)
   // -----------------------------------------------------------------
-  let yakumanList = [];
+  if (typeof checkYakumanWin === "function") {
+    const yakumanRes = checkYakumanWin(suitNum, handArr, winTile, isTsumo);
 
-  // A. 순정구련보등
-  if (handArr.join("") === "1112345678999") {
-    yakumanList.push({ nameKey: "yaku.junseiChuuren", value: 2 });
-  } 
-  // B. 구련보등
-  else {
-    let isChuuren = counts[1] >= 3 && counts[9] >= 3;
-    for (let i = 2; i <= 8; i++) {
-      if (counts[i] < 1) isChuuren = false;
+    if (yakumanRes.isYakuman) {
+      const yakuNames = yakumanRes.yakumanList.map((y) => t(y.nameKey));
+      const yakumanText = yakumanRes.yakumanCount > 1
+        ? t("bestReport.yakumanFormat", { count: yakumanRes.yakumanCount })
+        : t("bestReport.yakuman");
+
+      return {
+        isValid: true,
+        isYakuman: true,
+        yakumanCount: yakumanRes.yakumanCount,
+        yakuList: yakuNames,
+        formatted: `${yakumanText} (${yakuNames.join(", ")})`
+      };
     }
-    if (isChuuren) {
-      yakumanList.push({ nameKey: "yaku.chuuren", value: 1 });
-    }
-  }
-
-  // C. 사암각 단기 & 사암각
-  let hasSuuankouTanki = false;
-  let hasSuuankou = false;
-
-  for (const dec of decompositions) {
-    const pungs = dec.melds.filter((m) => m.type === "PUNG");
-    if (pungs.length === 4) {
-      if (winTile === dec.pair) {
-        hasSuuankouTanki = true;
-      } else if (isTsumo) {
-        hasSuuankou = true;
-      }
-    }
-  }
-
-  if (hasSuuankouTanki) {
-    yakumanList.push({ nameKey: "yaku.suuankouTanki", value: 2 });
-  } else if (hasSuuankou) {
-    yakumanList.push({ nameKey: "yaku.suuankou", value: 1 });
-  }
-
-  // D. 녹일색
-  if (suitNum === 3) {
-    const isAllGreen = totalTiles.every((tTile) => [2, 3, 4, 6, 8].includes(tTile));
-    if (isAllGreen && decompositions.length > 0) {
-      yakumanList.push({ nameKey: "yaku.ryuuisou", value: 1 });
-    }
-  }
-
-  // E. 청로두
-  const isAllTerminals = totalTiles.every((tTile) => tTile === 1 || tTile === 9);
-  if (isAllTerminals && ((counts[1] % 3 === 2 && counts[9] % 3 === 0) || (counts[1] % 3 === 0 && counts[9] % 3 === 2))) {
-    yakumanList.push({ nameKey: "yaku.chinroto", value: 1 });
-  }
-
-  // 역만 성립 시
-  if (yakumanList.length > 0) {
-    const totalYakumanVal = yakumanList.reduce((acc, cur) => acc + cur.value, 0);
-    const yakuNames = yakumanList.map((y) => t(y.nameKey));
-    
-    const yakumanText = totalYakumanVal > 1 
-      ? t("bestReport.yakumanFormat", { count: totalYakumanVal }) 
-      : t("bestReport.yakuman");
-
-    return {
-      isValid: true,
-      isYakuman: true,
-      yakumanCount: totalYakumanVal,
-      yakuList: yakuNames,
-      formatted: `${yakumanText} (${yakuNames.join(", ")})`
-    };
   }
 
   // -----------------------------------------------------------------
   // 3. 일반 역 계산
   // -----------------------------------------------------------------
+  const decompositions = findDecompositions(counts);
   let maxHan = 0;
   let bestYakuKeys = [];
 
@@ -117,7 +64,6 @@ function calc_pan(suit, hand, card, reach, win_card) {
   if (isChiitoitsu(counts)) {
     let han = 6;
     let yakuKeys = ["yaku.chinitsu", "yaku.chiitoi"];
-    han += 2;
 
     if (isReach) { han += 1; yakuKeys.push("yaku.reach"); }
     if (isTsumo) { han += 1; yakuKeys.push("yaku.tsumo"); }
@@ -442,6 +388,16 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
 
   let html = `<div class="explanation-box" style="margin-top:15px; text-align:left;">`;
   html += `<h4>📊 ${translate('bestReportHeaderTitle')}</h4>`;
+
+  // 역만 텐파이 상태인 경우 보조 안내 문구 표기
+  if (typeof checkYakumanTenpai === 'function') {
+    const tenpaiInfo = checkYakumanTenpai(suitNum, handArr);
+    if (tenpaiInfo.isYakumanTenpai) {
+      const yakumanNames = tenpaiInfo.possibleYakuman.map((k) => translate(k)).join(', ');
+      html += `<p style="font-size:13px; color:#d35400; font-weight:bold; margin-bottom:5px;">⚡ ${translate('bestReportYakumanTenpaiAlert', { yaku: yakumanNames })}</p>`;
+    }
+  }
+
   html += `<p style="font-size:13px; color:#555; margin-bottom:10px;">${translate('bestReportCondition')}</p>`;
   html += `<ul style="list-style:none; padding:0; margin:0; font-family:monospace, monospace; font-size:14px; line-height:1.8;">`;
 
@@ -451,17 +407,17 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
       const isValid = item.isValid;
 
       if (isBest) {
-        // 🏆 1. 최고 정답 패 강조 (배경 초록색 계열 + 진한 텍스트 + 테두리)
+        // 🏆 1. 최고 정답 패 강조
         html += `<li class="report-item best" style="font-weight:bold; color:#1e8449; background-color:#e8f8f5; padding:6px 10px; border-radius:4px; margin-bottom:4px; border:1px solid #2ecc71;">`;
         html += `🏆 <b>${item.tile}</b> : ${item.text} <b>${translate('bestReportOptimalChoice')}</b>`;
         html += `</li>`;
       } else if (isValid) {
-        // ⭕ 2. 일반 청일색 화료 가능 패 (배경 파란색 계열 + 유효 강조)
+        // ⭕ 2. 일반 청일색 화료 가능 패
         html += `<li class="report-item valid" style="font-weight:bold; color:#2980b9; background-color:#ebf5fb; padding:4px 8px; border-radius:4px; margin-bottom:4px; border-left:4px solid #3498db;">`;
         html += `⭕ <b>${item.tile}</b> : ${item.text}`;
         html += `</li>`;
       } else {
-        // ❌ 3. 화료 불가 패 (역 미성립 또는 4장 존재 - 흐린 회색 + 취소선)
+        // ❌ 3. 화료 불가 패
         html += `<li class="report-item invalid" style="color:#a6acaf; background-color:#f4f6f7; padding:4px 8px; border-radius:4px; margin-bottom:4px; text-decoration:line-through;">`;
         html += `❌ <b>${item.tile}</b> : ${item.text}`;
         html += `</li>`;
