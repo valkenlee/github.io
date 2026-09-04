@@ -845,6 +845,13 @@ h1 {
     color: #ffffff !important;           /* 헤더 제목 글자색 */
 }
 
+
+.modal-header strong {
+    color: #f1c40f; /* 눈에 잘 띄는 황금색/노란색 계열 */
+    font-family: 'Courier New', Courier, monospace; /* 고정폭 폰트로 깔끔하게 표시 */
+    letter-spacing: 0.5px;
+}
+
 .btn-close-modal {
     background: none;
     border: none;

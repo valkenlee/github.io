@@ -37,7 +37,7 @@ const TRANSLATIONS = {
             rate1: "정답률1",
             rate2: "정답률2",
             maxScore: "최고 기록",
-            btnChangeId: "ID 변경",
+            btnChangeId: "PID 변경",
             btnResetStats: "기록 삭제",
             confirmReset: "정말로 모든 게임 기록을 삭제하시겠습니까?"
         },
@@ -171,7 +171,7 @@ const TRANSLATIONS = {
             rate1: "正解率1",
             rate2: "正解率2",
             maxScore: "最高記録",
-            btnChangeId: "ID変更",
+            btnChangeId: "PID変更",
             btnResetStats: "記録削除",
             confirmReset: "本当にすべてのゲーム記録を削除しますか？"
         },
@@ -300,7 +300,7 @@ const TRANSLATIONS = {
             rate1: "正确率1",
             rate2: "正确率2",
             maxScore: "最高纪录",
-            btnChangeId: "更改ID",
+            btnChangeId: "更改PID",
             btnResetStats: "清除战绩",
             confirmReset: "确定要删除所有游戏记录吗？"
         },
@@ -428,7 +428,7 @@ const TRANSLATIONS = {
             rate1: "正確率1",
             rate2: "正確率2",
             maxScore: "最高紀錄",
-            btnChangeId: "變更ID",
+            btnChangeId: "變更PID",
             btnResetStats: "清除戰績",
             confirmReset: "確定要刪除所有遊戲紀錄嗎？"
         },
@@ -556,7 +556,7 @@ const TRANSLATIONS = {
             rate1: "Accuracy 1",
             rate2: "Accuracy 2",
             maxScore: "Best Record",
-            btnChangeId: "Change ID",
+            btnChangeId: "Change PID",
             btnResetStats: "Reset Data",
             confirmReset: "Are you sure you want to delete all game records?"
         },

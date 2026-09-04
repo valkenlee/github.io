@@ -20,7 +20,7 @@ function selectMode(mode) {
     if (currentMode !== mode) streakCount = 0;
     currentMode = mode;
 
-// 📌 해당 모드의 playCount 1 증가
+    // 📌 해당 모드의 playCount 1 증가
     incrementPlayCount(mode);
 
     generateQuiz();
@@ -44,60 +44,12 @@ function updateModeUI() {
 
     const infoBox = document.getElementById('mode-info-box');
 
-    // streak 모드일 경우 안내 문구 구성
-    if (currentMode === 'streak') {
-        const streakDesc = t('descriptions.streak') ||
-            `⚡ <b>어려움 연승 모드</b><br>` +
-            `⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>` +
-            `🏆 <b>글로벌 명예의 전당:</b> 10연승 이상 달성 시 전 세계 리더보드에 저장할 수 있습니다.<br>` +
-            `✏️ <b>이름 설정:</b> 미입력 시 Anonymous로 등록됩니다.`;
-
-        infoBox.innerHTML = streakDesc;
-        infoBox.style.backgroundColor = '#f5ee2e15';
-        infoBox.style.borderColor = '#8e44ad';
-        infoBox.style.color = '#4a235a';
-    } else {
-        infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
-        infoBox.style.backgroundColor = '#f8f9fa';
-        infoBox.style.borderColor = '#ced4da';
-        infoBox.style.color = '#2c3e50';
-    }
+    infoBox.innerHTML = t(`descriptions.${currentMode}`) || '';
+    infoBox.style.backgroundColor = '#f8f9fa';
+    infoBox.style.borderColor = '#ced4da';
+    infoBox.style.color = '#2c3e50';
 
     infoBox.style.display = 'block';
-}
-
-
-function startTimer() {
-    timeLeft = 60;
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimerDisplay();
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            handleTimeout();
-        }
-    }, 1000);
-}
-
-function updateTimerDisplay() {
-    document.getElementById('timer-display').innerText = t('timerSeconds', { count: timeLeft });
-    const percentage = Math.max(0, (timeLeft / 60) * 100);
-    document.getElementById('timer-gauge-bar').style.width = `${percentage}%`;
-}
-
-function handleTimeout() {
-    isSubmitted = true;
-    const resultDiv = document.getElementById('result');
-    resultDiv.style.display = 'block';
-    resultDiv.className = 'result-message incorrect';
-    resultDiv.innerHTML = `${t('timeout')}<br>👉 ${getAnswerString()}`;
-
-    checkStreakRecordAndReset();
-
-    const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = t('btnNextSame');
-    submitBtn.style.backgroundColor = '#8e44ad';
 }
 
 
@@ -220,7 +172,7 @@ function handleSubmitOrNext() {
 
     const isCorrect = isCorrectActual || isCorrectTheoretical;
 
-// 📌 정답/오답 결과 통계 반영
+    // 📌 정답/오답 결과 통계 반영
     recordAnswerResult(isCorrect);
 
     resultDiv.style.display = 'block';
@@ -235,15 +187,21 @@ function handleSubmitOrNext() {
         resultDiv.innerHTML = `${t('incorrect')}<br>👉 ${answerText}`;
     }
 
-    // 연승 모드에서 연승 관리.
+    // 연승 모드에서 연승 관리 (script_streak_mode.js 함수 연동)
     if (currentMode === 'streak') {
         if (isCorrect) {
             streakCount++;
-            document.getElementById('streak-display').innerText = t('streakCount', { count: streakCount });
-            processStreakResult();
+            const streakDisplay = document.getElementById('streak-display');
+            if (streakDisplay) {
+                streakDisplay.innerText = t('streakCount', { count: streakCount });
+            }
+            if (typeof processStreakResult === 'function') {
+                processStreakResult();
+            }
         } else {
-            processStreakResult();
-            checkStreakRecordAndReset();
+            if (typeof checkStreakRecordAndReset === 'function') {
+                checkStreakRecordAndReset();
+            }
         }
     }   
 
@@ -251,37 +209,6 @@ function handleSubmitOrNext() {
     const submitBtn = document.getElementById('btn-submit');
     submitBtn.innerText = currentMode === 'streak' ? t('btnNextStreak') : t('btnNextSame');
     submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
-}
-
-/**
- * 연승 모드 전용 결과 기록 함수
- * @param {boolean} isCorrect - 정답 여부
- */
-function processStreakResult() {
-    const stats = getUserStats();
-    const modeId = MODE_ID_MAP['streak']; // 연승 모드의 ID ('mode6')
-
-    if (!stats[modeId]) {
-        stats[modeId] = { playCount: 0, correct: 0, wrong: 0, max: 0 };
-    }
-
-    if (streakCount > stats[modeId].max) {
-        stats[modeId].max = streakCount;
-    }
-
-    // 변경된 통계 데이터 localStorage에 저장
-    localStorage.setItem('mahjong_user_stats', JSON.stringify(stats));
-}
-
-function checkStreakRecordAndReset() {
-
-    processStreakResult();
-
-    if (streakCount >= 10) {
-        pendingRecordStreak = streakCount;
-        document.getElementById('name-input-container').style.display = 'block';
-    }
-    streakCount = 0;
 }
 
 function copyCurrentQuizToCustom() {
