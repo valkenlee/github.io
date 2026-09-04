@@ -11,24 +11,21 @@ function changeSuit() {
 }
 
 /**
- * 퀴즈를 생성하고 관련 제반 상태 및 UI를 업데이트합니다.
+ * 퀴즈 데이터를 계산하고 관련 전역 상태를 업데이트합니다.
  */
-function generateQuiz() {
+function generateQuizData() {
     clearInterval(timerInterval);
     isSubmitted = false;
 
-    updateModeUI();
-
     changeSuit();
 
-    // 📌 discard 모드일 경우 discard 전용 생성 함수로 전달
+    // discard 모드일 경우 처리
     if (currentMode === 'discard') {
         if (typeof generateDiscardQuiz === 'function') {
             generateDiscardQuiz();
         }
-        return;
+        return false; // discard 모드는 별도 처리되므로 이후 UI 렌더링 스킵용 플래그 반환
     }
-
 
     let targetDifficulty = currentMode;
     if (currentMode === 'streak') {
@@ -56,12 +53,22 @@ function generateQuiz() {
         }
     }
 
+    // 전역 상태 업데이트
     currentHand = hand;
     winningTiles = resultData.waits;
     maxedOutWinningTiles = resultData.maxedOut;
     winningDecompositions = resultData.decomps;
     isChiitoiHand = resultData.isChiitoi;
     isRyanpeikouHand = resultData.isRyanpeikou;
+
+    return true;
+}
+
+/**
+ * 현재 상태에 맞춰 화면(UI)을 업데이트 및 렌더링합니다.
+ */
+function renderQuizUI() {
+    updateModeUI();
 
     renderHand();
     renderButtons();
@@ -98,6 +105,16 @@ function generateQuiz() {
     document.getElementById('result').style.display = 'none';
     document.getElementById('name-input-container').style.display = 'none';
     selectedTiles.clear();
+}
+
+/**
+ * 퀴즈를 생성하고 화면을 업데이트하는 메인 함수
+ */
+function generateQuiz() {
+    const isGenerated = generateQuizData();
+    if (isGenerated) {
+        renderQuizUI();
+    }
 }
 
 /**

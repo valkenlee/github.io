@@ -256,8 +256,11 @@ function check_flush_tenpai(suit, hand, new_card, riichi = 1, discard = []) {
 // =================================================================
 let discardNewCard = null;
 
-// 버림패 퀴즈 문제 생성
-function generateDiscardQuiz() {
+
+/**
+ * 버림패 퀴즈 데이터를 생성하고 관련 상태를 업데이트합니다.
+ */
+function generateDiscardQuizData() {
     isSubmitted = false;
 
     if (typeof timer !== 'undefined' && timer) {
@@ -268,25 +271,6 @@ function generateDiscardQuiz() {
         clearInterval(timerId);
         timerId = null;
     }
-
-    const hintElem = document.getElementById('easy-hint');
-    const streakElem = document.getElementById('streak-display');
-    const timerElem = document.getElementById('timer-display');
-    const timerGaugeContainer = document.getElementById('timer-gauge-container');
-
-    if (hintElem) hintElem.style.display = 'none';
-    if (streakElem) streakElem.style.display = 'none';
-    if (timerElem) timerElem.style.display = 'none';
-    if (timerGaugeContainer) timerGaugeContainer.style.display = 'none';
-
-    const resultDiv = document.getElementById('result');
-    if (resultDiv) {
-        resultDiv.style.display = 'none';
-        resultDiv.innerHTML = '';
-    }
-
-    const quizArea = document.getElementById('quiz-area');
-    if (quizArea) quizArea.style.display = 'block';
 
     let hand13 = [];
     let newCard = 1;
@@ -306,11 +290,37 @@ function generateDiscardQuiz() {
         if (results.length > 0) break;
     }
 
+    // 전역 상태 업데이트
     currentHand = hand13;
     discardNewCard = newCard;
 
-    renderHandWithDrawnCard();
+    return true;
+}
 
+/**
+ * 버림패 퀴즈 관련 UI를 업데이트 및 렌더링합니다.
+ */
+function renderDiscardQuizUI() {
+    const hintElem = document.getElementById('easy-hint');
+    const streakElem = document.getElementById('streak-display');
+    const timerElem = document.getElementById('timer-display');
+    const timerGaugeContainer = document.getElementById('timer-gauge-container');
+
+    if (hintElem) hintElem.style.display = 'none';
+    if (streakElem) streakElem.style.display = 'none';
+    if (timerElem) timerElem.style.display = 'none';
+    if (timerGaugeContainer) timerGaugeContainer.style.display = 'none';
+
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) {
+        resultDiv.style.display = 'none';
+        resultDiv.innerHTML = '';
+    }
+
+    const quizArea = document.getElementById('quiz-area');
+    if (quizArea) quizArea.style.display = 'block';
+
+    renderHandWithDrawnCard();
     renderButtons();
 
     const submitBtn = document.getElementById('btn-submit');
@@ -319,6 +329,14 @@ function generateDiscardQuiz() {
         submitBtn.style.backgroundColor = '#2980b9';
     }
     selectedTiles.clear();
+}
+
+/**
+ * 버림패 퀴즈를 생성하고 화면을 업데이트하는 메인 함수
+ */
+function generateDiscardQuiz() {
+    generateDiscardQuizData();
+    renderDiscardQuizUI();
 }
 
 // 쯔모패(14번째 패) 출력

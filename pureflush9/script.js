@@ -17,8 +17,16 @@ function incrementPlayCount(modeKey) {
 }
 
 function selectMode(mode) {
-    if (currentMode !== mode) streakCount = 0;
+
+    if (currentMode !== mode) {
+        // 📌 모드가 변경될 때 실행 중인 streak 타이머 정리
+        clearStreakTimer();
+        streakCount = 0;
+    }
     currentMode = mode;
+
+    // 📌 모드 변경 즉시 UI(버튼 활성화 테두리 등)를 먼저 업데이트
+    updateModeUI();
 
     // 📌 해당 모드의 playCount 1 증가
     incrementPlayCount(mode);
