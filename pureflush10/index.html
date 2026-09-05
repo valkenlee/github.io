@@ -13,7 +13,7 @@
 	
     <script> 
         window.MAIN_VER = "0.10"; 
-        window.JS_VER = "0.10.22"; 
+        window.JS_VER = "0.10.30"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -216,11 +216,6 @@
             <button id="btn-save-record" onclick="saveRecord()" data-i18n="btnSaveRecord">기록 등록</button>
         </div>
     </div>
-
-        <!-- 🔗 문제 공유하기 버튼 추가 -->
-        <button type="button" class="btn-share-quiz" id="btn-share-quiz" onclick="shareCurrentQuiz()" style="padding: 5px 12px; font-size: 13px; background-color: #8e44ad; color: white; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-            🔗 <span data-i18n="buttons.shareProblem">문제 공유</span>
-        </button>
 </div>
 
 <div class="card hall-of-fame">
