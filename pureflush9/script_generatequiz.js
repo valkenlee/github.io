@@ -123,35 +123,69 @@ function generateQuizData() {
 }
 
 /**
- * 손패 화면 렌더링 (매우 쉬움 모드의 자패 울음패 포함)
+ * 손패 화면 렌더링 (2줄 모드 상단 7장 / 하단 6장 + discardMode 오름패 대응)
  */
 async function renderHand() {
-    const container = document.getElementById('hand-container');
+    const container = document.getElementById('hand-container') || document.getElementById('hand-display');
     if (!container) return;
     container.innerHTML = '';
 
+    const isDiscardMode = (currentMode === 'discard');
+    
+    // discardMode일 때 전체 패 목록 구성 (기본 13장 또는 13장 + 오름패/쯔모패 1장)
+    let tilesToRender = [...currentHand];
+    
+    // discardMode일 때 14번째 패(쯔모패/오름패) 데이터가 별도 전역 변수에 있다면 합쳐줍니다.
+    if (isDiscardMode) {
+        const extraTile = (typeof currentDrawTile !== 'undefined' && currentDrawTile !== null) 
+            ? currentDrawTile 
+            : (typeof drawnTile !== 'undefined' ? drawnTile : null);
+            
+        // currentHand 길이가 13장이고 추가 오름패 변수가 존재하는 경우
+        if (extraTile !== null && tilesToRender.length === 13) {
+            tilesToRender.push(extraTile);
+        }
+    }
+
+    let totalTilesHandled = 0;
+
     // 1. 수패(만/통/삭) 렌더링
-    for (const num of currentHand) {
+    for (let i = 0; i < tilesToRender.length; i++) {
+        const num = tilesToRender[i];
         const img = document.createElement('img');
         img.src = await getTileImageSrc(currentSuitObj.code, num);
         img.className = 'tile-img';
         img.alt = `${currentSuitObj.code}${num}`;
+
+        // discard 모드에서 마지막 패(14번째 오름패/쯔모패) 구분 클래스 추가
+        if (isDiscardMode && i === tilesToRender.length - 1 && tilesToRender.length > 13) {
+            img.classList.add('draw-tile');
+        }
+
         container.appendChild(img);
+        totalTilesHandled++;
+
+        // 2줄 모드일 때 정확히 상단 7번째 패(인덱스 6) 뒤에 줄바꿈 요소를 삽입
+        if (isMultiLine && totalTilesHandled === 7) {
+            const lineBreak = document.createElement('div');
+            lineBreak.className = 'line-break';
+            container.appendChild(lineBreak);
+        }
     }
 
-	// 2. 매우 쉬움(Very Easy) 모드 자패 커츠(울은 패) 우측 배치
-	if (currentMode === 'veryEasy' && currentHonorHand && currentHonorHand.length > 0) {
-	    const meldDivider = document.createElement('span');
-	    meldDivider.style.display = 'inline-block';
-	    meldDivider.style.width = '2px';
-	    meldDivider.style.height = '40px';
-	    meldDivider.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
-	    meldDivider.style.margin = '0 10px';
-	    meldDivider.style.verticalAlign = 'middle';
-	    container.appendChild(meldDivider);
+    // 2. 매우 쉬움(Very Easy) 모드 자패 커츠(울은 패) 우측 배치
+    if (currentMode === 'veryEasy' && currentHonorHand && currentHonorHand.length > 0) {
+        const meldDivider = document.createElement('span');
+        meldDivider.className = 'meld-divider';
+        meldDivider.style.display = 'inline-block';
+        meldDivider.style.width = '2px';
+        meldDivider.style.height = '40px';
+        meldDivider.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+        meldDivider.style.margin = '0 10px';
+        meldDivider.style.verticalAlign = 'middle';
+        container.appendChild(meldDivider);
 
-	    for (const honor of currentHonorHand) {
-            // 객체 형태, 문자열 형태, 숫자 형태에 맞게 자패 코드 추출
+        for (const honor of currentHonorHand) {
             let honorCode = honor;
             if (typeof honor === 'object' && honor !== null) {
                 honorCode = honor.code || honor.num || honor.name;
@@ -173,9 +207,17 @@ async function renderHand() {
                 img.style.visibility = 'visible';
 
                 container.appendChild(img);
+                totalTilesHandled++;
+
+                // 수패가 7장 미만이고 자패를 포함하여 7번째가 되었을 경우 줄바꿈 처리
+                if (isMultiLine && totalTilesHandled === 7) {
+                    const lineBreak = document.createElement('div');
+                    lineBreak.className = 'line-break';
+                    container.appendChild(lineBreak);
+                }
             }
-	    }
-	}
+        }
+    }
 
     if (typeof updateHandDisplayLayout === 'function') {
         updateHandDisplayLayout();
@@ -229,12 +271,21 @@ function renderQuizUI() {
         }
     }
 
+    // 제출 버튼 텍스트 언어 적용
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = t('btnSubmit');
-    submitBtn.style.backgroundColor = '#2980b9';
+    if (submitBtn) {
+        submitBtn.innerText = t('btnSubmit');
+        submitBtn.style.backgroundColor = '#2980b9';
+    }
+
+    // 💡 [수정 핵심] 언어 변경 시 이전 결과창을 닫고 내용 초기화
+    const resultElem = document.getElementById('result');
+    if (resultElem) {
+        resultElem.style.display = 'none';
+        resultElem.innerHTML = '';
+    }
 
     document.getElementById('quiz-area').style.display = 'block';
-    document.getElementById('result').style.display = 'none';
     document.getElementById('name-input-container').style.display = 'none';
     selectedTiles.clear();
 }

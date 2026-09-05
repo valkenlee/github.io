@@ -40,6 +40,22 @@
 .hand-display.multi-line {
     flex-wrap: wrap !important;
     justify-content: center !important;
+    /* 7장 폭 기준으로 줄바꿈이 자연스럽게 일어나도록 최대 너비 제한 */
+    max-width: calc((44px * var(--tile-scale) + 4px) * 7 + 20px) !important;
+    margin: 0 auto;
+}
+
+/* 7번째 패 뒤 강제 줄바꿈 element 스타일 */
+.hand-display.multi-line .line-break {
+    flex-basis: 100% !important;
+    width: 100% !important;
+    height: 0 !important;
+    margin: 0 !important;
+}
+
+/* discardMode에서의 오름패/쯔모패 여백 설정 */
+.hand-display .draw-tile {
+    margin-left: calc(10px * var(--tile-scale)) !important; /* 하단 6장과 쯔모/오름패 간격 */
 }
 
 /* 입체 마작패 스타일 */
@@ -167,6 +183,12 @@
 @media (max-width: 600px) {
     .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 / 60; border-radius: 3px; padding: 1px; }
     .hand-display { gap: 2px; }
+    
+    /* 모바일 환경 대응 2줄 모드 너비 계산 */
+    .hand-display.multi-line {
+        max-width: calc((clamp(22px, 6.8vw, 36px) * var(--tile-scale) + 2px) * 7 + 10px) !important;
+    }
+    
     .selection-grid { gap: 4px; }
     .btn-number { padding: 10px 0; font-size: 16px; }
 }

@@ -387,7 +387,7 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
   const translate = (key, opt) => (typeof t === 'function' ? t(key, opt) : key);
 
   let html = `<div class="explanation-box" style="margin-top:15px; text-align:left;">`;
-  html += `<h4>📊 ${translate('bestReportHeaderTitle')}</h4>`;
+  html += `<h4>📊 ${translate('bestReportHeaderTitle', '최고의 오름패 판수 분석 리포트')}</h4>`;
 
   // 역만 텐파이 상태인 경우 보조 안내 문구 표기
   if (typeof checkYakumanTenpai === 'function') {
@@ -398,7 +398,7 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
     }
   }
 
-  html += `<p style="font-size:13px; color:#555; margin-bottom:10px;">${translate('bestReportCondition')}</p>`;
+  html += `<p style="font-size:13px; color:#555; margin-bottom:10px;">${translate('bestReportCondition', '조건: 멘젠 청일색 리치 쯔모 기준')}</p>`;
   html += `<ul style="list-style:none; padding:0; margin:0; font-family:monospace, monospace; font-size:14px; line-height:1.8;">`;
 
   if (resultData.analysis && Array.isArray(resultData.analysis)) {
@@ -409,7 +409,7 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
       if (isBest) {
         // 🏆 1. 최고 정답 패 강조
         html += `<li class="report-item best" style="font-weight:bold; color:#1e8449; background-color:#e8f8f5; padding:6px 10px; border-radius:4px; margin-bottom:4px; border:1px solid #2ecc71;">`;
-        html += `🏆 <b>${item.tile}</b> : ${item.text} <b>${translate('bestReportOptimalChoice')}</b>`;
+        html += `🏆 <b>${item.tile}</b> : ${item.text} <b>${translate('bestReportOptimalChoice', '[최적의 오름패]')}</b>`;
         html += `</li>`;
       } else if (isValid) {
         // ⭕ 2. 일반 청일색 화료 가능 패

@@ -44,6 +44,12 @@ const TRANSLATIONS = {
             btnClose: "닫기",
             confirmReset: "정말로 모든 게임 기록을 삭제하시겠습니까?"
         },
+        zoomctrl: {
+            zoomOut: "축소",
+            zoomIn: "확대",
+            lineToggle: "줄 바꿈 (1줄/2줄)",
+            reset: "초기화 🔄"
+        },
 
         // 히든 분석기
         analyzerTitle: "🕵️‍♂️ 히든 패 분석기 (자유 패 입력)",
@@ -95,7 +101,7 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "선택하신 [{tile}]번 패는 최고 판수가 아닙니다.<br>👉 가장 높은 판수를 얻는 패: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
-            veryEasy: "📌 <b>매우 쉬움 모드 (혼일색):</b><br>• 자패(동/서/남/북/백/발/중) 커츠(3장)가 1~2개 포함된 혼일색 텐파이 형태입니다.<br>• 수패 수가 7~10장으로 적어 손쉽게 오름패 분석을 연습할 수 있습니다.",
+            veryEasy: "📌 <b>매우 쉬움 모드 (혼일색):</b><br>• 자패(동/서/남/북/백/발/중) 커츠가 1~2개 포함된 혼일색 텐파이 형태입니다.<br>• 수패 수가 7~10장으로 적어 손쉽게 오름패 분석을 연습할 수 있습니다.",
             easy: "📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇 개인지도 알려 줍니다.<br>• 제출 후 대기 유형 및 세부 분해 해설을 제공합니다.",
             normal: "📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 대기 유형과 세부 분해 해설을 제공합니다.",
             hard: "📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.",
@@ -182,6 +188,12 @@ const TRANSLATIONS = {
             btnClose: "閉じる",
             confirmReset: "本当にすべてのゲーム記録を削除しますか？"
         },
+        zoomctrl: {
+            zoomOut: "縮小",
+            zoomIn: "拡大",
+            lineToggle: "折り返し (1行/2行)",
+            reset: "リセット 🔄"
+        },
 
         analyzerTitle: "🕵️‍♂️ 手牌アナライザー（自由入力）",
         analyzerInputLabel: "⌨️ 数字直接入力 (例: 1112345678999):",
@@ -228,7 +240,7 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "選択した [{tile}] 番の牌は最高翻数ではありません。<br>👉 最も高い翻数を得られる牌: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
-            veryEasy: "📌 <b>入門モード (混一色):</b><br>• 字牌(東/南/西/北/白/發/中)の刻子(3枚)が1〜2個含まれた混一色のテンパイ形です。<br>• 数牌が7〜10枚と少ないため、手軽に待ち牌分析の練習ができます。",
+            veryEasy: "📌 <b>入門モード (混一色):</b><br>• 字牌(東/南/西/北/白/發/中)の刻子が1〜2個含まれた混一色のテンパイ形です。<br>• 数牌が7〜10枚と少ないため、手軽に待ち牌分析の練習ができます。",
             easy: "📌 <b>🌱 初級モード:</b><br>• アガリ牌が1〜2個の簡単な問題です。待ち牌の数も表示されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
             normal: "📌 <b>🌿 中級モード:</b><br>• 主に2つ待ちを中心とした問題が出題されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
             hard: "📌 <b>🔥 上級モード:</b><br>• 複雑な多面張（多面待ち）問題が出題されます。<br>• 回答後に様々な待ちの形と分解パターンを解説します。",
@@ -315,6 +327,12 @@ const TRANSLATIONS = {
             btnClose: "关闭",
             confirmReset: "确定要删除所有游戏记录吗？"
         },
+        zoomctrl: {
+            zoomOut: "缩小",
+            zoomIn: "放大",
+            lineToggle: "换行 (1行/2行)",
+            reset: "重置 🔄"
+        },
 
         analyzerTitle: "🕵️‍♂️ 隐藏手牌分析器（自由输入）",
         analyzerInputLabel: "⌨️ 直接输入数字 (例: 1112345678999):",
@@ -361,7 +379,7 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "您选择的 [{tile}] 号牌不是最高番数。<br>👉 番数最高的和牌为: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
-            veryEasy: "📌 <b>入门模式 (混一色):</b><br>• 包含 1~2 组字牌（东/南/西/北/白/发/中）刻子（3张）的混一色听牌牌型。<br>• 数牌仅有 7~10 张，非常适合轻松练习听牌分析。",
+            veryEasy: "📌 <b>入门模式 (混一色):</b><br>• 包含 1~2 组字牌（东/南/西/北/白/发/中）刻子的混一色听牌牌型。<br>• 数牌仅有 7~10 张，非常适合轻松练习听牌分析。",
             easy: "📌 <b>🌱 简单模式:</b><br>• 仅有 1~2 个和牌的简单题目，并提示和牌数量。<br>• 提交后提供听牌类型及详细拆解说明。",
             normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 个和牌为主的常见听牌型。<br>• 提交后提供听牌类型及详细拆解说明。",
             hard: "📌 <b>🔥 困难模式:</b><br>• 复杂的多面听牌型。<br>• 提交后分析所有可能组合与听牌类型。",
@@ -447,6 +465,12 @@ const TRANSLATIONS = {
             btnClose: "關閉",
             confirmReset: "確定要刪除所有遊戲紀錄嗎？"
         },
+        zoomctrl: {
+            zoomOut: "縮小",
+            zoomIn: "放大",
+            lineToggle: "換行 (1行/2行)",
+            reset: "重置 🔄"
+        },
 
         analyzerTitle: "🕵️‍♂️ 隱藏手牌分析器（自由輸入）",
         analyzerInputLabel: "⌨️ 直接輸入數字 (例: 1112345678999):",
@@ -493,7 +517,7 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "您選擇的 [{tile}] 號牌不是最高番數。<br>👉 番數最高的胡牌為: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
-            veryEasy: "📌 <b>入門模式 (混一色):</b><br>• 包含 1~2 組字牌（東/南/西/北/白/發/中）刻子（3張）的混一色聽牌牌型。<br>• 數牌僅有 7~10 張，非常適合輕鬆練習聽牌分析。",
+            veryEasy: "📌 <b>入門模式 (混一色):</b><br>• 包含 1~2 組字牌（東/南/西/北/白/發/中）刻子的混一色聽牌牌型。<br>• 數牌僅有 7~10 張，非常適合輕鬆練習聽牌分析。",
             easy: "📌 <b>🌱 簡單模式:</b><br>• 僅有 1~2 個胡牌的簡單題目，並提示胡牌數量。<br>• 提交後提供聽牌類型及詳細拆分說明。",
             normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 個胡牌為主的常見聽牌型。<br>• 提交後提供聽牌類型及詳細拆分說明。",
             hard: "📌 <b>🔥 困難模式:</b><br>• 複雜的多面聽牌型。<br>• 提交後解析所有可能組合與聽牌類型。",
@@ -578,6 +602,12 @@ const TRANSLATIONS = {
             btnClose: "Close",
             confirmReset: "Are you sure you want to delete all game records?"
         },
+        zoomctrl: {
+            zoomOut: "Zoom Out",
+            zoomIn: "Zoom In",
+            lineToggle: "Toggle Wrap (1/2 Lines)",
+            reset: "Reset 🔄"
+        },
 
         analyzerTitle: "🕵️‍♂️ Hidden Analyzer (Custom Hand Input)",
         analyzerInputLabel: "⌨️ Direct Number Input (e.g. 1112345678999):",
@@ -624,6 +654,7 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "Tile [{tile}] does not yield the highest score.<br>👉 Highest scoring tile(s): <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
+            veryEasy: "📌 <b>🌱 Very Easy Mode (Honitsu):</b><br>• A Honitsu Tenpai hand containing 1-2 sets of honor triplets (Wind/Dragon tiles).<br>• Designed with fewer suit tiles (7-10 tiles) for beginner-friendly wait tile analysis.",
             easy: "📌 <b>🌱 Easy Mode:</b><br>• Simple hands with 1-2 winning tiles. Displays the tile count hint.<br>• Provides detailed hand decompositions and wait types after submission.",
             normal: "📌 <b>🌿 Normal Mode:</b><br>• Standard hands, mostly with 2 winning tiles.<br>• Provides detailed hand decompositions and wait types after submission.",
             hard: "📌 <b>🔥 Hard Mode:</b><br>• Complex multi-sided waits.<br>• Provides full structural decompositions and wait type analysis.",

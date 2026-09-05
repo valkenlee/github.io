@@ -153,12 +153,13 @@
         <!-- 손패 조작 컨트롤바 -->
         <div class="hand-controls">
             <div class="control-group">
-                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" title="축소">🔍-</button>
-                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" title="확대">🔍+</button>
-                <button type="button" class="btn-hand-ctrl" id="btn-line-toggle">줄 바꿈 (1줄/2줄)</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" data-i18n-title="zoomctrl.zoomOut" title="축소">🔍-</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" data-i18n-title="zoomctrl.zoomIn" title="확대">🔍+</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-line-toggle" data-i18n="zoomctrl.lineToggle">줄 바꿈 (1줄/2줄)</button>
             </div>
-            <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset">초기화 🔄</button>
-	    </div>
+            <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset" data-i18n="zoomctrl.reset">초기화 🔄</button>
+        </div>
+
         <!-- 손패 출력 영역 -->
         <div class="hand-display" id="hand-container"></div>
     </div>

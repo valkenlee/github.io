@@ -50,18 +50,19 @@ function updateTimerDisplay() {
  */
 function handleTimeout() {
     isSubmitted = true;
+    const tr = typeof t === 'function' ? t : (k, d) => d || k;
     const resultDiv = document.getElementById('result');
     if (resultDiv) {
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `${t('timeout')}<br>👉 ${getAnswerString()}`;
+        resultDiv.innerHTML = `${tr('timeout', '⏰ 제한시간 초과!')}<br>👉 ${getAnswerString()}`;
     }
 
     checkStreakRecordAndReset();
 
     const submitBtn = document.getElementById('btn-submit');
     if (submitBtn) {
-        submitBtn.innerText = t('btnNextSame');
+        submitBtn.innerText = tr('btnNextSame', '다음 문제');
         submitBtn.style.backgroundColor = '#8e44ad';
     }
 }
