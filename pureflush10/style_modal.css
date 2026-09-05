@@ -1,0 +1,191 @@
+/* 모달 전체 오버레이 설정 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* 모달 콘텐츠 상자 */
+.modal-content {
+    background-color: #2c3e50 !important;
+    color: #ffffff !important;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 모달 본문 영역 */
+.modal-body {
+    padding: 15px 20px;
+    background-color: #2c3e50 !important;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 헤더 및 푸터 */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background-color: #1a252f !important;
+    border-bottom: 1px solid #34495e;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #ffffff !important;
+}
+
+.modal-header-id {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 12px 20px;
+    background-color: #1a252f !important;
+    border-bottom: 1px solid #34495e;
+    gap: 6px; 
+    text-align: right; 
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.modal-header-id strong {
+    color: #f1c40f;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 0.5px;
+}
+
+.modal-footer {
+    flex-shrink: 0;
+    padding: 12px 20px 16px;
+    background-color: #1a252f;
+    border-top: 1px solid #34495e;
+    display: flex;
+    justify-content: center;
+}
+
+.modal-btn {
+    width: 100%;
+    padding: 12px;
+    background: #8e44ad;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.modal-btn:hover { background: #71368a; }
+
+.btn-modal-close-large {
+    width: 100%;
+    max-width: 280px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #7f8c8d;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.btn-modal-close-large:hover { background-color: #95a5a6; }
+.btn-modal-close-large:active { transform: scale(0.98); }
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    color: #ffffff !important;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.btn-change-id,
+.btn-reset-stats {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px;
+    height: 26px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+.btn-change-id:active,
+.btn-reset-stats:active { transform: scale(0.96); }
+
+.btn-change-id { background-color: #3498db; }
+.btn-change-id:hover { background-color: #2980b9; }
+
+.btn-reset-stats { background-color: #e74c3c; }
+.btn-reset-stats:hover { background-color: #c0392b; }
+
+/* 모달 내부 테이블 */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 13px;
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+
+.stats-table th, 
+.stats-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #34495e;
+    background-color: transparent !important;
+}
+
+.stats-table th {
+    background-color: #34495e !important;
+    color: #f1c40f !important;
+    font-weight: bold;
+}
+
+.stats-table td {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.stats-table td.txt-correct { color: #2ecc71 !important; font-weight: bold; }
+.stats-table td.txt-wrong { color: #e74c3c !important; font-weight: bold; }
+.stats-table td.txt-rate { color: #3498db !important; font-weight: bold; }
+
+@media (max-width: 600px) {
+    .modal-overlay { padding: 10px; }
+    .modal-content { max-height: 95vh; }
+    .modal-body { padding: 10px; }
+    .modal-header-id {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+}
