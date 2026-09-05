@@ -13,7 +13,7 @@
 	
     <script> 
         window.MAIN_VER = "0.10"; 
-        window.JS_VER = "0.10.30"; 
+        window.JS_VER = "0.10.35"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -57,8 +57,14 @@
     	<span id="app-version"></span>
         <script> document.getElementById('app-version').textContent = `(v${window.MAIN_VER})`; </script>
     </h1>
+</div>
+<div class="header-container-id">
+    <div class="user-info-bar" left>
+       <span>🔑 PID: <strong id="user-id-display">불러오는 중...</strong></span>
+       <button type="button" class="btn-stats" onclick="openStatsModal()">기록</button>
+    </div>
     <div class="header-right-controls">
-	    <div class="lang-select-wrapper">
+	    <div class="lang-select-wrapper right">
 		    <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
 			    <option value="ko">🇰🇷 한국어</option>
 			    <option value="ja">🇯🇵 日本語</option>
@@ -67,10 +73,6 @@
 			    <option value="en">🇬🇧🇺🇸 English</option>
 		    </select>
 	    </div>
-        <div class="user-info-bar">
-            <span>🔑 PID: <strong id="user-id-display">불러오는 중...</strong></span>
-            <button type="button" class="btn-stats" onclick="openStatsModal()">기록</button>
-        </div>
     </div>
 </div>
 
