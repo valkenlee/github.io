@@ -8,6 +8,7 @@
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
     overflow-x: auto !important; /* 확대 시 스크롤 허용 */
+    container-type: inline-size; 
 }
 
 /* hand-display Base */
@@ -203,21 +204,59 @@
         padding: 4px 0;
     }
 
-    .hand-display.multi-line {
-        width: max-content !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-    }
-    
-    .hand-display .break-line,
-    .hand-display.multi-line .line-break {
-        flex-basis: 100% !important;
-        width: 100% !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
+
+    /* ========================================================
+       모바일 세로 모드 (Portrait) -> 2줄 모드 (multi-line) 적용
+       ======================================================== */
+    @media (orientation: portrait) {
+        .hand-display {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            margin: 0 auto;
+        }
+
+        .hand-display .line-break,
+        .hand-display .break-line {
+            flex-basis: 100% !important;
+            width: 100% !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
     }
 
-    .selection-grid { gap: 4px; }
-    .btn-number { padding: 10px 0; font-size: 16px; }
+    /* ========================================================
+       모바일 가로 모드 (Landscape) -> 1줄 모드 (single-line) 적용
+       ======================================================== */
+    @media (max-width: 900px) and (orientation: landscape) {
+	    .tile-img,
+	    .hand-display .tile-img {
+		/* 
+		   100cqw = 컨테이너의 순수 너비(100%)
+		   패 14개 + 쯔모패 간격 + padding + gap 등을 고려하여 15.5~16으로 나눕니다.
+		*/
+	        --base-tile-w: calc(((100cqw - 20px) / 16) * 0.9);
+		width: calc(var(--base-tile-w) * var(--tile-scale)) !important;
+		height: auto !important;
+		aspect-ratio: 44 / 60;
+	    }
+
+	    .hand-display {
+		flex-wrap: nowrap !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		justify-content: center !important;
+		margin: 0 auto;
+		overflow-x: hidden;
+	    }
+
+	    /* 가로 모드일 때는 강제 줄바꿈 숨김 */
+	    .hand-display .line-break,
+	    .hand-display .break-line {
+		display: none !important;
+	    }
+    }
 }
