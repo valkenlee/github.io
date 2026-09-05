@@ -69,6 +69,11 @@ function initHandControls() {
             isMultiLine = !isMultiLine;
             userHasCustomized = true;
             updateHandDisplayLayout();
+            
+            // 패 배치를 상단 7장 / 하단 6장 구조로 재렌더링
+            if (typeof renderHand === 'function') {
+                renderHand();
+            }
         };
     }
 

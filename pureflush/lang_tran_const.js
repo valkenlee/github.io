@@ -4,8 +4,9 @@ const TRANSLATIONS = {
         loading: "📦 마작패 패키지를 읽어오는 중입니다...",
         loadingSuccess: "✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.",
         loadingError: "❌ 마작패 로딩 실패! 파일이 같은 폴더에 있는지 확인해 주세요.",
-        modeEasy: "🌱 쉬움",
-        modeNormal: "🌿 보통",
+        modeVeryEasy: "🌱 매우 쉬움",
+        modeEasy: "🌿 쉬움",
+        modeNormal: "🌾 보통",
         modeHard: "🔥 어려움",
         modeStreak: "⚡ 연승 모드",
         hintEasy: "💡 힌트: 총 {count}개의 오름패가 있습니다.",
@@ -15,6 +16,7 @@ const TRANSLATIONS = {
         quizInstruction_best: "오름패(대기패)를 <span style=\"color: red;\">하나만</span> 선택하세요:",
         quizInstruction_discard: "버릴 패를 <span style=\"color: red;\">하나만</span> 선택하세요:",
         shortcutHint: "(단축키: 1~9, Enter)",
+        btnStartGame: "🎮 게임 시작하기",
         btnSubmit: "제출 및 정답 확인",
         btnNextStreak: "다음 연승 문제로 이동",
         btnNextSame: "같은 난이도로 새 문제 제출",
@@ -39,7 +41,14 @@ const TRANSLATIONS = {
             maxScore: "최고 기록",
             btnChangeId: "PID 변경",
             btnResetStats: "기록 삭제",
+            btnClose: "닫기",
             confirmReset: "정말로 모든 게임 기록을 삭제하시겠습니까?"
+        },
+        zoomctrl: {
+            zoomOut: "축소",
+            zoomIn: "확대",
+            lineToggle: "줄 바꿈 (1줄/2줄)",
+            reset: "초기화 🔄"
         },
 
         // 히든 분석기
@@ -92,12 +101,13 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "선택하신 [{tile}]번 패는 최고 판수가 아닙니다.<br>👉 가장 높은 판수를 얻는 패: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
+            veryEasy: "📌 <b>매우 쉬움 모드 (혼일색):</b><br>• 자패(동/서/남/북/백/발/중) 커츠가 1~2개 포함된 혼일색 텐파이 형태입니다.<br>• 수패 수가 7~10장으로 적어 손쉽게 오름패 분석을 연습할 수 있습니다.",
             easy: "📌 <b>🌱 쉬움 모드:</b><br>• 1~2개의 오름패만 존재하는 쉬운 문제이며, 오름패가 몇 개인지도 알려 줍니다.<br>• 제출 후 대기 유형 및 세부 분해 해설을 제공합니다.",
             normal: "📌 <b>🌿 보통 모드:</b><br>• 일반적으로 2개의 오름패인 문제 위주로 출제됩니다.<br>• 제출 후 대기 유형과 세부 분해 해설을 제공합니다.",
             hard: "📌 <b>🔥 어려움 모드:</b><br>• 기본적으로 여러 형태의 다면대기 문제입니다.<br>• 제출 후 다양한 대기 유형과 분해 형태를 모두 분석해 드립니다.",
             streak: "📌 <b>⚡ 어려움 연승 모드:</b><br>• ⏱️ <b>60초 제한시간:</b> 문제당 60초 안에 정답을 맞혀야 합니다.<br>• 🏆 <b>글로벌 명예의 전당:</b> 10연승 이상 달성 시 전 세계 리더보드에 저장됩니다.<br>• ✏️ <b>이름 설정:</b> 이름 미입력 시 Anonymous로 등록됩니다.",
             best: "📌 <b>🏆 최고의 오름패 모드:</b><br>• 오름패 중 가장 높은 판수(역)를 만드는 패를 맞히는 모드입니다.<br>• '리치'와 '멘젠쯔모'를 가정하지만, 도라, 적도라는 무시합니다.<br>• 동점인 패가 여러 개일 경우, 그중 하나만 맞혀도 정답입니다.<br>• 제출 후 1~9 오름패별 판수 상세 분석 리포트를 제공합니다.",
-            discard: "📌 <b>🀄 무엇을 버릴까? 모드:</b><br>• 14장의 손패(13장 + 새로 가져온 쯔모패)에서 버렸을 때 텐파이가 되며, 대기패의 매수가 가장 많은 <b>최선의 버림패</b>를 선택하는 모드입니다.<br>역(판수)를 손해보더라도 대기패를 많게 하는 것을 고르십시오.<br>• 제출 후 버림패별 대기패 목록 및 수량 분석 리포트를 제공합니다."
+            discard: "📌 <b>🀄 무엇을 버릴까? 모드:</b><br>• 14장의 손패(13장 + 새로 가져온 쯔모패)에서 버렸을 때 텐파이가 되며, 대기패의 매수가 가장 많은 <b>최선의 버림패</b>를 선택하는 모드입니다.<br>• 역(판수)를 손해보더라도 대기패를 많게 하는 것을 고르십시오.<br>• 혹시 '역만 텐파이'를 기대할 수 있다면 그것을 선택해도 좋습니다.<br>• 제출 후 버림패별 대기패 목록 및 수량 분석 리포트를 제공합니다."
         },
 
         yaku: {
@@ -139,8 +149,9 @@ const TRANSLATIONS = {
         loading: "📦 麻雀牌のリソースを読み込んでいます...",
         loadingSuccess: "✅ 牌の読み込み完了！モードを選択してください。",
         loadingError: "❌ 麻雀牌の読み込み失敗！ファイルが同じフォルダにあるか確認してください。",
-        modeEasy: "🌱 初級",
-        modeNormal: "🌿 中級",
+        modeVeryEasy: "🌱 入門 (混一色)",
+        modeEasy: "🌿 初級",
+        modeNormal: "🌾 中級",
         modeHard: "🔥 上級",
         modeStreak: "⚡ 連勝モード",
         hintEasy: "💡 ヒント: アガリ牌は全部で {count} 個あります。",
@@ -150,6 +161,7 @@ const TRANSLATIONS = {
         quizInstruction_best: "アガリ牌となる数字を<span style=\"color: red;\">1つだけ</span>選んでください:",
         quizInstruction_discard: "打牌（捨てる牌）を<span style=\"color: red;\">1つだけ</span>選んでください:",
         shortcutHint: "(ショートカット: 1~9, Enter)",
+        btnStartGame: "🎮 ゲームを開始する",
         btnSubmit: "回答する",
         btnNextStreak: "次の問題へ",
         btnNextSame: "同じ難易度で再挑戦",
@@ -173,7 +185,14 @@ const TRANSLATIONS = {
             maxScore: "最高記録",
             btnChangeId: "PID変更",
             btnResetStats: "記録削除",
+            btnClose: "閉じる",
             confirmReset: "本当にすべてのゲーム記録を削除しますか？"
+        },
+        zoomctrl: {
+            zoomOut: "縮小",
+            zoomIn: "拡大",
+            lineToggle: "折り返し (1行/2行)",
+            reset: "リセット 🔄"
         },
 
         analyzerTitle: "🕵️‍♂️ 手牌アナライザー（自由入力）",
@@ -221,12 +240,13 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "選択した [{tile}] 番の牌は最高翻数ではありません。<br>👉 最も高い翻数を得られる牌: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
+            veryEasy: "📌 <b>入門モード (混一色):</b><br>• 字牌(東/南/西/北/白/發/中)の刻子が1〜2個含まれた混一色のテンパイ形です。<br>• 数牌が7〜10枚と少ないため、手軽に待ち牌分析の練習ができます。",
             easy: "📌 <b>🌱 初級モード:</b><br>• アガリ牌が1〜2個の簡単な問題です。待ち牌の数も表示されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
             normal: "📌 <b>🌿 中級モード:</b><br>• 主に2つ待ちを中心とした問題が出題されます。<br>• 回答後に待ちの形と詳細な解説が表示されます。",
             hard: "📌 <b>🔥 上級モード:</b><br>• 複雑な多面張（多面待ち）問題が出題されます。<br>• 回答後に様々な待ちの形と分解パターンを解説します。",
             streak: "📌 <b>⚡ 上級 連勝モード:</b><br>• ⏱️ <b>60秒制限:</b> 1問につき60秒以内に回答してください。<br>• 🏆 <b>グローバル殿堂:</b> 10連勝以上達成時に世界リーダーボードへ保存されます。<br>• ✏️ <b>名前設定:</b> 未入力の場合は Anonymous として登録されます。",
             best: "📌 <b>🏆 最高アガリ牌モード:</b><br>• アガリ牌の中で最も翻数（役）が高くなる牌を当てるモードです。<br>• 「リーチ」と「門前清自摸和」を仮定しますが、ドラ・赤ドラは無視します。<br>• 同点の牌が複数ある場合は、どれを選んでも正解となります。<br>• 提出後、1〜9のアガリ牌ごとの翻数詳細分析レポートを提供します。",
-            discard: "📌 <b>🀄 何を切る？モード:</b><br>• 14枚の手牌（13枚 + ツモ牌）から切った時にテンパイとなり、受け入れ（待ち牌の枚数）が最も多くなる<b>最善の切牌</b>を選択するモードです。<br>打点（翻数）を損にしてでも受け入れ枚数を最大化する牌を選んでください。<br>• 提出後、切牌ごとの待ち牌一覧および枚数分析レポートを提供します。"
+            discard: "📌 <b>🀄 何を切る？モード:</b><br>• 14枚の手牌（13枚 + ツモ牌）から切った時にテンパイとなり、受け入れ（待ち牌の枚数）が最も多くなる<b>最善の切牌</b>を選択するモードです。<br>• 打点（翻数）を損にしてでも受け入れ枚数を最大化する牌を選んでください。<br>• もし「役満テンパイ」が狙える場合は、そちらを選んでも正解となります。<br>• 提出後、切牌ごとの待ち牌一覧および枚数分析レポートを提供します。"
         },
 
         yaku: {
@@ -268,17 +288,19 @@ const TRANSLATIONS = {
         loading: "📦 正在加载麻将牌资源...",
         loadingSuccess: "✅ 麻将牌加载完成！请选择游戏模式。",
         loadingError: "❌ 麻将牌加载失败！请检查文件是否在同一目录下。",
-        modeEasy: "🌱 简单",
-        modeNormal: "🌿 普通",
+        modeVeryEasy: "🌱 入门 (混一色)",
+        modeEasy: "🌿 简单",
+        modeNormal: "🌾 普通",
         modeHard: "🔥 困难",
         modeStreak: "⚡ 连胜模式",
         hintEasy: "💡 提示: 共有 {count} 个和牌（听牌）。",
         streakCount: "🔥 当前 {count} 连胜",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "请<span style=\"color: red;\">选择所有</span>可以和牌（听牌）的数字:",
-        quizInstruction_best: "请<span style=\"color: red;\">仅选择一个</span>能成为听牌的数字:",
+        quizInstruction_best: "请<span style=\"color: red;\">仅选择一个</span>最佳和牌数字:",
         quizInstruction_discard: "请<span style=\"color: red;\">仅选择一张</span>要打出的牌:",
         shortcutHint: "(快捷键: 1~9, Enter)",
+        btnStartGame: "🎮 开始游戏",
         btnSubmit: "提交并查看答案",
         btnNextStreak: "进入下一题",
         btnNextSame: "同难度再来一题",
@@ -302,7 +324,14 @@ const TRANSLATIONS = {
             maxScore: "最高纪录",
             btnChangeId: "更改PID",
             btnResetStats: "清除战绩",
+            btnClose: "关闭",
             confirmReset: "确定要删除所有游戏记录吗？"
+        },
+        zoomctrl: {
+            zoomOut: "缩小",
+            zoomIn: "放大",
+            lineToggle: "换行 (1行/2行)",
+            reset: "重置 🔄"
         },
 
         analyzerTitle: "🕵️‍♂️ 隐藏手牌分析器（自由输入）",
@@ -350,12 +379,13 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "您选择的 [{tile}] 号牌不是最高番数。<br>👉 番数最高的和牌为: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
+            veryEasy: "📌 <b>入门模式 (混一色):</b><br>• 包含 1~2 组字牌（东/南/西/北/白/发/中）刻子的混一色听牌牌型。<br>• 数牌仅有 7~10 张，非常适合轻松练习听牌分析。",
             easy: "📌 <b>🌱 简单模式:</b><br>• 仅有 1~2 个和牌的简单题目，并提示和牌数量。<br>• 提交后提供听牌类型及详细拆解说明。",
             normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 个和牌为主的常见听牌型。<br>• 提交后提供听牌类型及详细拆解说明。",
             hard: "📌 <b>🔥 困难模式:</b><br>• 复杂的多面听牌型。<br>• 提交后分析所有可能组合与听牌类型。",
             streak: "📌 <b>⚡ 困难连胜模式:</b><br>• ⏱️ <b>60秒限时:</b> 每题须在60秒内完成。<br>• 🏆 <b>全球名人堂:</b> 达成10连胜以上时将保存至全球排行榜。<br>• ✏️ <b>玩家名称:</b> 未输入时默认显示为 Anonymous。",
             best: "📌 <b>🏆 最高和牌模式：</b><br>• 在所有和牌中，找出能组成最高番数（最高役型）的和牌模式。<br>• 默认假设“立直”与“门前清自摸和”，但忽略宝牌（Dora）和红宝牌。<br>• 若存在多张同番数的牌，选择其中任意一张均算正确。<br>• 提交后，将提供1~9各和牌的番数详细分析报告。",
-            discard: "📌 <b>🀄 打什么？模式：</b><br>• 从14张手牌（13张 + 摸到的牌）中打出牌后达成听牌，并选择听牌张数最多的<b>最佳打牌</b>模式。<br>即使牺牲番数（打点），也请优先选择能使听牌张数最大化的打牌。<br>• 提交后提供按打牌分类的听牌列表及张数分析报告。"
+            discard: "📌 <b>🀄 打什么？模式：</b><br>• 从14张手牌（13张 + 摸到的牌）中打出牌后达成听牌，并选择听牌张数最多的<b>最佳打牌</b>模式。<br>• 即使牺牲番数（打点），也请优先选择能使听牌张数最大化的打牌。<br>• 若有机会达成“役满听牌”，选择该打牌同样算作正确。<br>• 提交后提供按打牌分类的听牌列表及张数分析报告。"
         },
         yaku: {
             chinitsu: "清一色",
@@ -396,17 +426,19 @@ const TRANSLATIONS = {
         loading: "📦 正在載入麻將牌資源...",
         loadingSuccess: "✅ 麻將牌載入完成！請選擇遊戲模式。",
         loadingError: "❌ 麻將牌載入失敗！請確認檔案是否在同一資料夾。",
-        modeEasy: "🌱 簡單",
-        modeNormal: "🌿 普通",
+        modeVeryEasy: "🌱 入門 (混一色)",
+        modeEasy: "🌿 簡單",
+        modeNormal: "🌾 普通",
         modeHard: "🔥 困難",
         modeStreak: "⚡ 連勝模式",
         hintEasy: "💡 提示: 共有 {count} 個胡牌（聽牌）。",
         streakCount: "🔥 當前 {count} 連勝",
         timerSeconds: "⏱️ {count}秒",
         quizInstruction: "請<span style=\"color: red;\">選擇所有</span>可以胡牌（聽牌）的數字:",
-        quizInstruction_best: "請<span style=\"color: red;\">僅選擇一個</span>能成為聽牌的數字:",
+        quizInstruction_best: "請<span style=\"color: red;\">僅選擇一個</span>最佳胡牌數字:",
         quizInstruction_discard: "請<span style=\"color: red;\">僅選擇一張</span>要打出的牌:",
         shortcutHint: "(快捷鍵: 1~9, Enter)",
+        btnStartGame: "🎮 開始遊戲",
         btnSubmit: "提交並確認答案",
         btnNextStreak: "進入下一題",
         btnNextSame: "同難度再挑戰一題",
@@ -430,7 +462,14 @@ const TRANSLATIONS = {
             maxScore: "最高紀錄",
             btnChangeId: "變更PID",
             btnResetStats: "清除戰績",
+            btnClose: "關閉",
             confirmReset: "確定要刪除所有遊戲紀錄嗎？"
+        },
+        zoomctrl: {
+            zoomOut: "縮小",
+            zoomIn: "放大",
+            lineToggle: "換行 (1行/2行)",
+            reset: "重置 🔄"
         },
 
         analyzerTitle: "🕵️‍♂️ 隱藏手牌分析器（自由輸入）",
@@ -478,12 +517,13 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "您選擇的 [{tile}] 號牌不是最高番數。<br>👉 番數最高的胡牌為: <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
+            veryEasy: "📌 <b>入門模式 (混一色):</b><br>• 包含 1~2 組字牌（東/南/西/北/白/發/中）刻子的混一色聽牌牌型。<br>• 數牌僅有 7~10 張，非常適合輕鬆練習聽牌分析。",
             easy: "📌 <b>🌱 簡單模式:</b><br>• 僅有 1~2 個胡牌的簡單題目，並提示胡牌數量。<br>• 提交後提供聽牌類型及詳細拆分說明。",
             normal: "📌 <b>🌿 普通模式:</b><br>• 以 2 個胡牌為主的常見聽牌型。<br>• 提交後提供聽牌類型及詳細拆分說明。",
             hard: "📌 <b>🔥 困難模式:</b><br>• 複雜的多面聽牌型。<br>• 提交後解析所有可能組合與聽牌類型。",
             streak: "📌 <b>⚡ 困難連勝模式:</b><br>• ⏱️ <b>60秒限時:</b> 每題須在60秒內完成。<br>• 🏆 <b>全球名人堂:</b> 達成10連勝以上時將儲存至全球排行榜。<br>• ✏️ <b>玩家名稱:</b> 未輸入時預設顯示為 Anonymous。",
-            best: "📌 <b>🏆 最高胡牌模式：</b><br>• 在所有胡牌中，找出能組成最高番數（役種）的牌。<br>• 預設假設「立直」與「門前清自摸和」，但忽略寶牌（Dora）和紅寶牌。<br>• 若存在多張同番數的牌，選擇其中任意一張均算正確。<br>• 提交後，將提供1~9各胡牌的番数詳細分析報告。",
-            discard: "📌 <b>🀄 打什麼？模式：</b><br>• 從14張手牌（13張 + 摸到的牌）中打出牌後達成聽牌，並選擇聽牌張數最多的<b>最佳打牌</b>模式。<br>即使犧牲番數（打點），也請優先選擇能使聽牌張數最大化的打牌。<br>• 提交後提供按打牌分類的聽牌列表及張數分析報告。"
+            best: "📌 <b>🏆 最高胡牌模式：</b><br>• 在所有胡牌中，找出能組成最高番數（役種）的牌。<br>• 預設假設「立直」與「門前清自摸和」，但忽略寶牌（Dora）和紅寶牌。<br>• 若存在多張同番數的牌，選擇其中任意一張均算正確。<br>• 提交後，將提供1~9各胡牌的番數詳細分析報告。",
+            discard: "📌 <b>🀄 打什麼？模式：</b><br>• 從14張手牌（13張 + 摸到的牌）中打出牌後達成聽牌，並選擇聽牌張數最多的<b>最佳打牌</b>模式。<br>• 即使犧牲番數（打點），也請優先選擇能使聽牌張數最大化的打牌。<br>• 若有機會達成「役滿聽牌」，選擇該打牌同樣算作正確。<br>• 提交後提供按打牌分類的聽牌列表及張數分析報告。"
         },
         yaku: {
             chinitsu: "清一色",
@@ -532,9 +572,10 @@ const TRANSLATIONS = {
         streakCount: "🔥 Current Streak: {count}",
         timerSeconds: "⏱️ {count}s",
         quizInstruction: "Select <span style=\"color: red;\">ALL</span> tile numbers that complete the hand:",
-        quizInstruction_best: "Select <span style=\"color: red;\">ONLY ONE</span> number that completes the winning tile:",
+        quizInstruction_best: "Select <span style=\"color: red;\">ONLY ONE</span> optimal winning tile:",
         quizInstruction_discard: "Select <span style=\"color: red;\">ONLY ONE</span> tile to discard:",
         shortcutHint: "(Shortcuts: 1-9, Enter)",
+        btnStartGame: "🎮 Start Game",
         btnSubmit: "Submit Answer",
         btnNextStreak: "Next Challenge",
         btnNextSame: "Try Another Question",
@@ -558,7 +599,14 @@ const TRANSLATIONS = {
             maxScore: "Best Record",
             btnChangeId: "Change PID",
             btnResetStats: "Reset Data",
+            btnClose: "Close",
             confirmReset: "Are you sure you want to delete all game records?"
+        },
+        zoomctrl: {
+            zoomOut: "Zoom Out",
+            zoomIn: "Zoom In",
+            lineToggle: "Toggle Wrap (1/2 Lines)",
+            reset: "Reset 🔄"
         },
 
         analyzerTitle: "🕵️‍♂️ Hidden Analyzer (Custom Hand Input)",
@@ -606,12 +654,13 @@ const TRANSLATIONS = {
         bestResultIncorrectMsg: "Tile [{tile}] does not yield the highest score.<br>👉 Highest scoring tile(s): <b>[ {bestTiles} ]</b> ({score})",
 
         descriptions: {
+            veryEasy: "📌 <b>🌱 Very Easy Mode (Honitsu):</b><br>• A Honitsu Tenpai hand containing 1-2 sets of honor triplets (Wind/Dragon tiles).<br>• Designed with fewer suit tiles (7-10 tiles) for beginner-friendly wait tile analysis.",
             easy: "📌 <b>🌱 Easy Mode:</b><br>• Simple hands with 1-2 winning tiles. Displays the tile count hint.<br>• Provides detailed hand decompositions and wait types after submission.",
             normal: "📌 <b>🌿 Normal Mode:</b><br>• Standard hands, mostly with 2 winning tiles.<br>• Provides detailed hand decompositions and wait types after submission.",
             hard: "📌 <b>🔥 Hard Mode:</b><br>• Complex multi-sided waits.<br>• Provides full structural decompositions and wait type analysis.",
             streak: "📌 <b>⚡ Hard Streak Mode:</b><br>• ⏱️ <b>60s Timer:</b> Solve each puzzle within 60 seconds.<br>• 🏆 <b>Global Hall of Fame:</b> Reaching a 10+ streak saves your record on the global leaderboard.<br>• ✏️ <b>Name Setting:</b> Leaving it blank registers as Anonymous.",
             best: "📌 <b>🏆 Best Winning Tile Mode:</b><br>• A mode where you guess the winning tile that forms the highest Han value.<br>• Assumes 'Riichi' and 'Menzen Tsumo' (Fully Concealed Hand), but ignores Dora and Red Dora.<br>• If there are multiple tiles with the same highest score, any of them will be counted as correct.<br>• After submission, a detailed analysis report of Han counts for winning tiles 1–9 will be provided.",
-            discard: "📌 <b>🀄 What to Discard? Mode:</b><br>• Select the <b>best discard tile</b> that achieves Tenpai and maximizes the total number of waiting tile copies from a 14-tile hand (13 hand tiles + 1 drawn tile).<br>Choose the tile that gives the widest acceptance even if it lowers the total hand score (Han).<br>• A waiting tile list and quantity analysis report for each discard will be provided after submission."
+            discard: "📌 <b>🀄 What to Discard? Mode:</b><br>• Select the <b>best discard tile</b> that achieves Tenpai and maximizes the total number of waiting tile copies from a 14-tile hand (13 hand tiles + 1 drawn tile).<br>• Choose the tile that gives the widest acceptance even if it lowers the total hand score (Han).<br>• If a 'Yakuman Tenpai' is possible, selecting that discard is also counted as correct.<br>• A waiting tile list and quantity analysis report for each discard will be provided after submission."
         },
 
         yaku: {
@@ -649,4 +698,3 @@ const TRANSLATIONS = {
         }
     }
 };
-

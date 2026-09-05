@@ -67,20 +67,15 @@ function getOrCreateUserId() {
     return userId;
 }
 
-/**
- * 💡 호출 시점의 현재 언어(t)를 반영하여 6개 게임 모드 리스트를 반환하는 함수
- */
-function getGameModes() {
-    return [
-        { id: 'mode0', name: t('modeVeryEasy') },
-        { id: 'mode1', name: t('modeEasy') },
-        { id: 'mode2', name: t('modeNormal') },
-        { id: 'mode3', name: t('modeHard') },
-        { id: 'mode4', name: t('modeBest') },
-        { id: 'mode5', name: t('modeDiscard') },
-        { id: 'mode6', name: t('modeStreak') }
-    ];
-}
+// 6개 게임 모드 정의
+const GAME_MODES = [
+    { id: 'mode1', name: t('modeEasy') },
+    { id: 'mode2', name: t('modeNormal') },
+    { id: 'mode3', name: t('modeHard') },
+    { id: 'mode4', name: t('modeBest') },
+    { id: 'mode5', name: t('modeDiscard') },
+    { id: 'mode6', name: t('modeStreak') }
+];
 
 /**
  * 저장된 기록 불러오기 (데이터가 없으면 0으로 초기화된 데이터 반환)
@@ -93,7 +88,7 @@ function getUserStats() {
 
     // 기본 데이터 구조 (현재는 저장된 데이터가 없으므로 0으로 초기화)
     const initialStats = {};
-    getGameModes().forEach(mode => {
+    GAME_MODES.forEach(mode => {
         initialStats[mode.id] = { playCount: 0, correct: 0, wrong: 0, max: 0 };
     });
     return initialStats;
@@ -109,10 +104,7 @@ function openStatsModal() {
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    // 모달을 열 때 최신 언어가 반영된 게임 모드 목록을 가져옴
-    const gameModes = getGameModes();
-
-    gameModes.forEach(mode => {
+    GAME_MODES.forEach(mode => {
         const data = stats[mode.id] || { playCount: 0, correct: 0, wrong: 0, max: 0 };
         
         // 미제출 카운트 계산

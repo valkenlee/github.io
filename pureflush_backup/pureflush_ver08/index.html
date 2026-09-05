@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 	<!-- 국문 기본 설정 -->
 	<meta name="description" content="청일색(清一色, Chinitsu) 텐파이 대기패를 몇 초 만에 맞힐 수 있나요? 복잡한 다면대기 문제를 풀고 당신의 마작 실력을 검증해 보세요!">
 	
@@ -11,9 +10,10 @@
 	<meta property="og:title" content="청일색 텐파이 대기패 퀴즈 | Chinitsu Quiz">
 	<meta property="og:description" content="마작 고수도 헷갈리는 청일색 다면대기! 당신은 모든 대기패를 찾을 수 있습니까? (日本語/中文/English Support)">
 	
+
     <script> 
-        window.MAIN_VER = "0.9"; 
-        window.JS_VER = "0.1a"; 
+        window.MAIN_VER = "0.8"; 
+        window.JS_VER = "0.1b"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -80,11 +80,12 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 data-i18n="stats.title">📊 나의 게임 기록</h2>
-        </div>
-        <div class="modal-header-id">
-            <span>🔑 PID: <strong id="modal-user-id-display">불러오는 중...</strong></span>
-            <button type="button" class="btn-change-id" onclick="regenerateUserId()" data-i18n="stats.btnChangeId">ID 변경</button>
-            <button type="button" class="btn-reset-stats" onclick="resetUserStats()" data-i18n="stats.btnResetStats">기록 삭제</button>
+            <div class="modal-header-actions" style="display: flex; gap: 6px; align-items: center; margin-left: auto; margin-right: 10px;">
+                <span>🔑 PID: <strong id="modal-user-id-display">불러오는 중...</strong></span>
+                <button type="button" class="btn-change-id" onclick="regenerateUserId()" data-i18n="stats.btnChangeId">ID 변경</button>
+                <button type="button" class="btn-reset-stats" onclick="resetUserStats()" data-i18n="stats.btnResetStats">기록 삭제</button>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeStatsModal()">&times;</button>
         </div>
         <div class="modal-body">
             <table class="stats-table">
@@ -105,20 +106,15 @@
                 </tbody>
             </table>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-modal-close-large" onclick="closeStatsModal()" data-i18n="stats.btnClose">닫기</button>
-        </div>
     </div>
 </div>
 
-<!-- 🎯 난이도 선택 & 모드 설명 영역 -->
-<div class="card difficulty-card">
+<div class="card">
     <div id="status-msg" data-i18n="loading" style="text-align:center; font-weight:bold; margin-bottom:12px; color:#e67e22;">
         📦 마작패 패키지를 읽어오는 중입니다...
     </div>
     
 	<div class="difficulty-group">
-		<button id="btn-mode-veryEasy" class="btn-diff btn-very-easy" onclick="selectMode('veryEasy')" data-i18n="modeVeryEasy">🌱 매우 쉬움 (혼일색)</button>
 		<button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" data-i18n="modeEasy">🌱 쉬움</button>
 		<button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" data-i18n="modeNormal">🌿 보통</button>
 		<button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" data-i18n="modeHard">🔥 어려움</button>
@@ -129,14 +125,7 @@
 
     <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
-    <div class="start-action-area">
-        <button id="btn-start-game" class="btn-start-game" onclick="startGame()" style="display: none;" data-i18n="btnStartGame">🎮 게임 시작하기</button>
-    </div>
-</div>
-
-<!-- 🀄 실제 게임 실행 영역 (시작 버튼을 눌러야 노출) -->
-<div class="card game-card" id="game-play-area" style="display: none;">
-    <div class="status-bar">
+    <div class="status-bar" style="margin-top: 15px;">
         <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승</span>
         <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초</span>
     </div>
@@ -153,17 +142,18 @@
         <!-- 손패 조작 컨트롤바 -->
         <div class="hand-controls">
             <div class="control-group">
-                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" data-i18n-title="zoomctrl.zoomOut" title="축소">🔍-</button>
-                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" data-i18n-title="zoomctrl.zoomIn" title="확대">🔍+</button>
-                <button type="button" class="btn-hand-ctrl" id="btn-line-toggle" data-i18n="zoomctrl.lineToggle">줄 바꿈 (1줄/2줄)</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" title="축소">🔍-</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" title="확대">🔍+</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-line-toggle">줄 바꿈 (1줄/2줄)</button>
             </div>
-            <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset" data-i18n="zoomctrl.reset">초기화 🔄</button>
-        </div>
-
+            <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset">초기화 🔄</button>
+	</div>
         <!-- 손패 출력 영역 -->
         <div class="hand-display" id="hand-container"></div>
     </div>
 </div>
+
+
 
 <!-- 🔒 히든 패 분석기 영역 -->
 <div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; background: #faf5ff;">
@@ -230,32 +220,30 @@
     </div>
 </div>
 
-<!-- 광고 통합 컨테이너 -->
-<div class="ad-container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin: 30px 0;">
-  
-  <!-- 왼쪽: 구글 애드센스 (300x250) -->
-  <div class="area_ad1" style="flex: 0 0 auto;">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
-    <ins class="adsbygoogle"
-         style="display:inline-block;width:300px;height:250px"
-         data-ad-client="ca-pub-9689426453798023"
-         data-ad-slot="2975777961"></ins>
-    <script>
-         (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
-
-  <!-- 오른쪽: 카카오 애드핏 (300x250) -->
-  <div class="area_ad2" style="width: 300px; height: 250px; flex: 0 0 auto; display: flex; justify-content: flex-end;">
-    <ins class="kakao_ad_area" style="display:none;"
-         data-ad-unit="DAN-lXwbvMYNnoA9RRWh"
-         data-ad-width="300"
-         data-ad-height="250"></ins>
-    <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
-  </div>
-
+<!-- ⬇️ 여기에 구글 애드센스 광고 코드를 넣으시면 됩니다 ⬇️ -->
+<div class="area_ad1" style="text-align: left; margin: 30px 0;">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023"
+       crossorigin="anonymous"></script>
+  <!-- valken.net 300x250 -->
+  <ins class="adsbygoogle"
+       style="display:inline-block;width:300px;height:250px"
+       data-ad-client="ca-pub-9689426453798023"
+       data-ad-slot="2975777961"></ins>
+  <script>
+       (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
 </div>
+<!-- ⬆️ 여기에 구글 애드센스 광고 코드를 넣으시면 됩니다 ⬆️ -->
 
+<!-- ⬇️ 여기에 카카오 애드핏 광고 코드를 넣으시면 됩니다 ⬇️ -->
+<div class="area_ad2" style="text-align: right; margin: 30px 0;">
+	<ins class="kakao_ad_area" style="display:none;"
+	data-ad-unit = "DAN-lXwbvMYNnoA9RRWh"
+	data-ad-width = "300"
+	data-ad-height = "250"></ins>
+	<script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
+</div>
+<!-- ⬆️ 여기에 카카오 애드핏 광고 코드를 넣으시면 됩니다 ⬆️ -->
 
 <script>
     // CSS 동적 로드 함수
@@ -276,11 +264,6 @@
 
     // 스크립트 로드 호출
     loadCSS('style.css');
-    loadCSS('style_header.css');
-    loadCSS('style_card.css');
-    loadCSS('style_modal.css');
-    loadCSS('style_halloffame.css');
-    loadCSS('style_hand.css');
 
     loadScript('script_global.js');
     loadScript('lang_tran_const.js');
@@ -290,7 +273,6 @@
     loadScript('script_loadimg.js');
     loadScript('script_gameboard.js');
     loadScript('script_leaderboard.js');
-    loadScript('script_yakuman.js');
     loadScript('script_generatequiz.js');
     loadScript('script_explanation.js');
     loadScript('script_streak_mode.js');

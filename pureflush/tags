@@ -4,21 +4,173 @@
 !_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
 !_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
 !_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
-!_TAG_PROC_CWD	/home/valken/work/valken_github/github.io/pureflush5/	//
+!_TAG_PROC_CWD	/home/valken/work/valken_github/github.io/pureflush9/	//
 !_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	5.9.0	//
+.analysis-report	style.css	/^.analysis-report {$/;"	c
+.badge-kanchan	style.css	/^.badge-kanchan { background-color: #2980b9; }$/;"	c
+.badge-penchan	style.css	/^.badge-penchan { background-color: #c0392b; }$/;"	c
+.badge-ryanmen	style.css	/^.badge-ryanmen { background-color: #27ae60; }$/;"	c
+.badge-shanpon	style.css	/^.badge-shanpon { background-color: #d35400; }$/;"	c
+.badge-tanki	style.css	/^.badge-tanki { background-color: #8e44ad; }$/;"	c
+.btn-best	style_card.css	/^.btn-best { background-color: #e84393; }$/;"	c
+.btn-change-id	style_modal.css	/^.btn-change-id { background-color: #3498db; }$/;"	c
+.btn-change-id	style_modal.css	/^.btn-change-id,$/;"	c
+.btn-change-id:active	style_modal.css	/^.btn-change-id:active,$/;"	c
+.btn-change-id:hover	style_modal.css	/^.btn-change-id:hover { background-color: #2980b9; }$/;"	c
+.btn-close-modal	style_modal.css	/^.btn-close-modal {$/;"	c
+.btn-diff	style_card.css	/^    .btn-diff { font-size: 14px; padding: 12px 2px; }$/;"	c
+.btn-diff	style_card.css	/^.btn-diff {$/;"	c
+.btn-diff.active	style_card.css	/^.btn-diff.active { $/;"	c
+.btn-diff:disabled	style_card.css	/^.btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; tr/;"	c
+.btn-diff:hover:not(:disabled)	style_card.css	/^.btn-diff:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }$/;"	c
+.btn-discard	style_card.css	/^.btn-discard { background-color: #16a085; }$/;"	c
+.btn-discard-tile	style_hand.css	/^.btn-discard-tile {$/;"	c
+.btn-discard-tile.selected	style_hand.css	/^.btn-discard-tile.selected {$/;"	c
+.btn-discard-tile.selected span	style_hand.css	/^.btn-discard-tile.selected span {$/;"	s
+.btn-discard-tile:hover	style_hand.css	/^.btn-discard-tile:hover {$/;"	c
+.btn-discard:hover:not(:disabled)	style_card.css	/^.btn-discard:hover:not(:disabled) { background-color: #1abc9c; }$/;"	c
+.btn-easy	style_card.css	/^.btn-easy { background-color: #27ae60; }$/;"	c
+.btn-hand-ctrl	style_hand.css	/^.btn-hand-ctrl {$/;"	c
+.btn-hand-ctrl.btn-reset	style_hand.css	/^.btn-hand-ctrl.btn-reset { background-color: #7f8c8d; }$/;"	c
+.btn-hand-ctrl:active	style_hand.css	/^.btn-hand-ctrl:active { transform: scale(0.95); }$/;"	c
+.btn-hand-ctrl:hover	style_hand.css	/^.btn-hand-ctrl:hover { background-color: #2c3e50; }$/;"	c
+.btn-hard	style_card.css	/^.btn-hard { background-color: #c0392b; }$/;"	c
+.btn-modal-close-large	style_modal.css	/^.btn-modal-close-large {$/;"	c
+.btn-modal-close-large:active	style_modal.css	/^.btn-modal-close-large:active { transform: scale(0.98); }$/;"	c
+.btn-modal-close-large:hover	style_modal.css	/^.btn-modal-close-large:hover { background-color: #95a5a6; }$/;"	c
+.btn-normal	style_card.css	/^.btn-normal { background-color: #e67e22; }$/;"	c
+.btn-number	style_hand.css	/^    .btn-number { padding: 10px 0; font-size: 16px; }$/;"	c
+.btn-number	style_hand.css	/^.btn-number {$/;"	c
+.btn-number.selected	style_hand.css	/^.btn-number.selected {$/;"	c
+.btn-reset-records	style_halloffame.css	/^.btn-reset-records {$/;"	c
+.btn-reset-records:hover	style_halloffame.css	/^.btn-reset-records:hover { background-color: #c0392b; }$/;"	c
+.btn-reset-stats	style_modal.css	/^.btn-reset-stats { background-color: #e74c3c; }$/;"	c
+.btn-reset-stats	style_modal.css	/^.btn-reset-stats {$/;"	c
+.btn-reset-stats:active	style_modal.css	/^.btn-reset-stats:active { transform: scale(0.96); }$/;"	c
+.btn-reset-stats:hover	style_modal.css	/^.btn-reset-stats:hover { background-color: #c0392b; }$/;"	c
+.btn-start-game	style_card.css	/^.btn-start-game {$/;"	c
+.btn-start-game:active	style_card.css	/^.btn-start-game:active {$/;"	c
+.btn-start-game:hover	style_card.css	/^.btn-start-game:hover {$/;"	c
+.btn-stats	style_header.css	/^.btn-stats {$/;"	c
+.btn-stats:hover	style_header.css	/^.btn-stats:hover {$/;"	c
+.btn-streak	style_card.css	/^.btn-streak { background-color: #8e44ad; }$/;"	c
+.btn-submit	style.css	/^.btn-submit {$/;"	c
+.btn-submit:hover	style.css	/^.btn-submit:hover { background-color: #2471a3; }$/;"	c
+.btn-very-easy	style_card.css	/^.btn-very-easy { background-color: #2ecc71; color: white; }$/;"	c
+.btn-very-easy:hover	style_card.css	/^.btn-very-easy:hover { background-color: #27ae60; }$/;"	c
+.card	style_card.css	/^    .card { padding: 15px 10px; }$/;"	c
+.card	style_card.css	/^.card {$/;"	c
+.chiitoi-tag	style.css	/^.chiitoi-tag { background-color: #8e44ad; }$/;"	c
+.control-group	style_hand.css	/^.control-group {$/;"	c
+.correct	style.css	/^.correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }$/;"	c
+.difficulty-card	style_card.css	/^.difficulty-card {$/;"	c
+.difficulty-group	style_card.css	/^    .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }$/;"	c
+.difficulty-group	style_card.css	/^.difficulty-group {$/;"	c
+.discard-selection-grid	style_hand.css	/^.discard-selection-grid {$/;"	c
+.explanation-box	style.css	/^.explanation-box {$/;"	c
+.explanation-box h4	style.css	/^.explanation-box h4 {$/;"	s
+.explanation-item	style.css	/^.explanation-item {$/;"	c
+.explanation-item b	style.css	/^.explanation-item b {$/;"	s
+.filled-slot	style.css	/^.filled-slot {$/;"	c
+.game-card	style_card.css	/^.game-card {$/;"	c
+.hall-of-fame	style_halloffame.css	/^.hall-of-fame {$/;"	c
+.hall-of-fame h3	style_halloffame.css	/^.hall-of-fame h3 {$/;"	s
+.hand-container-wrapper	style_hand.css	/^.hand-container-wrapper {$/;"	c
+.hand-controls	style_hand.css	/^.hand-controls {$/;"	c
+.hand-display	style_hand.css	/^    .hand-display { gap: 2px; }$/;"	c
+.hand-display	style_hand.css	/^.hand-display {$/;"	c
+.hand-display .tile-img	style_hand.css	/^.hand-display .tile-img {$/;"	c
+.hand-display.multi-line	style_hand.css	/^.hand-display.multi-line {$/;"	c
+.hand-display.single-line	style_hand.css	/^.hand-display.single-line {$/;"	c
+.header-container	style_header.css	/^.header-container {$/;"	c
+.header-container h1	style_header.css	/^.header-container h1 {$/;"	s
+.header-right-controls	style_header.css	/^.header-right-controls {$/;"	c
+.hint-badge	style_card.css	/^.hint-badge {$/;"	c
+.honor-meld-tile	style_card.css	/^.honor-meld-tile {$/;"	c
+.incorrect	style.css	/^.incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }$/;"	c
+.lang-select	style_header.css	/^.lang-select {$/;"	c
+.lang-select-wrapper	style_header.css	/^.lang-select-wrapper {$/;"	c
+.lang-select:hover	style_header.css	/^.lang-select:hover {$/;"	c
+.modal-body	style_modal.css	/^    .modal-body { padding: 10px; }$/;"	c
+.modal-body	style_modal.css	/^.modal-body {$/;"	c
+.modal-btn	style_modal.css	/^.modal-btn {$/;"	c
+.modal-btn:hover	style_modal.css	/^.modal-btn:hover { background: #71368a; }$/;"	c
+.modal-content	style_modal.css	/^    .modal-content { max-height: 95vh; }$/;"	c
+.modal-content	style_modal.css	/^.modal-content {$/;"	c
+.modal-footer	style_modal.css	/^.modal-footer {$/;"	c
+.modal-header	style_modal.css	/^.modal-header {$/;"	c
+.modal-header h2	style_modal.css	/^.modal-header h2 {$/;"	s
+.modal-header-id	style_modal.css	/^    .modal-header-id {$/;"	c
+.modal-header-id	style_modal.css	/^.modal-header-id {$/;"	c
+.modal-header-id strong	style_modal.css	/^.modal-header-id strong {$/;"	s
+.modal-overlay	style_modal.css	/^    .modal-overlay { padding: 10px; }$/;"	c
+.modal-overlay	style_modal.css	/^.modal-overlay {$/;"	c
+.mode-info-box	style_card.css	/^.mode-info-box {$/;"	c
+.name-input-box	style_halloffame.css	/^.name-input-box {$/;"	c
+.name-input-box button	style_halloffame.css	/^.name-input-box button {$/;"	s
+.name-input-box input	style_halloffame.css	/^.name-input-box input {$/;"	s
+.record-date	style_halloffame.css	/^    .record-date { display: none; }$/;"	c
+.record-date	style_halloffame.css	/^.record-date { color: #7f8c8d; font-size: 12px; width: 130px; text-align: right; }$/;"	c
+.record-item	style_halloffame.css	/^.record-item {$/;"	c
+.record-item:last-child	style_halloffame.css	/^.record-item:last-child { border-bottom: none; }$/;"	c
+.record-list	style_halloffame.css	/^.record-list {$/;"	c
+.record-name	style_halloffame.css	/^.record-name { font-weight: bold; flex: 1; margin: 0 10px; word-break: break-all; }$/;"	c
+.record-rank	style_halloffame.css	/^.record-rank { font-weight: bold; color: #8e44ad; width: 30px; }$/;"	c
+.record-score	style_halloffame.css	/^.record-score { font-weight: bold; color: #e74c3c; width: 60px; text-align: right; }$/;"	c
+.report-item.best	style.css	/^.report-item.best {$/;"	c
+.report-item.invalid	style.css	/^.report-item.invalid {$/;"	c
+.report-item.valid	style.css	/^.report-item.valid {$/;"	c
+.report-summary-box	style.css	/^.report-summary-box {$/;"	c
+.report-summary-box.fail	style.css	/^.report-summary-box.fail {$/;"	c
+.report-summary-box.success	style.css	/^.report-summary-box.success {$/;"	c
+.result-item.BEST	style.css	/^.result-item.BEST {$/;"	c
+.result-item.INVALID_4TILES	style.css	/^.result-item.INVALID_4TILES {$/;"	c
+.result-item.INVALID_NO_YAKU	style.css	/^.result-item.INVALID_NO_YAKU {$/;"	c
+.result-item.VALID	style.css	/^.result-item.VALID {$/;"	c
+.result-message	style.css	/^.result-message {$/;"	c
+.ryanpeikou-tag	style.css	/^.ryanpeikou-tag { background-color: #d35400; }$/;"	c
+.selection-grid	style_hand.css	/^    .selection-grid { gap: 4px; }$/;"	c
+.selection-grid	style_hand.css	/^.selection-grid {$/;"	c
+.special-tag	style.css	/^.special-tag {$/;"	c
+.start-action-area	style_card.css	/^.start-action-area {$/;"	c
+.stats-table	style_modal.css	/^.stats-table {$/;"	c
+.stats-table td	style_modal.css	/^.stats-table td {$/;"	s
+.stats-table td.txt-correct	style_modal.css	/^.stats-table td.txt-correct { color: #2ecc71 !important; font-weight: bold; }$/;"	c
+.stats-table td.txt-rate	style_modal.css	/^.stats-table td.txt-rate { color: #3498db !important; font-weight: bold; }$/;"	c
+.stats-table td.txt-wrong	style_modal.css	/^.stats-table td.txt-wrong { color: #e74c3c !important; font-weight: bold; }$/;"	c
+.stats-table th	style_modal.css	/^.stats-table th {$/;"	s
+.stats-table th	style_modal.css	/^.stats-table th, $/;"	s
+.status-bar	style_card.css	/^.status-bar {$/;"	c
+.streak-badge	style_card.css	/^.streak-badge {$/;"	c
+.tile-img	style_hand.css	/^    .tile-img { width: clamp(22px, 6.8vw, 36px); height: auto; aspect-ratio: 44 \/ 60; border-ra/;"	c
+.tile-img	style_hand.css	/^.tile-img {$/;"	c
+.timer-badge	style_card.css	/^.timer-badge {$/;"	c
+.timer-gauge-bar	style_card.css	/^.timer-gauge-bar {$/;"	c
+.timer-gauge-container	style_card.css	/^.timer-gauge-container {$/;"	c
+.user-info-bar	style_header.css	/^.user-info-bar {$/;"	c
+.user-info-bar strong	style_header.css	/^.user-info-bar strong {$/;"	s
+.wait-type-badge	style.css	/^.wait-type-badge {$/;"	c
 APP_VERSION	script_global.js	/^const APP_VERSION = window.MAIN_VER || "0.0";$/;"	C
 AnonymousFunctionaa900e790100	script_leaderboard.js	/^                complete: function(results) {$/;"	f
 AnonymousFunctionaa900e790200	script_leaderboard.js	/^                error: function(err) {$/;"	f
-GAME_MODES	script_id.js	/^const GAME_MODES = [$/;"	C
+Chun	script_loadimg.js	/^        'Chun': 'Chun.svg'$/;"	p	class:getTileImageSrc.honorFileMap
 GAS_CONFIG	script_leaderboard.js	/^const GAS_CONFIG = {$/;"	c
+HONORS	script_global.js	/^const HONORS = [$/;"	C
+Haku	script_loadimg.js	/^        'Haku': 'Haku.svg',$/;"	p	class:getTileImageSrc.honorFileMap
+Hatsu	script_loadimg.js	/^        'Hatsu': 'Hatsu.svg',$/;"	p	class:getTileImageSrc.honorFileMap
 ID_ADJS	script_id_const.js	/^const ID_ADJS = [$/;"	C
 ID_WORDS	script_id_const.js	/^const ID_WORDS = [$/;"	C
 MODE_ID_MAP	script_global.js	/^const MODE_ID_MAP = {$/;"	c
+Nan	script_loadimg.js	/^        'Nan': 'Nan.svg',$/;"	p	class:getTileImageSrc.honorFileMap
+Pei	script_loadimg.js	/^        'Pei': 'Pei.svg',$/;"	p	class:getTileImageSrc.honorFileMap
 SUITS	script_global.js	/^const SUITS = [$/;"	C
+Sha	script_loadimg.js	/^        'Sha': 'Shaa.svg',   \/\/ ZIP 내 파일명이 Shaa.svg$/;"	p	class:getTileImageSrc.honorFileMap
+Shaa	script_loadimg.js	/^        'Shaa': 'Shaa.svg',$/;"	p	class:getTileImageSrc.honorFileMap
 TRANSLATIONS	lang_tran_const.js	/^const TRANSLATIONS = {$/;"	c
+Ton	script_loadimg.js	/^        'Ton': 'Ton.svg',$/;"	p	class:getTileImageSrc.honorFileMap
 actualWaits	lang_tran_const.js	/^        actualWaits: "Winning Tiles",$/;"	p	class:TRANSLATIONS.en
 actualWaits	lang_tran_const.js	/^        actualWaits: "实际和牌",$/;"	p	class:TRANSLATIONS.zh_CN
 actualWaits	lang_tran_const.js	/^        actualWaits: "実際のアガリ牌",$/;"	p	class:TRANSLATIONS.ja
@@ -72,6 +224,7 @@ analyzerTitle	lang_tran_const.js	/^        analyzerTitle: "🕵️‍♂️ 隐�
 analyzerTitle	lang_tran_const.js	/^        analyzerTitle: "🕵️‍♂️ 隱藏手牌分析器（自由輸入）",$/;"	p	class:TRANSLATIONS.zh_TW
 analyzerTitle	lang_tran_const.js	/^        analyzerTitle: "🕵️‍♂️ 히든 패 분석기 (자유 패 입력)",$/;"	p	class:TRANSLATIONS.ko
 apiUrl	script_leaderboard.js	/^    apiUrl: "https:\/\/script.google.com\/macros\/s\/AKfycbw7IDyRIqGfps_5Yw7az-9_vPXajFKR-rZaCHp/;"	p	class:GAS_CONFIG
+app-version	index.html	/^    	<span id="app-version"><\/span>$/;"	I
 applyAutoLineMode	script_gameboard.js	/^function applyAutoLineMode() {$/;"	f
 applyCustomTextInput	script_hidden.js	/^function applyCustomTextInput() {$/;"	f
 applyTranslations	script_lang.js	/^function applyTranslations() {$/;"	f
@@ -116,11 +269,32 @@ bestResultIncorrectMsg	lang_tran_const.js	/^        bestResultIncorrectMsg: "您
 bestResultIncorrectMsg	lang_tran_const.js	/^        bestResultIncorrectMsg: "您選擇的 [{tile}] 號牌不是最高番數。<br>👉 番數/;"	p	class:TRANSLATIONS.zh_TW
 bestResultIncorrectMsg	lang_tran_const.js	/^        bestResultIncorrectMsg: "選択した [{tile}] 番の牌は最高翻数ではありませ/;"	p	class:TRANSLATIONS.ja
 bestResultIncorrectMsg	lang_tran_const.js	/^        bestResultIncorrectMsg: "선택하신 [{tile}]번 패는 최고 판수가 아닙니다.</;"	p	class:TRANSLATIONS.ko
+body	style.css	/^    body { padding: 10px; }$/;"	s
+body	style.css	/^body {$/;"	s
+btn-hand-reset	index.html	/^            <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset">초기화 /;"	I
+btn-line-toggle	index.html	/^                <button type="button" class="btn-hand-ctrl" id="btn-line-toggle">줄 바꿈 (1줄/;"	I
+btn-mode-best	index.html	/^		<button id="btn-mode-best" class="btn-diff btn-best" onclick="selectMode('best')" data-i18n="m/;"	I
+btn-mode-discard	index.html	/^		<button id="btn-mode-discard" class="btn-diff btn-discard" onclick="selectMode('discard')" dat/;"	I
+btn-mode-easy	index.html	/^		<button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" data-i18n="m/;"	I
+btn-mode-hard	index.html	/^		<button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" data-i18n="m/;"	I
+btn-mode-normal	index.html	/^		<button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" data-i/;"	I
+btn-mode-streak	index.html	/^		<button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" data-i/;"	I
+btn-mode-veryEasy	index.html	/^		<button id="btn-mode-veryEasy" class="btn-diff btn-very-easy" onclick="selectMode('veryEasy')"/;"	I
+btn-save-record	index.html	/^            <button id="btn-save-record" onclick="saveRecord()" data-i18n="btnSaveRecord">기록/;"	I
+btn-start-game	index.html	/^        <button id="btn-start-game" class="btn-start-game" onclick="startGame()" style="display:/;"	I
+btn-submit	index.html	/^    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()" data-i18n="btnSubm/;"	I
+btn-zoom-in	index.html	/^                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" title="확대">🔍/;"	I
+btn-zoom-out	index.html	/^                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" title="축소">🔍/;"	I
 btnChangeId	lang_tran_const.js	/^            btnChangeId: "Change PID",$/;"	p	class:TRANSLATIONS.en.stats
 btnChangeId	lang_tran_const.js	/^            btnChangeId: "PID 변경",$/;"	p	class:TRANSLATIONS.ko.stats
 btnChangeId	lang_tran_const.js	/^            btnChangeId: "PID変更",$/;"	p	class:TRANSLATIONS.ja.stats
 btnChangeId	lang_tran_const.js	/^            btnChangeId: "更改PID",$/;"	p	class:TRANSLATIONS.zh_CN.stats
 btnChangeId	lang_tran_const.js	/^            btnChangeId: "變更PID",$/;"	p	class:TRANSLATIONS.zh_TW.stats
+btnClose	lang_tran_const.js	/^            btnClose: "Close",$/;"	p	class:TRANSLATIONS.en.stats
+btnClose	lang_tran_const.js	/^            btnClose: "关闭",$/;"	p	class:TRANSLATIONS.zh_CN.stats
+btnClose	lang_tran_const.js	/^            btnClose: "閉じる",$/;"	p	class:TRANSLATIONS.ja.stats
+btnClose	lang_tran_const.js	/^            btnClose: "關閉",$/;"	p	class:TRANSLATIONS.zh_TW.stats
+btnClose	lang_tran_const.js	/^            btnClose: "닫기",$/;"	p	class:TRANSLATIONS.ko.stats
 btnNextSame	lang_tran_const.js	/^        btnNextSame: "Try Another Question",$/;"	p	class:TRANSLATIONS.en
 btnNextSame	lang_tran_const.js	/^        btnNextSame: "同じ難易度で再挑戦",$/;"	p	class:TRANSLATIONS.ja
 btnNextSame	lang_tran_const.js	/^        btnNextSame: "同难度再来一题",$/;"	p	class:TRANSLATIONS.zh_CN
@@ -148,9 +322,13 @@ btnSubmit	lang_tran_const.js	/^        btnSubmit: "提交并查看答案",$/;"	p
 btnSubmit	lang_tran_const.js	/^        btnSubmit: "제출 및 정답 확인",$/;"	p	class:TRANSLATIONS.ko
 calc_pan	script_best_mode.js	/^function calc_pan(suit, hand, card, reach, win_card) {$/;"	f
 canFormTwoIdenticalChowPairs	script_generatequiz.js	/^function canFormTwoIdenticalChowPairs(counts) {$/;"	f
+changeSuit	script_generatequiz.js	/^function changeSuit() {$/;"	f
 checkCompleteHand	script_generatequiz.js	/^function checkCompleteHand(counts, addedTile, originalHand) {$/;"	f
+checkDifficulty	script_generatequiz.js	/^function checkDifficulty(mode, hand) {$/;"	f
 checkRyanpeikouForm	script_generatequiz.js	/^function checkRyanpeikouForm(counts) {$/;"	f
 checkStreakRecordAndReset	script_streak_mode.js	/^function checkStreakRecordAndReset() {$/;"	f
+checkYakumanTenpai	script_yakuman.js	/^function checkYakumanTenpai(suit, hand) {$/;"	f
+checkYakumanWin	script_yakuman.js	/^function checkYakumanWin(suit, hand, winTile, isTsumo = true) {$/;"	f
 check_best_pan	script_best_mode.js	/^function check_best_pan(suit, hand, card, reach, win_card) {$/;"	f
 check_flush_tenpai	script_discard_mode.js	/^function check_flush_tenpai(suit, hand, new_card, riichi = 1, discard = []) {$/;"	f
 chiitoi	lang_tran_const.js	/^            chiitoi: "Chiitoitsu",$/;"	p	class:TRANSLATIONS.en.yaku
@@ -180,6 +358,7 @@ chuuren	lang_tran_const.js	/^            chuuren: "九蓮寶燈",$/;"	p	class:TR
 chuuren	lang_tran_const.js	/^            chuuren: "구련보등",$/;"	p	class:TRANSLATIONS.ko.yaku
 classifyWaitTypes	script_generatequiz.js	/^function classifyWaitTypes(decomp, addedTile, originalHand) {$/;"	f
 clearCustomHand	script_hidden.js	/^function clearCustomHand() {$/;"	f
+clearStreakTimer	script_streak_mode.js	/^function clearStreakTimer() {$/;"	f
 closeStatsModal	script_id.js	/^function closeStatsModal() {$/;"	f
 confirmReset	lang_tran_const.js	/^            confirmReset: "Are you sure you want to delete all game records?"$/;"	p	class:TRANSLATIONS.en.stats
 confirmReset	lang_tran_const.js	/^            confirmReset: "本当にすべてのゲーム記録を削除しますか？"$/;"	p	class:TRANSLATIONS.ja.stats
@@ -204,12 +383,16 @@ correct	lang_tran_const.js	/^        correct: "🎉 正解です！",$/;"	p	clas
 correct	lang_tran_const.js	/^        correct: "🎉 정답입니다!",$/;"	p	class:TRANSLATIONS.ko
 correct	script_streak_mode.js	/^        stats[modeId] = { playCount: 0, correct: 0, wrong: 0, max: 0 };$/;"	p	class:processStreakResult.stats
 csvUrl	script_leaderboard.js	/^    csvUrl: "https:\/\/docs.google.com\/spreadsheets\/d\/e\/2PACX-1vTnJU4yDCDyeZZCmpkbogFP62WF_A/;"	p	class:GAS_CONFIG
-currentHand	script_global.js	/^let currentHand = [];$/;"	v
-currentMode	script_global.js	/^let currentMode = 'normal';$/;"	v
+currentHand	script_global.js	/^let currentHand = [];         \/\/ 숫자패 (수패 1~9)$/;"	v
+currentHonorHand	script_global.js	/^let currentHonorHand = [];    \/\/ 자패 (혼일색용 자패 목록, 예: [{code:'Ton', count:/;"	v
+currentMode	script_global.js	/^let currentMode = 'veryEasy'; \/\/ 기본 선택 모드를 매우 쉬움으로 배치$/;"	v
 currentSuitObj	script_global.js	/^let currentSuitObj = null;$/;"	v
+custom-hand-container	index.html	/^        <div class="hand-display" id="custom-hand-container">$/;"	I
+custom-result	index.html	/^    <div id="custom-result" class="result-message" style="display: none;"><\/div>$/;"	I
+custom-text-input	index.html	/^            <input type="text" id="custom-text-input" data-i18n-placeholder="analyzerInputPlaceh/;"	I
+custom-tile-buttons	index.html	/^        <div class="selection-grid" id="custom-tile-buttons"><\/div>$/;"	I
 customHand	script_global.js	/^let customHand = [];$/;"	v
 customSuitCode	script_global.js	/^let customSuitCode = 'Man';$/;"	v
-decomps	script_generatequiz.js	/^    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: fal/;"	p	class:generateQuiz.resultData
 descriptions	lang_tran_const.js	/^        descriptions: {$/;"	c	class:TRANSLATIONS.en
 descriptions	lang_tran_const.js	/^        descriptions: {$/;"	c	class:TRANSLATIONS.ja
 descriptions	lang_tran_const.js	/^        descriptions: {$/;"	c	class:TRANSLATIONS.ko
@@ -221,6 +404,7 @@ discard	lang_tran_const.js	/^            discard: "📌 <b>🀄 打什么？模�
 discard	lang_tran_const.js	/^            discard: "📌 <b>🀄 打什麼？模式：<\/b><br>• 從14張手牌（13張 + 摸/;"	p	class:TRANSLATIONS.zh_TW.descriptions
 discard	lang_tran_const.js	/^            discard: "📌 <b>🀄 무엇을 버릴까? 모드:<\/b><br>• 14장의 손패(13장/;"	p	class:TRANSLATIONS.ko.descriptions
 discard	script_global.js	/^    'discard': 'mode5',$/;"	p	class:MODE_ID_MAP
+discard-selection-buttons	index.html	/^    <div class="discard-selection-grid" id="discard-selection-buttons" style="display: none;"><\//;"	I
 discardNewCard	script_discard_mode.js	/^let discardNewCard = null;$/;"	v
 displayUserId	script_id.js	/^function displayUserId() {$/;"	f
 easy	lang_tran_const.js	/^            easy: "📌 <b>🌱 Easy Mode:<\/b><br>• Simple hands with 1-2 winning tiles. Disp/;"	p	class:TRANSLATIONS.en.descriptions
@@ -229,6 +413,7 @@ easy	lang_tran_const.js	/^            easy: "📌 <b>🌱 简单模式:<\/b><br>
 easy	lang_tran_const.js	/^            easy: "📌 <b>🌱 簡單模式:<\/b><br>• 僅有 1~2 個胡牌的簡單題目，/;"	p	class:TRANSLATIONS.zh_TW.descriptions
 easy	lang_tran_const.js	/^            easy: "📌 <b>🌱 쉬움 모드:<\/b><br>• 1~2개의 오름패만 존재하는 쉬/;"	p	class:TRANSLATIONS.ko.descriptions
 easy	script_global.js	/^    'easy': 'mode1',$/;"	p	class:MODE_ID_MAP
+easy-hint	index.html	/^        <div id="easy-hint" class="hint-badge" style="display: none;"><\/div>$/;"	I
 en	lang_tran_const.js	/^    en: {$/;"	c	class:TRANSLATIONS
 errInvalidHand	lang_tran_const.js	/^            errInvalidHand: "Invalid hand or winning tile input.",$/;"	p	class:TRANSLATIONS.en.bestReport
 errInvalidHand	lang_tran_const.js	/^            errInvalidHand: "不正な手牌またはアガリ牌の入力です。",$/;"	p	class:TRANSLATIONS.ja.bestReport
@@ -253,25 +438,33 @@ explanationTitle	lang_tran_const.js	/^        explanationTitle: "🔍 待ち牌�
 explanationTitle	lang_tran_const.js	/^        explanationTitle: "🔍 대기패별 대기 유형 및 손패 구조 해설",$/;"	p	class:TRANSLATIONS.ko
 findAllDecompositions	script_generatequiz.js	/^function findAllDecompositions(counts, addedTile, originalHand) {$/;"	f
 findDecompositions	script_best_mode.js	/^function findDecompositions(counts) {$/;"	f
+findDecompositionsForYakuman	script_yakuman.js	/^function findDecompositionsForYakuman(counts) {$/;"	f
 findMeldsRecursive	script_generatequiz.js	/^function findMeldsRecursive(counts, currentMelds, results) {$/;"	f
 formatTimestamp	script_leaderboard.js	/^function formatTimestamp(rawStr) {$/;"	f
+game-play-area	index.html	/^<div class="card game-card" id="game-play-area" style="display: none;">$/;"	I
 generateDiscardQuiz	script_discard_mode.js	/^function generateDiscardQuiz() {$/;"	f
+generateDiscardQuizData	script_discard_mode.js	/^function generateDiscardQuizData() {$/;"	f
 generateQuiz	script_generatequiz.js	/^function generateQuiz() {$/;"	f
+generateQuizData	script_generatequiz.js	/^function generateQuizData() {$/;"	f
 generateRandom13Tiles	script_generatequiz.js	/^function generateRandom13Tiles() {$/;"	f
 generateUniqueUserId	script_id.js	/^function generateUniqueUserId() {$/;"	f
+generateVeryEasyHand	script_generatequiz.js	/^function generateVeryEasyHand() {$/;"	f
 getAnswerString	script_explanation.js	/^function getAnswerString() {$/;"	f
 getAttributions	script_best_mode.js	/^function getAttributions(dec, winTile) {$/;"	f
 getDetailedYakuList	script_best_mode.js	/^function getDetailedYakuList(yakuKeys) {$/;"	f
+getGameModes	script_id.js	/^function getGameModes() {$/;"	f
 getOrCreateUserId	script_id.js	/^function getOrCreateUserId() {$/;"	f
 getRyanmenExplanationItems	script_explanation.js	/^function getRyanmenExplanationItems(d, validWaitsSet) {$/;"	f
 getSafeSuitCode	script_discard_mode.js	/^function getSafeSuitCode() {$/;"	f
 getSafeSuitNum	script_discard_mode.js	/^function getSafeSuitNum() {$/;"	f
 getShanponExplanationItems	script_explanation.js	/^function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {$/;"	f
 getSingleWaitExplanationItems	script_explanation.js	/^function getSingleWaitExplanationItems(d, tile, waitType, validWaitsSet) {$/;"	f
+getTileCounts	script_yakuman.js	/^function getTileCounts(handArr) {$/;"	f
 getTileImageSrc	script_loadimg.js	/^async function getTileImageSrc(suitCode, num) {$/;"	f
 getUserStats	script_id.js	/^function getUserStats() {$/;"	f
 getWaitTypeBadgeHtml	script_explanation.js	/^function getWaitTypeBadgeHtml(waitType) {$/;"	f
 getWinningTiles	script_generatequiz.js	/^function getWinningTiles(hand) {$/;"	f
+h1	style.css	/^h1 { $/;"	s
 hallOfFameLoading	lang_tran_const.js	/^        hallOfFameLoading: "Loading records...",$/;"	p	class:TRANSLATIONS.en
 hallOfFameLoading	lang_tran_const.js	/^        hallOfFameLoading: "正在加载纪录...",$/;"	p	class:TRANSLATIONS.zh_CN
 hallOfFameLoading	lang_tran_const.js	/^        hallOfFameLoading: "正在載入紀錄...",$/;"	p	class:TRANSLATIONS.zh_TW
@@ -292,6 +485,7 @@ han	lang_tran_const.js	/^            han: "{count}番",$/;"	p	class:TRANSLATIONS
 han	lang_tran_const.js	/^            han: "{count}番",$/;"	p	class:TRANSLATIONS.zh_TW.bestReport
 han	lang_tran_const.js	/^            han: "{count}翻",$/;"	p	class:TRANSLATIONS.ja.bestReport
 han	lang_tran_const.js	/^            han: "{count}판",$/;"	p	class:TRANSLATIONS.ko.bestReport
+hand-container	index.html	/^        <div class="hand-display" id="hand-container"><\/div>$/;"	I
 handScale	script_gameboard.js	/^let handScale = 1.0;          \/\/ 패 크기 비율 (0.6 ~ 1.5)$/;"	v
 handleBestModeSubmit	script_best_mode.js	/^function handleBestModeSubmit() {$/;"	f
 handleDiscardModeSubmit	script_discard_mode.js	/^function handleDiscardModeSubmit() {$/;"	f
@@ -303,11 +497,13 @@ hard	lang_tran_const.js	/^            hard: "📌 <b>🔥 困难模式:<\/b><br>
 hard	lang_tran_const.js	/^            hard: "📌 <b>🔥 困難模式:<\/b><br>• 複雜的多面聽牌型。<br>• 提/;"	p	class:TRANSLATIONS.zh_TW.descriptions
 hard	lang_tran_const.js	/^            hard: "📌 <b>🔥 어려움 모드:<\/b><br>• 기본적으로 여러 형태의 다/;"	p	class:TRANSLATIONS.ko.descriptions
 hard	script_global.js	/^    'hard': 'mode3',$/;"	p	class:MODE_ID_MAP
+hidden-analyzer	index.html	/^<div class="card" id="hidden-analyzer" style="display: none; border: 2px solid #8e44ad; backgrou/;"	I
 hintEasy	lang_tran_const.js	/^        hintEasy: "💡 Hint: There are {count} winning tile(s).",$/;"	p	class:TRANSLATIONS.en
 hintEasy	lang_tran_const.js	/^        hintEasy: "💡 ヒント: アガリ牌は全部で {count} 個あります。",$/;"	p	class:TRANSLATIONS.ja
 hintEasy	lang_tran_const.js	/^        hintEasy: "💡 提示: 共有 {count} 个和牌（听牌）。",$/;"	p	class:TRANSLATIONS.zh_CN
 hintEasy	lang_tran_const.js	/^        hintEasy: "💡 提示: 共有 {count} 個胡牌（聽牌）。",$/;"	p	class:TRANSLATIONS.zh_TW
 hintEasy	lang_tran_const.js	/^        hintEasy: "💡 힌트: 총 {count}개의 오름패가 있습니다.",$/;"	p	class:TRANSLATIONS.ko
+honorFileMap	script_loadimg.js	/^    const honorFileMap = {$/;"	c	class:getTileImageSrc
 iipeikou	lang_tran_const.js	/^            iipeikou: "Iipeikou",$/;"	p	class:TRANSLATIONS.en.yaku
 iipeikou	lang_tran_const.js	/^            iipeikou: "一杯口",$/;"	p	class:TRANSLATIONS.zh_CN.yaku
 iipeikou	lang_tran_const.js	/^            iipeikou: "一杯口",$/;"	p	class:TRANSLATIONS.zh_TW.yaku
@@ -344,11 +540,9 @@ invalidNoYaku	lang_tran_const.js	/^            invalidNoYaku: "0番 [錯誤: 無
 invalidNoYaku	lang_tran_const.js	/^            invalidNoYaku: "0番 [错误: 无役]",$/;"	p	class:TRANSLATIONS.zh_CN.bestReport
 invalidNoYaku	lang_tran_const.js	/^            invalidNoYaku: "0翻 [不正解: 役なし]",$/;"	p	class:TRANSLATIONS.ja.bestReport
 invalidNoYaku	lang_tran_const.js	/^            invalidNoYaku: "0판 [오답: 역 미성립]",$/;"	p	class:TRANSLATIONS.ko.bestReport
-isChiitoi	script_generatequiz.js	/^    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: fal/;"	p	class:generateQuiz.resultData
 isChiitoiHand	script_global.js	/^let isChiitoiHand = false;     $/;"	v
 isChiitoitsu	script_best_mode.js	/^function isChiitoitsu(counts) {$/;"	f
 isMultiLine	script_gameboard.js	/^let isMultiLine = false;      \/\/ true: 2줄, false: 1줄$/;"	v
-isRyanpeikou	script_generatequiz.js	/^    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: fal/;"	p	class:generateQuiz.resultData
 isRyanpeikouHand	script_global.js	/^let isRyanpeikouHand = false; $/;"	v
 isSubmitted	script_global.js	/^let isSubmitted = false;$/;"	v
 isWrappedEnvironment	script_hidden.js	/^function isWrappedEnvironment() {$/;"	f
@@ -384,6 +578,8 @@ labelValid	lang_tran_const.js	/^            labelValid: "⭕ [可和牌]",$/;"	p
 labelValid	lang_tran_const.js	/^            labelValid: "⭕ [可胡牌]",$/;"	p	class:TRANSLATIONS.zh_TW.bestReport
 labelValid	lang_tran_const.js	/^            labelValid: "⭕ [和了可能]",$/;"	p	class:TRANSLATIONS.ja.bestReport
 labelValid	lang_tran_const.js	/^            labelValid: "⭕ [화료 가능]",$/;"	p	class:TRANSLATIONS.ko.bestReport
+lang-select	index.html	/^		    <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">$/;"	I
+leaderboard-content	index.html	/^    <div id="leaderboard-content">$/;"	I
 loadLeaderboard	script_leaderboard.js	/^function loadLeaderboard() {$/;"	f
 loading	lang_tran_const.js	/^        loading: "📦 Loading Mahjong tile resources...",$/;"	p	class:TRANSLATIONS.en
 loading	lang_tran_const.js	/^        loading: "📦 正在加载麻将牌资源...",$/;"	p	class:TRANSLATIONS.zh_CN
@@ -400,6 +596,7 @@ loadingSuccess	lang_tran_const.js	/^        loadingSuccess: "✅ 牌の読み込
 loadingSuccess	lang_tran_const.js	/^        loadingSuccess: "✅ 麻将牌加载完成！请选择游戏模式。",$/;"	p	class:TRANSLATIONS.zh_CN
 loadingSuccess	lang_tran_const.js	/^        loadingSuccess: "✅ 麻將牌載入完成！請選擇遊戲模式。",$/;"	p	class:TRANSLATIONS.zh_TW
 loadingSuccess	lang_tran_const.js	/^        loadingSuccess: "✅ 마작패 로딩 완료! 원하시는 모드를 선택하세요.",$/;"	p	class:TRANSLATIONS.ko
+main-hand-wrapper	index.html	/^    <div class="hand-container-wrapper" id="main-hand-wrapper">$/;"	I
 max	script_streak_mode.js	/^        stats[modeId] = { playCount: 0, correct: 0, wrong: 0, max: 0 };$/;"	p	class:processStreakResult.stats
 maxScore	lang_tran_const.js	/^            maxScore: "Best Record",$/;"	p	class:TRANSLATIONS.en.stats
 maxScore	lang_tran_const.js	/^            maxScore: "最高紀錄",$/;"	p	class:TRANSLATIONS.zh_TW.stats
@@ -411,8 +608,8 @@ maxedNotice	lang_tran_const.js	/^        maxedNotice: "(※ {tiles} は手牌で
 maxedNotice	lang_tran_const.js	/^        maxedNotice: "(※ {tiles} 已經在手牌中使用4張，無法完成胡牌)",$/;"	p	class:TRANSLATIONS.zh_TW
 maxedNotice	lang_tran_const.js	/^        maxedNotice: "(※ {tiles} 已经被手牌使用4张，无法完成和牌)",$/;"	p	class:TRANSLATIONS.zh_CN
 maxedNotice	lang_tran_const.js	/^        maxedNotice: "(※ {tiles}번 패는 오름패 형태이지만 4장을 모두 사용 중/;"	p	class:TRANSLATIONS.ko
-maxedOut	script_generatequiz.js	/^    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: fal/;"	p	class:generateQuiz.resultData
 maxedOutWinningTiles	script_global.js	/^let maxedOutWinningTiles = [];$/;"	v
+modal-user-id-display	index.html	/^            <span>🔑 PID: <strong id="modal-user-id-display">불러오는 중...<\/strong><\/s/;"	I
 modalHofRule	lang_tran_const.js	/^        modalHofRule: "🏆 <b>Hall of Fame:<\/b> Reaching a <b>10+ streak<\/b> registers you on/;"	p	class:TRANSLATIONS.en
 modalHofRule	lang_tran_const.js	/^        modalHofRule: "🏆 <b>全球名人堂:<\/b> 达到 <b>10连胜以上<\/b> 即可登榜。/;"	p	class:TRANSLATIONS.zh_CN
 modalHofRule	lang_tran_const.js	/^        modalHofRule: "🏆 <b>全球名人堂:<\/b> 達到 <b>10連勝以上<\/b> 即可登榜。/;"	p	class:TRANSLATIONS.zh_TW
@@ -443,6 +640,7 @@ mode	lang_tran_const.js	/^            mode: "ゲームモード",$/;"	p	class:TR
 mode	lang_tran_const.js	/^            mode: "游戏模式",$/;"	p	class:TRANSLATIONS.zh_CN.stats
 mode	lang_tran_const.js	/^            mode: "遊戲模式",$/;"	p	class:TRANSLATIONS.zh_TW.stats
 mode	lang_tran_const.js	/^            mode: "게임 모드",$/;"	p	class:TRANSLATIONS.ko.stats
+mode-info-box	index.html	/^    <div id="mode-info-box" class="mode-info-box" style="display: none;"><\/div>$/;"	I
 modeBest	lang_tran_const.js	/^        modeBest: "🏆 Best Winning Tile",$/;"	p	class:TRANSLATIONS.en
 modeBest	lang_tran_const.js	/^        modeBest: "🏆 最佳和牌",$/;"	p	class:TRANSLATIONS.zh_CN
 modeBest	lang_tran_const.js	/^        modeBest: "🏆 最佳胡牌",$/;"	p	class:TRANSLATIONS.zh_TW
@@ -457,23 +655,25 @@ modeEasy	lang_tran_const.js	/^        modeEasy: "🌱 Easy",$/;"	p	class:TRANSLA
 modeEasy	lang_tran_const.js	/^        modeEasy: "🌱 初級",$/;"	p	class:TRANSLATIONS.ja
 modeEasy	lang_tran_const.js	/^        modeEasy: "🌱 简单",$/;"	p	class:TRANSLATIONS.zh_CN
 modeEasy	lang_tran_const.js	/^        modeEasy: "🌱 簡單",$/;"	p	class:TRANSLATIONS.zh_TW
-modeEasy	lang_tran_const.js	/^        modeEasy: "🌱 쉬움",$/;"	p	class:TRANSLATIONS.ko
+modeEasy	lang_tran_const.js	/^        modeEasy: "🌿 쉬움",$/;"	p	class:TRANSLATIONS.ko
 modeHard	lang_tran_const.js	/^        modeHard: "🔥 Hard",$/;"	p	class:TRANSLATIONS.en
 modeHard	lang_tran_const.js	/^        modeHard: "🔥 上級",$/;"	p	class:TRANSLATIONS.ja
 modeHard	lang_tran_const.js	/^        modeHard: "🔥 困难",$/;"	p	class:TRANSLATIONS.zh_CN
 modeHard	lang_tran_const.js	/^        modeHard: "🔥 困難",$/;"	p	class:TRANSLATIONS.zh_TW
 modeHard	lang_tran_const.js	/^        modeHard: "🔥 어려움",$/;"	p	class:TRANSLATIONS.ko
+modeNormal	lang_tran_const.js	/^        modeNormal: "🌾 보통",$/;"	p	class:TRANSLATIONS.ko
 modeNormal	lang_tran_const.js	/^        modeNormal: "🌿 Normal",$/;"	p	class:TRANSLATIONS.en
 modeNormal	lang_tran_const.js	/^        modeNormal: "🌿 中級",$/;"	p	class:TRANSLATIONS.ja
 modeNormal	lang_tran_const.js	/^        modeNormal: "🌿 普通",$/;"	p	class:TRANSLATIONS.zh_CN
 modeNormal	lang_tran_const.js	/^        modeNormal: "🌿 普通",$/;"	p	class:TRANSLATIONS.zh_TW
-modeNormal	lang_tran_const.js	/^        modeNormal: "🌿 보통",$/;"	p	class:TRANSLATIONS.ko
 modeStreak	lang_tran_const.js	/^        modeStreak: "⚡ Streak Mode",$/;"	p	class:TRANSLATIONS.en
 modeStreak	lang_tran_const.js	/^        modeStreak: "⚡ 连胜模式",$/;"	p	class:TRANSLATIONS.zh_CN
 modeStreak	lang_tran_const.js	/^        modeStreak: "⚡ 連勝モード",$/;"	p	class:TRANSLATIONS.ja
 modeStreak	lang_tran_const.js	/^        modeStreak: "⚡ 連勝模式",$/;"	p	class:TRANSLATIONS.zh_TW
 modeStreak	lang_tran_const.js	/^        modeStreak: "⚡ 연승 모드",$/;"	p	class:TRANSLATIONS.ko
+modeVeryEasy	lang_tran_const.js	/^        modeVeryEasy: "🌱 매우 쉬움",$/;"	p	class:TRANSLATIONS.ko
 name	script_leaderboard.js	/^        name: playerName,$/;"	p	class:saveRecord.payload
+name-input-container	index.html	/^    <div id="name-input-container" style="display: none;" class="hall-of-fame">$/;"	I
 normal	lang_tran_const.js	/^            normal: "📌 <b>🌿 Normal Mode:<\/b><br>• Standard hands, mostly with 2 winning/;"	p	class:TRANSLATIONS.en.descriptions
 normal	lang_tran_const.js	/^            normal: "📌 <b>🌿 中級モード:<\/b><br>• 主に2つ待ちを中心とした/;"	p	class:TRANSLATIONS.ja.descriptions
 normal	lang_tran_const.js	/^            normal: "📌 <b>🌿 普通模式:<\/b><br>• 以 2 个和牌为主的常见听牌/;"	p	class:TRANSLATIONS.zh_CN.descriptions
@@ -490,12 +690,15 @@ pinfu	lang_tran_const.js	/^            pinfu: "平和",$/;"	p	class:TRANSLATIONS
 pinfu	lang_tran_const.js	/^            pinfu: "平和",$/;"	p	class:TRANSLATIONS.zh_TW.yaku
 pinfu	lang_tran_const.js	/^            pinfu: "핑후",$/;"	p	class:TRANSLATIONS.ko.yaku
 playCount	script_streak_mode.js	/^        stats[modeId] = { playCount: 0, correct: 0, wrong: 0, max: 0 };$/;"	p	class:processStreakResult.stats
+player-name-input	index.html	/^            <input type="text" id="player-name-input" maxlength="20" data-i18n-placeholder="inpu/;"	I
 plays	lang_tran_const.js	/^            plays: "Plays",$/;"	p	class:TRANSLATIONS.en.stats
 plays	lang_tran_const.js	/^            plays: "プレイ回数",$/;"	p	class:TRANSLATIONS.ja.stats
 plays	lang_tran_const.js	/^            plays: "游戏次数",$/;"	p	class:TRANSLATIONS.zh_CN.stats
 plays	lang_tran_const.js	/^            plays: "遊戲次數",$/;"	p	class:TRANSLATIONS.zh_TW.stats
 plays	lang_tran_const.js	/^            plays: "게임 횟수",$/;"	p	class:TRANSLATIONS.ko.stats
 processStreakResult	script_streak_mode.js	/^function processStreakResult() {$/;"	f
+quiz-area	index.html	/^<div class="card" id="quiz-area" style="display: none;">$/;"	I
+quiz-instruction	index.html	/^	<span id="quiz-instruction" data-i18n="quizInstruction">오름패(대기패)가 되는 숫자를/;"	I
 quizInstruction	lang_tran_const.js	/^        quizInstruction: "Select <span style=\\"color: red;\\">ALL<\/span> tile numbers that com/;"	p	class:TRANSLATIONS.en
 quizInstruction	lang_tran_const.js	/^        quizInstruction: "アガリ牌（待ち牌）となる数字を<span style=\\"color: red/;"	p	class:TRANSLATIONS.ja
 quizInstruction	lang_tran_const.js	/^        quizInstruction: "請<span style=\\"color: red;\\">選擇所有<\/span>可以胡牌（聽/;"	p	class:TRANSLATIONS.zh_TW
@@ -506,10 +709,10 @@ quizInstructionBest	lang_tran_const.js	/^        quizInstructionBest: "最も高
 quizInstructionBest	lang_tran_const.js	/^        quizInstructionBest: "請選擇能組成最高番數（最佳番型）的胡牌：",$/;"	p	class:TRANSLATIONS.zh_TW
 quizInstructionBest	lang_tran_const.js	/^        quizInstructionBest: "请选择能组成最高番数（最佳番型）的和牌：",$/;"	p	class:TRANSLATIONS.zh_CN
 quizInstructionBest	lang_tran_const.js	/^        quizInstructionBest: "가장 높은 판수(최고의 역)를 만드는 오름패를 선택/;"	p	class:TRANSLATIONS.ko
-quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "Select <span style=\\"color: red;\\">ONLY ONE<\/span> number that/;"	p	class:TRANSLATIONS.en
+quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "Select <span style=\\"color: red;\\">ONLY ONE<\/span> optimal win/;"	p	class:TRANSLATIONS.en
 quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "アガリ牌となる数字を<span style=\\"color: red;\\">1つだ/;"	p	class:TRANSLATIONS.ja
-quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "請<span style=\\"color: red;\\">僅選擇一個<\/span>能成為/;"	p	class:TRANSLATIONS.zh_TW
-quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "请<span style=\\"color: red;\\">仅选择一个<\/span>能成为/;"	p	class:TRANSLATIONS.zh_CN
+quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "請<span style=\\"color: red;\\">僅選擇一個<\/span>最佳胡/;"	p	class:TRANSLATIONS.zh_TW
+quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "请<span style=\\"color: red;\\">仅选择一个<\/span>最佳和/;"	p	class:TRANSLATIONS.zh_CN
 quizInstruction_best	lang_tran_const.js	/^        quizInstruction_best: "오름패(대기패)를 <span style=\\"color: red;\\">하나만<\//;"	p	class:TRANSLATIONS.ko
 quizInstruction_discard	lang_tran_const.js	/^        quizInstruction_discard: "Select <span style=\\"color: red;\\">ONLY ONE<\/span> tile to /;"	p	class:TRANSLATIONS.en
 quizInstruction_discard	lang_tran_const.js	/^        quizInstruction_discard: "打牌（捨てる牌）を<span style=\\"color: red;\\">1つだ/;"	p	class:TRANSLATIONS.ja
@@ -531,6 +734,7 @@ reach	lang_tran_const.js	/^            reach: "リーチ",$/;"	p	class:TRANSLATI
 reach	lang_tran_const.js	/^            reach: "立直",$/;"	p	class:TRANSLATIONS.zh_CN.yaku
 reach	lang_tran_const.js	/^            reach: "立直",$/;"	p	class:TRANSLATIONS.zh_TW.yaku
 reach	lang_tran_const.js	/^            reach: "리치",$/;"	p	class:TRANSLATIONS.ko.yaku
+record-list-ul	index.html	/^        <ul class="record-list" id="record-list-ul">$/;"	I
 recordAnswerResult	script.js	/^function recordAnswerResult(isCorrect) {$/;"	f
 regenerateUserId	script_id.js	/^function regenerateUserId() {$/;"	f
 removeCustomTile	script_hidden.js	/^function removeCustomTile(index) {$/;"	f
@@ -538,12 +742,14 @@ renderBestPanAnalysisHTML	script_best_mode.js	/^function renderBestPanAnalysisHT
 renderButtons	script.js	/^function renderButtons() {$/;"	f
 renderCustomButtons	script_hidden.js	/^function renderCustomButtons() {$/;"	f
 renderDecompositionExplanation	script_explanation.js	/^function renderDecompositionExplanation() {$/;"	f
-renderDiscardButtons	script_discard_mode.js	/^function renderDiscardButtons() {$/;"	f
+renderDiscardQuizUI	script_discard_mode.js	/^function renderDiscardQuizUI() {$/;"	f
 renderDiscardReportHTML	script_discard_mode.js	/^function renderDiscardReportHTML(suitNum, hand13, newCard, userDiscard) {$/;"	f
 renderHand	script.js	/^async function renderHand() {$/;"	f
+renderHand	script_generatequiz.js	/^async function renderHand() {$/;"	f
 renderHandWithDrawnCard	script_discard_mode.js	/^async function renderHandWithDrawnCard() {$/;"	f
+renderQuizUI	script_generatequiz.js	/^function renderQuizUI() {$/;"	f
 resetUserStats	script_id.js	/^function resetUserStats() {$/;"	f
-resultData	script_generatequiz.js	/^    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: fal/;"	c	class:generateQuiz
+result	index.html	/^    <div id="result" class="result-message" style="display: none;"><\/div>$/;"	I
 ryanpeikou	lang_tran_const.js	/^            ryanpeikou: "Ryanpeikou",$/;"	p	class:TRANSLATIONS.en.yaku
 ryanpeikou	lang_tran_const.js	/^            ryanpeikou: "两杯口",$/;"	p	class:TRANSLATIONS.zh_CN.yaku
 ryanpeikou	lang_tran_const.js	/^            ryanpeikou: "二盃口",$/;"	p	class:TRANSLATIONS.ja.yaku
@@ -566,9 +772,11 @@ sanankou	lang_tran_const.js	/^            sanankou: "三暗刻",$/;"	p	class:TRA
 sanankou	lang_tran_const.js	/^            sanankou: "삼암각",$/;"	p	class:TRANSLATIONS.ko.yaku
 saveRecord	script_leaderboard.js	/^function saveRecord() {$/;"	f
 searchMelds	script_best_mode.js	/^function searchMelds(counts, startRank, currentMelds, callback) {$/;"	f
+searchMeldsForYakuman	script_yakuman.js	/^function searchMeldsForYakuman(counts, startRank, currentMelds, callback) {$/;"	f
 secretKey	script_leaderboard.js	/^    secretKey: "Mahjong_Quiz_Secret_Key_2026",$/;"	p	class:GAS_CONFIG
 selectMode	script.js	/^function selectMode(mode) {$/;"	f
 selectedTiles	script_global.js	/^let selectedTiles = new Set();$/;"	v
+selection-buttons	index.html	/^    <div class="selection-grid" id="selection-buttons"><\/div>$/;"	I
 setLanguage	script_lang.js	/^function setLanguage(lang) {$/;"	f
 shortcutHint	lang_tran_const.js	/^        shortcutHint: "(Shortcuts: 1-9, Enter)",$/;"	p	class:TRANSLATIONS.en
 shortcutHint	lang_tran_const.js	/^        shortcutHint: "(ショートカット: 1~9, Enter)",$/;"	p	class:TRANSLATIONS.ja
@@ -576,6 +784,7 @@ shortcutHint	lang_tran_const.js	/^        shortcutHint: "(快捷鍵: 1~9, Enter)
 shortcutHint	lang_tran_const.js	/^        shortcutHint: "(快捷键: 1~9, Enter)",$/;"	p	class:TRANSLATIONS.zh_CN
 shortcutHint	lang_tran_const.js	/^        shortcutHint: "(단축키: 1~9, Enter)",$/;"	p	class:TRANSLATIONS.ko
 signature	script_leaderboard.js	/^        signature: signature$/;"	p	class:saveRecord.payload
+startGame	script.js	/^function startGame() {$/;"	f
 startTimer	script_streak_mode.js	/^function startTimer() {$/;"	f
 stats	lang_tran_const.js	/^        stats: {$/;"	c	class:TRANSLATIONS.en
 stats	lang_tran_const.js	/^        stats: {$/;"	c	class:TRANSLATIONS.ja
@@ -583,6 +792,9 @@ stats	lang_tran_const.js	/^        stats: {$/;"	c	class:TRANSLATIONS.ko
 stats	lang_tran_const.js	/^        stats: {$/;"	c	class:TRANSLATIONS.zh_CN
 stats	lang_tran_const.js	/^        stats: {$/;"	c	class:TRANSLATIONS.zh_TW
 stats	script_streak_mode.js	/^        stats[modeId] = { playCount: 0, correct: 0, wrong: 0, max: 0 };$/;"	c	class:processStreakResult
+stats-modal	index.html	/^<div id="stats-modal" class="modal-overlay" style="display: none;">$/;"	I
+stats-table-body	index.html	/^                <tbody id="stats-table-body">$/;"	I
+status-msg	index.html	/^    <div id="status-msg" data-i18n="loading" style="text-align:center; font-weight:bold; margin-/;"	I
 streak	lang_tran_const.js	/^            streak: "📌 <b>⚡ Hard Streak Mode:<\/b><br>• ⏱️ <b>60s Timer:<\/b> Solve e/;"	p	class:TRANSLATIONS.en.descriptions
 streak	lang_tran_const.js	/^            streak: "📌 <b>⚡ 上級 連勝モード:<\/b><br>• ⏱️ <b>60秒制限:<\/b>/;"	p	class:TRANSLATIONS.ja.descriptions
 streak	lang_tran_const.js	/^            streak: "📌 <b>⚡ 困难连胜模式:<\/b><br>• ⏱️ <b>60秒限时:<\/b> 每/;"	p	class:TRANSLATIONS.zh_CN.descriptions
@@ -590,6 +802,7 @@ streak	lang_tran_const.js	/^            streak: "📌 <b>⚡ 困難連勝模式:
 streak	lang_tran_const.js	/^            streak: "📌 <b>⚡ 어려움 연승 모드:<\/b><br>• ⏱️ <b>60초 제한시간/;"	p	class:TRANSLATIONS.ko.descriptions
 streak	script_global.js	/^    'streak': 'mode6'$/;"	p	class:MODE_ID_MAP
 streak	script_leaderboard.js	/^        streak: streak,$/;"	p	class:saveRecord.payload
+streak-display	index.html	/^        <span id="streak-display" class="streak-badge" style="display: none;">🔥 현재 0연승/;"	I
 streakCount	lang_tran_const.js	/^        streakCount: "🔥 Current Streak: {count}",$/;"	p	class:TRANSLATIONS.en
 streakCount	lang_tran_const.js	/^        streakCount: "🔥 当前 {count} 连胜",$/;"	p	class:TRANSLATIONS.zh_CN
 streakCount	lang_tran_const.js	/^        streakCount: "🔥 現在 {count} 連勝中",$/;"	p	class:TRANSLATIONS.ja
@@ -624,6 +837,9 @@ timeout	lang_tran_const.js	/^        timeout: "⏰ 制限時間切れです！",
 timeout	lang_tran_const.js	/^        timeout: "⏰ 时间到！",$/;"	p	class:TRANSLATIONS.zh_CN
 timeout	lang_tran_const.js	/^        timeout: "⏰ 時間到！",$/;"	p	class:TRANSLATIONS.zh_TW
 timeout	lang_tran_const.js	/^        timeout: "⏰ 시간 초과로 실패했습니다!",$/;"	p	class:TRANSLATIONS.ko
+timer-display	index.html	/^        <span id="timer-display" class="timer-badge" style="display: none;">⏱️ 60초<\/span>$/;"	I
+timer-gauge-bar	index.html	/^        <div id="timer-gauge-bar" class="timer-gauge-bar"><\/div>$/;"	I
+timer-gauge-container	index.html	/^    <div id="timer-gauge-container" class="timer-gauge-container" style="display: none;">$/;"	I
 timerInterval	script_global.js	/^let timerInterval = null;$/;"	v
 timerSeconds	lang_tran_const.js	/^        timerSeconds: "⏱️ {count}s",$/;"	p	class:TRANSLATIONS.en
 timerSeconds	lang_tran_const.js	/^        timerSeconds: "⏱️ {count}秒",$/;"	p	class:TRANSLATIONS.ja
@@ -641,6 +857,7 @@ title	lang_tran_const.js	/^        title: "清一色 听牌 猜谜",$/;"	p	class
 title	lang_tran_const.js	/^        title: "清一色 聴牌 待ち牌クイズ",$/;"	p	class:TRANSLATIONS.ja
 title	lang_tran_const.js	/^        title: "清一色 聽牌 猜謎",$/;"	p	class:TRANSLATIONS.zh_TW
 title	lang_tran_const.js	/^        title: "청일색 텐파이 대기패 퀴즈",$/;"	p	class:TRANSLATIONS.ko
+title-icon	index.html	/^        <span id="title-icon" style="cursor: pointer;">🀄<\/span> $/;"	I
 titleClickCount	script_global.js	/^let titleClickCount = 0;$/;"	v
 titleClickTimer	script_global.js	/^let titleClickTimer = null;$/;"	v
 toggleSelect	script.js	/^function toggleSelect(num, btn) {$/;"	f
@@ -664,7 +881,10 @@ updateCustomHandDisplay	script_hidden.js	/^async function updateCustomHandDispla
 updateHandDisplayLayout	script_gameboard.js	/^function updateHandDisplayLayout() {$/;"	f
 updateModeUI	script.js	/^function updateModeUI() {$/;"	f
 updateTimerDisplay	script_streak_mode.js	/^function updateTimerDisplay() {$/;"	f
+user-id-display	index.html	/^            <span>🔑 PID: <strong id="user-id-display">불러오는 중...<\/strong><\/span>$/;"	I
 userHasCustomized	script_gameboard.js	/^let userHasCustomized = false; \/\/ 사용자가 직접 조작했는지 여부$/;"	v
+veryEasy	lang_tran_const.js	/^            veryEasy: "📌 <b>매우 쉬움 모드 (혼일색):<\/b><br>• 자패(동\/서\/남/;"	p	class:TRANSLATIONS.ko.descriptions
+veryEasy	script_global.js	/^    'veryEasy': 'mode0',$/;"	p	class:MODE_ID_MAP
 waitKanchan	lang_tran_const.js	/^        waitKanchan: "Kanchan (Closed)",$/;"	p	class:TRANSLATIONS.en
 waitKanchan	lang_tran_const.js	/^        waitKanchan: "カンチャン",$/;"	p	class:TRANSLATIONS.ja
 waitKanchan	lang_tran_const.js	/^        waitKanchan: "嵌张",$/;"	p	class:TRANSLATIONS.zh_CN
@@ -690,7 +910,6 @@ waitTanki	lang_tran_const.js	/^        waitTanki: "单骑",$/;"	p	class:TRANSLAT
 waitTanki	lang_tran_const.js	/^        waitTanki: "単騎",$/;"	p	class:TRANSLATIONS.ja
 waitTanki	lang_tran_const.js	/^        waitTanki: "單騎",$/;"	p	class:TRANSLATIONS.zh_TW
 waitTanki	lang_tran_const.js	/^        waitTanki: "단기",$/;"	p	class:TRANSLATIONS.ko
-waits	script_generatequiz.js	/^    let resultData = { waits: [], maxedOut: [], decomps: {}, isChiitoi: false, isRyanpeikou: fal/;"	p	class:generateQuiz.resultData
 winningDecompositions	script_global.js	/^let winningDecompositions = {}; $/;"	v
 winningTiles	script_global.js	/^let winningTiles = [];$/;"	v
 wrong	lang_tran_const.js	/^            wrong: "Wrong",$/;"	p	class:TRANSLATIONS.en.stats
@@ -732,3 +951,8 @@ zh_TW	lang_tran_const.js	/^    zh_TW: {$/;"	c	class:TRANSLATIONS
 zipInstance	script_loadimg.js	/^let zipInstance = null;$/;"	v
 zipReadyPromise	script_loadimg.js	/^const zipReadyPromise = new Promise((resolve) => {$/;"	C
 zipReadyResolve	script_loadimg.js	/^let zipReadyResolve = null;$/;"	v
+오름패(대기패)가 되는 숫자를 모두 선택하세요: (단축키: 1~9, Enter)	index.html	/^    <\/h3>$/;"	j
+🀄 청일색 텐파이 대기패 퀴즈	index.html	/^    <\/h1>$/;"	h
+🏆 연승 모드 글로벌 명예의 전당 (Top 10)	index.html	/^    <h3 data-i18n="hallOfFameTitle">🏆 연승 모드 글로벌 명예의 전당 (Top 10)<\/h3>$/;"	j
+📊 나의 게임 기록	index.html	/^            <h2 data-i18n="stats.title">📊 나의 게임 기록<\/h2>$/;"	i
+🕵️‍♂️ 히든 패 분석기 (자유 패 입력)	index.html	/^    <h3 style="margin-top:0; color:#8e44ad; text-align:center;" data-i18n="analyzerTitle">🕵️/;"	j

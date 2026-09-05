@@ -2,17 +2,29 @@
    📌 연승(Streak) 모드 전용 스크립트 (script_streak_mode.js)
    ============================================================= */
 
+
+/**
+ * streak 모드 타이머 중지 및 초기화
+ */
+function clearStreakTimer() {
+    if (typeof timerInterval !== 'undefined' && timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
 /**
  * streak 모드 타이머 시작
  */
 function startTimer() {
+    clearStreakTimer(); // 기존 실행 중인 타이머가 있다면 먼저 제거
     timeLeft = 60;
     updateTimerDisplay();
     timerInterval = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
         if (timeLeft <= 0) {
-            clearInterval(timerInterval);
+            clearStreakTimer(); // 타임아웃 시 타이머 중지
             handleTimeout();
         }
     }, 1000);
@@ -38,18 +50,19 @@ function updateTimerDisplay() {
  */
 function handleTimeout() {
     isSubmitted = true;
+    const tr = typeof t === 'function' ? t : (k, d) => d || k;
     const resultDiv = document.getElementById('result');
     if (resultDiv) {
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `${t('timeout')}<br>👉 ${getAnswerString()}`;
+        resultDiv.innerHTML = `${tr('timeout', '⏰ 제한시간 초과!')}<br>👉 ${getAnswerString()}`;
     }
 
     checkStreakRecordAndReset();
 
     const submitBtn = document.getElementById('btn-submit');
     if (submitBtn) {
-        submitBtn.innerText = t('btnNextSame');
+        submitBtn.innerText = tr('btnNextSame', '다음 문제');
         submitBtn.style.backgroundColor = '#8e44ad';
     }
 }

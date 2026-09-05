@@ -17,36 +17,12 @@ function incrementPlayCount(modeKey) {
 }
 
 function selectMode(mode) {
-    if (currentMode !== mode) {
-        // 📌 모드가 변경될 때 실행 중인 streak 타이머 정리
-        clearStreakTimer();
-        streakCount = 0;
-    }
+    if (currentMode !== mode) streakCount = 0;
     currentMode = mode;
 
-    // 📌 모드 변경 즉시 UI(버튼 활성화 테두리 등) 업데이트
-    updateModeUI();
-
-    // 난이도를 선택했을 때는 게임판을 일단 숨기고 "게임 시작하기" 버튼 표시
-    const gamePlayArea = document.getElementById('game-play-area');
-    const quizArea = document.getElementById('quiz-area');
-    const startBtn = document.getElementById('btn-start-game');
-
-    if (gamePlayArea) gamePlayArea.style.display = 'none';
-    if (quizArea) quizArea.style.display = 'none';
-    if (startBtn) startBtn.style.display = 'inline-block';
-}
-
-function startGame() {
-    if (!currentMode) return;
-
-    const gamePlayArea = document.getElementById('game-play-area');
-    if (gamePlayArea) gamePlayArea.style.display = 'block';
-
     // 📌 해당 모드의 playCount 1 증가
-    incrementPlayCount(currentMode);
+    incrementPlayCount(mode);
 
-    // 실제 문제 및 판 생성
     generateQuiz();
 }
 
@@ -76,6 +52,23 @@ function updateModeUI() {
     infoBox.style.display = 'block';
 }
 
+
+async function renderHand() {
+    const container = document.getElementById('hand-container');
+    container.innerHTML = '';
+    for (const num of currentHand) {
+        const img = document.createElement('img');
+        img.src = await getTileImageSrc(currentSuitObj.code, num);
+        img.className = 'tile-img';
+        img.alt = `${currentSuitObj.code}${num}`;
+        container.appendChild(img);
+    }
+
+    // 레이아웃 스케일 및 줄 적용 (script_gameboard.js 연동)
+    if (typeof updateHandDisplayLayout === 'function') {
+        updateHandDisplayLayout();
+    }
+}
 
 /**
  * 선택 버튼 생성 함수 (모든 모드 공통 사용)
@@ -271,9 +264,7 @@ async function initApp() {
     loadLeaderboard();
     initTitleClickTrigger();
     renderCustomButtons();
-    
-    // 기본으로 easy 모드 선택 처리 (설명만 노출)
-    selectMode('easy');
+    updateModeUI();
 
     window.addEventListener('keydown', (e) => {
         if (document.activeElement.tagName === 'INPUT') return;

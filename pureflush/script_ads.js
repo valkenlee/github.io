@@ -1,4 +1,3 @@
-
 function initAppLanguage() {
     // 1. 번역 적용 및 <select id="lang-select"> UI를 currentLang 값으로 맞춤
     applyTranslations();
@@ -19,13 +18,15 @@ function updateAdVisibility(selectedLang) {
   const ad1Container = document.querySelector('.area_ad1');
   const ad2Container = document.querySelector('.area_ad2');   
   
-  // 한국어가 아닌 경우에만 광고 표시
-  if (selectedLang !== 'ko' && selectedLang !== 'ko_KR') {
-    ad1Container.style.display = 'block';
-    ad2Container.style.display = 'block';     
+  if (!ad1Container || !ad2Container) return;
+
+  // 한국어가 아닌 경우에만 광고 표시 ('ko', 'ko_KR', 'ko-KR' 모두 대응)
+  if (selectedLang !== 'ko' && selectedLang !== 'ko_KR' && selectedLang !== 'ko-KR') {
+    ad1Container.style.setProperty('display', 'block', 'important');
+    ad2Container.style.setProperty('display', 'flex', 'important');     
   } else {
-    ad1Container.style.display = 'none';
-    ad2Container.style.display = 'none';     
+    ad1Container.style.setProperty('display', 'none', 'important');
+    ad2Container.style.setProperty('display', 'none', 'important');     
   }
 }
 

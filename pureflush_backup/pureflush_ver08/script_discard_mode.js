@@ -180,39 +180,15 @@ function check_flush_tenpai(suit, hand, new_card, riichi = 1, discard = []) {
             const isFuriten = waits.some(w => discard.includes(w));
             const yakuList = ["청일색(清一色)"];
             let expectedHan = 6;
-            let isYakuman = false;
 
             if (riichi === 1) {
                 yakuList.push("리치(立直)");
                 expectedHan += 1;
             }
 
-            // script_yakuman.js 연동하여 역만 텐파이 검증
-            let yakumanNames = [];
-            if (typeof checkYakumanTenpai === "function") {
-                const remainingHand13 = [];
-                for (let i = 1; i <= 9; i++) {
-                    for (let c = 0; c < hand14[i]; c++) {
-                        remainingHand13.push(i);
-                    }
-                }
-                const yakumanCheck = checkYakumanTenpai(suit, remainingHand13);
-                if (yakumanCheck.isYakumanTenpai) {
-                    isYakuman = true;
-                    expectedHan = 13;
-                    yakumanNames = yakumanCheck.possibleYakuman;
-                    yakumanNames.forEach(yKey => {
-                        const translated = typeof t === 'function' ? t(yKey) : yKey;
-                        yakuList.unshift(translated);
-                    });
-                }
-            }
-
-            // 구련보등(9면 대기) 특수 체크
-            if (waits.length === 9 && !isYakuman) {
+            if (waits.length === 9) {
                 yakuList.unshift("순정 구련보등(九蓮寶燈)");
                 expectedHan = 13;
-                isYakuman = true;
             }
 
             let pekoCount = 0;
@@ -239,9 +215,7 @@ function check_flush_tenpai(suit, hand, new_card, riichi = 1, discard = []) {
                 totalWaitsCount: totalWaitsCount,
                 isFuriten: isFuriten,
                 expectedHan: expectedHan,
-                isYakuman: isYakuman,
-                yakuList: yakuList,
-                yakumanNames: yakumanNames
+                yakuList: yakuList
             });
         }
 
@@ -256,13 +230,11 @@ function check_flush_tenpai(suit, hand, new_card, riichi = 1, discard = []) {
 // =================================================================
 let discardNewCard = null;
 
+// 버림패 퀴즈 문제 생성
+function generateDiscardQuiz() {
+    isSubmitted = false; // 📌 제출 상태 초기화 추가
 
-/**
- * 버림패 퀴즈 데이터를 생성하고 관련 상태를 업데이트합니다.
- */
-function generateDiscardQuizData() {
-    isSubmitted = false;
-
+    // 1. 실행 중인 streak 타이머 정지 (타이머 변수명에 맞게 확인)
     if (typeof timer !== 'undefined' && timer) {
         clearInterval(timer);
         timer = null;
@@ -271,6 +243,28 @@ function generateDiscardQuizData() {
         clearInterval(timerId);
         timerId = null;
     }
+
+    // 2. 다른 모드 전용 UI 요소 숨김 처리
+    const hintElem = document.getElementById('easy-hint');
+    const streakElem = document.getElementById('streak-display');
+    const timerElem = document.getElementById('timer-display');
+    const timerGaugeContainer = document.getElementById('timer-gauge-container');
+
+    if (hintElem) hintElem.style.display = 'none';
+    if (streakElem) streakElem.style.display = 'none';
+    if (timerElem) timerElem.style.display = 'none';
+    if (timerGaugeContainer) timerGaugeContainer.style.display = 'none';
+
+    // 3. 이전 결과창 및 버튼 상태 초기화
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) {
+        resultDiv.style.display = 'none';
+        resultDiv.innerHTML = '';
+    }
+	
+    // Discard Quiz 생성
+    const quizArea = document.getElementById('quiz-area');
+    if (quizArea) quizArea.style.display = 'block';
 
     let hand13 = [];
     let newCard = 1;
@@ -290,37 +284,12 @@ function generateDiscardQuizData() {
         if (results.length > 0) break;
     }
 
-    // 전역 상태 업데이트
     currentHand = hand13;
     discardNewCard = newCard;
 
-    return true;
-}
-
-/**
- * 버림패 퀴즈 관련 UI를 업데이트 및 렌더링합니다.
- */
-function renderDiscardQuizUI() {
-    const hintElem = document.getElementById('easy-hint');
-    const streakElem = document.getElementById('streak-display');
-    const timerElem = document.getElementById('timer-display');
-    const timerGaugeContainer = document.getElementById('timer-gauge-container');
-
-    if (hintElem) hintElem.style.display = 'none';
-    if (streakElem) streakElem.style.display = 'none';
-    if (timerElem) timerElem.style.display = 'none';
-    if (timerGaugeContainer) timerGaugeContainer.style.display = 'none';
-
-    const resultDiv = document.getElementById('result');
-    if (resultDiv) {
-        resultDiv.style.display = 'none';
-        resultDiv.innerHTML = '';
-    }
-
-    const quizArea = document.getElementById('quiz-area');
-    if (quizArea) quizArea.style.display = 'block';
-
     renderHandWithDrawnCard();
+    
+    // 공통 버튼 생성 함수 호출 (script.js의 renderButtons 사용)
     renderButtons();
 
     const submitBtn = document.getElementById('btn-submit');
@@ -329,14 +298,6 @@ function renderDiscardQuizUI() {
         submitBtn.style.backgroundColor = '#2980b9';
     }
     selectedTiles.clear();
-}
-
-/**
- * 버림패 퀴즈를 생성하고 화면을 업데이트하는 메인 함수
- */
-function generateDiscardQuiz() {
-    generateDiscardQuizData();
-    renderDiscardQuizUI();
 }
 
 // 쯔모패(14번째 패) 출력
@@ -363,7 +324,8 @@ async function renderHandWithDrawnCard() {
         img.alt = `${suitCode}${discardNewCard}`;
         container.appendChild(img);
     }
-
+    
+    // 레이아웃 스케일 및 줄 적용 (script_gameboard.js 연동)
     if (typeof updateHandDisplayLayout === 'function') {
         updateHandDisplayLayout();
     }
@@ -371,7 +333,6 @@ async function renderHandWithDrawnCard() {
 
 // 버림패 분석 상세 리포트 HTML 생성
 function renderDiscardReportHTML(suitNum, hand13, newCard, userDiscard) {
-    const tr = typeof t === 'function' ? t : (k) => k;
     const results = check_flush_tenpai(suitNum, hand13, newCard, 1, []);
 
     let maxWaitCount = -1;
@@ -379,94 +340,47 @@ function renderDiscardReportHTML(suitNum, hand13, newCard, userDiscard) {
         if (r.totalWaitsCount > maxWaitCount) maxWaitCount = r.totalWaitsCount;
     });
 
-    const maxWaitDiscardTiles = results
+    const bestDiscardTiles = results
         .filter(r => r.totalWaitsCount === maxWaitCount)
         .map(r => r.discardTile);
 
-    const yakumanDiscardTiles = results
-        .filter(r => r.isYakuman)
-        .map(r => r.discardTile);
-
-    const userResult = results.find(r => r.discardTile === userDiscard);
-    const isUserMaxWait = maxWaitDiscardTiles.includes(userDiscard);
-    const isUserYakuman = userResult ? userResult.isYakuman : false;
-    const hasAnyYakumanOption = yakumanDiscardTiles.length > 0;
-
-    // 5가지 케이스 구분
-    let caseType = 5;
-    let isCorrect = false;
-
-    if (isUserMaxWait && isUserYakuman) {
-        caseType = 1;
-        isCorrect = true;
-    } else if (isUserMaxWait && !isUserYakuman) {
-        caseType = !hasAnyYakumanOption ? 2 : 3;
-        isCorrect = true;
-    } else if (!isUserMaxWait && isUserYakuman) {
-        caseType = 4;
-        isCorrect = true;
-    } else {
-        caseType = 5;
-        isCorrect = false;
-    }
+    const isUserBest = bestDiscardTiles.includes(userDiscard);
 
     let html = `<div class="explanation-box" style="margin-top:15px; text-align:left;">`;
-    html += `<h4>📊 ${tr('discardReport.title', '버림패별 텐파이 및 역만 효율 분석 리포트')}</h4>`;
+    html += `<h4>📊 버림패별 텐파이 효율 분석 리포트</h4>`;
     html += `<ul style="list-style:none; padding:0; margin:0; font-size:14px; line-height:1.8;">`;
 
     for (let d = 1; d <= 9; d++) {
         const res = results.find(r => r.discardTile === d);
+        
         let totalCount = hand13.filter(x => x === d).length + (newCard === d ? 1 : 0);
         if (totalCount === 0) continue;
 
         if (res) {
-            const isBest = maxWaitDiscardTiles.includes(d);
-            const isYak = res.isYakuman;
-            const waitStr = res.waits.map(w => `${w.tile}(${tr('discardReport.tileCount', { count: w.remain })})`).join(', ');
+            const isBest = bestDiscardTiles.includes(d);
+            const waitStr = res.waits.map(w => `${w.tile}(${w.remain}장)`).join(', ');
 
-            let yakumanNamesStr = "";
-            if (isYak && res.yakumanNames && res.yakumanNames.length > 0) {
-                const translatedNames = res.yakumanNames.map(yKey => tr(yKey));
-                yakumanNamesStr = translatedNames.join(', ');
-            } else if (isYak) {
-                yakumanNamesStr = tr('yakuman', '역만');
-            }
-
-            let badgeHtml = '';
-            if (isBest) badgeHtml += ` <span style="color:#27ae60; font-weight:bold;">[${tr('discardReport.tagMaxWait', '최다 대기패')}]</span>`;
-            if (isYak) badgeHtml += ` <span style="color:#8e44ad; font-weight:bold;">✨ [${tr('discardReport.tagYakumanTenpai', { yaku: yakumanNamesStr })}]</span>`;
-
-            if (isBest || isYak) {
-                const bg = isYak ? '#f4ecf7' : '#e8f8f5';
-                const border = isYak ? '#8e44ad' : '#2ecc71';
-                html += `<li class="report-item valid" style="font-weight:bold; color:#2c3e50; background-color:${bg}; padding:6px 10px; border-radius:4px; margin-bottom:4px; border:1px solid ${border};">`;
-                html += `⭐ <b>[${d}] ${tr('discardReport.discard', '버림')}</b> ➔ ${tr('discardReport.waits', '대기패')}: [${waitStr}] (${tr('discardReport.totalCount', { count: res.totalWaitsCount })})${badgeHtml}`;
-                
-                if (!isBest && isYak) {
-                    html += `<div style="font-size:12px; color:#7d3c98; margin-top:2px;">💡 ${tr('discardReport.tipYakumanOnly', { yaku: yakumanNamesStr })}</div>`;
-                } else if (isBest && isYak) {
-                    html += `<div style="font-size:12px; color:#1e8449; margin-top:2px;">💡 ${tr('discardReport.tipBestAndYakuman', { yaku: yakumanNamesStr })}</div>`;
-                }
-                
+            if (isBest) {
+                html += `<li class="report-item best" style="font-weight:bold; color:#1e8449; background-color:#e8f8f5; padding:6px 10px; border-radius:4px; margin-bottom:4px; border:1px solid #2ecc71;">`;
+                html += `🏆 <b>[${d}] 버림</b> ➔ 대기패: [${waitStr}] (총 <b>${res.totalWaitsCount}장</b>) <b>[최적의 버림패]</b>`;
                 html += `</li>`;
             } else {
-                html += `<li class="report-item valid" style="color:#2980b9; background-color:#ebf5fb; padding:4px 8px; border-radius:4px; margin-bottom:4px; border-left:4px solid #3498db;">`;
-                html += `⭕ <b>[${d}] ${tr('discardReport.discard', '버림')}</b> ➔ ${tr('discardReport.waits', '대기패')}: [${waitStr}] (${tr('discardReport.totalCount', { count: res.totalWaitsCount })})`;
+                html += `<li class="report-item valid" style="font-weight:bold; color:#2980b9; background-color:#ebf5fb; padding:4px 8px; border-radius:4px; margin-bottom:4px; border-left:4px solid #3498db;">`;
+                html += `⭕ <b>[${d}] 버림</b> ➔ 대기패: [${waitStr}] (총 <b>${res.totalWaitsCount}장</b>)`;
                 html += `</li>`;
             }
         } else {
             html += `<li class="report-item invalid" style="color:#a6acaf; background-color:#f4f6f7; padding:4px 8px; border-radius:4px; margin-bottom:4px;">`;
-            html += `❌ <b>[${d}] ${tr('discardReport.discard', '버림')}</b> ➔ ${tr('discardReport.noten', '노텐 (텐파이 불가)')}`;
+            html += `❌ <b>[${d}] 버림</b> ➔ 노텐 (텐파이 불가)`;
             html += `</li>`;
         }
     }
 
     html += `</ul></div>`;
-
-    return { html, isCorrect, caseType, userResult, maxWaitDiscardTiles, yakumanDiscardTiles, maxWaitCount };
+    return { html, isUserBest, bestDiscardTiles, maxWaitCount };
 }
 
-// 버림패 모드 제출 처리 함수
+// 제출 처리 함수
 function handleDiscardModeSubmit() {
     const resultDiv = document.getElementById('result');
     const btnSubmit = document.getElementById('btn-submit');
@@ -476,7 +390,7 @@ function handleDiscardModeSubmit() {
         if (!selectedTiles || selectedTiles.size === 0) {
             if (resultDiv) {
                 resultDiv.className = 'result-message incorrect';
-                resultDiv.innerHTML = `⚠️ <b>${tr('alertSelectDiscardTile', '버릴 패를 선택해 주세요.')}</b>`;
+                resultDiv.innerHTML = `⚠️ <b>버릴 패를 선택해 주세요.</b>`;
                 resultDiv.style.display = 'block';
             }
             return;
@@ -486,57 +400,24 @@ function handleDiscardModeSubmit() {
         const userChoice = Array.from(selectedTiles)[0];
         const suitNum = getSafeSuitNum();
 
-        const {
-            html,
-            isCorrect,
-            caseType,
-            userResult,
-            maxWaitDiscardTiles,
-            yakumanDiscardTiles,
-            maxWaitCount
-        } = renderDiscardReportHTML(suitNum, currentHand, discardNewCard, userChoice);
+        const { html, isUserBest, bestDiscardTiles, maxWaitCount } = renderDiscardReportHTML(
+            suitNum,
+            currentHand,
+            discardNewCard,
+            userChoice
+        );
 
-        recordAnswerResult(isCorrect);
+        // 무엇을 버릴까? 모드 정답/오답 통계 반영
+        recordAnswerResult(isUserBest);
+
         resultDiv.style.display = 'block';
 
-        const userWaitCount = userResult ? userResult.totalWaitsCount : 0;
-
-        if (caseType === 1) {
+        if (isUserBest) {
             resultDiv.className = 'result-message correct';
-            resultDiv.style.borderColor = '#2ecc71';
-            resultDiv.style.backgroundColor = '#e8f8f5';
-            resultDiv.style.color = '#1e8449';
-            resultDiv.innerHTML = `🎉 <b>${tr('discardResult.case1Title', '[정답] 완벽한 선택! (최다 대기 & 역만)')}</b><br>${tr('discardResult.case1Desc', { tile: userChoice, count: userWaitCount })}${html}`;
-        } else if (caseType === 2) {
-            resultDiv.className = 'result-message correct';
-            resultDiv.style.borderColor = '#3498db';
-            resultDiv.style.backgroundColor = '#ebf5fb';
-            resultDiv.style.color = '#21618c';
-            resultDiv.innerHTML = `⭕ <b>${tr('discardResult.case2Title', '[정답] 최적 대기패 선택!')}</b><br>${tr('discardResult.case2Desc', { tile: userChoice, count: userWaitCount })}${html}`;
-        } else if (caseType === 3) {
-            resultDiv.className = 'result-message correct';
-            resultDiv.style.borderColor = '#2980b9';
-            resultDiv.style.backgroundColor = '#eaf2f8';
-            resultDiv.style.color = '#1b4f72';
-            resultDiv.innerHTML = `⭕ <b>${tr('discardResult.case3Title', '[정답] 화료율 중심 선택! (역만 포기)')}</b><br>${tr('discardResult.case3Desc', { tile: userChoice, count: userWaitCount })}${html}`;
-        } else if (caseType === 4) {
-            resultDiv.className = 'result-message correct';
-            resultDiv.style.borderColor = '#8e44ad';
-            resultDiv.style.backgroundColor = '#f4ecf7';
-            resultDiv.style.color = '#6c3483';
-            resultDiv.innerHTML = `✨ <b>${tr('discardResult.case4Title', '[정답] 역만 노림수 인정!')}</b><br>${tr('discardResult.case4Desc', { tile: userChoice, count: userWaitCount })}${html}`;
+            resultDiv.innerHTML = `🎉 <b>정답입니다!</b><br>선택하신 [<b>${userChoice}</b>]번 패는 대기패가 가장 많은(총 <b>${maxWaitCount}장</b>) 최선의 버림패입니다.${html}`;
         } else {
             resultDiv.className = 'result-message incorrect';
-            resultDiv.style.borderColor = '#e74c3c';
-            resultDiv.style.backgroundColor = '#fadbd8';
-            resultDiv.style.color = '#78281f';
-
-            let recommendation = `👉 ${tr('discardResult.recMaxWait', { tiles: maxWaitDiscardTiles.join(', '), count: maxWaitCount })}`;
-            if (yakumanDiscardTiles.length > 0) {
-                recommendation += `<br>👉 ${tr('discardResult.recYakuman', { tiles: yakumanDiscardTiles.join(', ') })}`;
-            }
-
-            resultDiv.innerHTML = `❌ <b>${tr('incorrect', '오답입니다.')}</b><br>${tr('discardResult.case5Desc', { tile: userChoice })}<br>${recommendation}${html}`;
+            resultDiv.innerHTML = `❌ <b>오답입니다.</b><br>선택하신 [<b>${userChoice}</b>]번 패는 최선의 선택이 아닙니다.<br>👉 최적의 버림패: <b>[ ${bestDiscardTiles.join(', ')} ]</b> (${maxWaitCount}장 대기)${html}`;
         }
 
         if (btnSubmit) {
@@ -544,7 +425,9 @@ function handleDiscardModeSubmit() {
             btnSubmit.style.backgroundColor = '#27ae60';
         }
     } else {
+        // 📌 이미 제출된 상태에서 클릭 시 다음 퀴즈 생성
         incrementPlayCount(currentMode);
         generateQuiz();
     }
 }
+
