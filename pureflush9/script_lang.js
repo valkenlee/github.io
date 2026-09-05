@@ -1,61 +1,112 @@
+/* =============================================================
+   📌 언어 및 다국어 처리 모듈 (script_lang.js)
+   ============================================================= */
 
-function setLanguage(lang) {
-    if (!TRANSLATIONS[lang]) return;
-    window.currentLang = lang;
-    localStorage.setItem('app_lang', lang);
-    applyTranslations();
-    updateAdVisibility(lang);
-    if (typeof updateModeUI === 'function') updateModeUI();
+/**
+ * 점(.)으로 구분된 중첩 키(예: 'stats.title')를 객체에서 찾아 텍스트를 반환하는 함수
+ */
+function getNestedTranslation(obj, path) {
+    if (!obj || !path) return null;
+    return path.split('.').reduce((prev, curr) => (prev && prev[curr] !== undefined) ? prev[curr] : null, obj);
 }
 
+/**
+ * 전역 번역 헬퍼 함수
+ */
 function t(key, params = {}) {
-    const getNestedValue = (obj, path) => {
-        if (!obj || !path) return undefined;
-
-        const keys = String(path).split('.');
-        let current = obj;
-
-        for (const k of keys) {
-            if (current && typeof current === 'object' && k in current) {
-                current = current[k];
-            } else {
-                return undefined;
-            }
-        }
-        return current;
-    };
-
-    // 현재 언어에서 찾기 -> 없으면 한국어(ko)에서 찾기
-    let text = getNestedValue(TRANSLATIONS[window.currentLang], key) ||
-               getNestedValue(TRANSLATIONS['ko'], key);
-
-    // 찾지 못했거나 결과가 문자열이 아닌 경우(객체 그대로 반환 방지)
-    if (typeof text !== 'string') {
-        console.warn(`[i18n] 번역 키를 찾을 수 없습니다: "${key}"`);
-        return key;
-    }
-
-    // {count} 등 파라미터 치환
-    Object.keys(params).forEach(p => {
-        text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
+    const lang = window.currentLang || 'ko';
+    let text = getNestedTranslation(TRANSLATIONS[lang], key) || getNestedTranslation(TRANSLATIONS['ko'], key) || key;
+    
+    // {count}, {tiles} 등의 치환 파라미터 처리
+    Object.keys(params).forEach(pKey => {
+        text = text.replace(new RegExp(`\\{${pKey}\\}`, 'g'), params[pKey]);
     });
-
     return text;
 }
 
+/**
+ * 화면 전체의 data-i18n, data-i18n-placeholder 속성을 일괄 번역 적용
+ */
 function applyTranslations() {
+    const lang = window.currentLang || 'ko';
+
+    document.querySelectorAll('[data-i18n]').forEach(elem => {
+        const key = elem.getAttribute('data-i18n');
+        const translation = getNestedTranslation(TRANSLATIONS[lang], key);
+        if (translation) {
+            elem.innerHTML = translation;
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(elem => {
+        const key = elem.getAttribute('data-i18n-placeholder');
+        const translation = getNestedTranslation(TRANSLATIONS[lang], key);
+        if (translation) {
+            elem.placeholder = translation;
+        }
+    });
+
+    // select 드롭다운 선택값 유지
     const langSelect = document.getElementById('lang-select');
-    if (langSelect) langSelect.value = window.currentLang;
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        el.innerHTML = t(key);
-    });
-
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-placeholder');
-        el.placeholder = t(key);
-    });
+    if (langSelect) {
+        langSelect.value = lang;
+    }
 }
 
-document.addEventListener('DOMContentLoaded', applyTranslations);
+/**
+ * 언어 변경 메인 함수 (lang-select onchange 이벤트)
+ */
+function setLanguage(lang) {
+    if (typeof TRANSLATIONS === 'undefined' || !TRANSLATIONS[lang]) return;
+    
+    window.currentLang = lang;
+    localStorage.setItem('preferred_lang', lang);
+
+    // 1. DOM 정적 요소 번역
+    applyTranslations();
+
+    // 2. 모드 설명 박스 갱신
+    if (typeof updateModeUI === 'function') {
+        updateModeUI();
+    }
+
+    // 3. 게임 영역 동적 UI 텍스트 갱신
+    updateGameCardLanguage();
+
+    // 4. 광고 노출 제어
+    if (typeof updateAdVisibility === 'function') {
+        updateAdVisibility(lang);
+    }
+}
+
+/**
+ * game-card 영역 및 퀴즈 관련 동적 텍스트 언어 재설정
+ */
+function updateGameCardLanguage() {
+    // 힌트 갱신
+    const hintElem = document.getElementById('easy-hint');
+    if (hintElem && typeof winningTiles !== 'undefined' && winningTiles) {
+        hintElem.innerText = t('hintEasy', { count: winningTiles.length });
+    }
+
+    // 연승 횟수 갱신
+    const streakElem = document.getElementById('streak-display');
+    if (streakElem && typeof streakCount !== 'undefined') {
+        streakElem.innerText = t('streakCount', { count: streakCount });
+    }
+
+    // 문제 지시어 갱신
+    const quizInstElem = document.getElementById('quiz-instruction');
+    if (quizInstElem && typeof currentMode !== 'undefined') {
+        if (currentMode === 'best') {
+            quizInstElem.innerHTML = t('quizInstruction_best');
+        } else if (currentMode === 'discard') {
+            quizInstElem.innerHTML = t('quizInstruction_discard');
+        } else {
+            quizInstElem.innerHTML = t('quizInstruction');
+        }
+    }
+}
+
+// 초기 언어 전역 설정 (로컬스토리지 복원)
+window.currentLang = localStorage.getItem('preferred_lang') || 'ko';

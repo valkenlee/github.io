@@ -13,7 +13,7 @@
 	
     <script> 
         window.MAIN_VER = "0.9"; 
-        window.JS_VER = "0.1d"; 
+        window.JS_VER = "0.1a"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -118,6 +118,7 @@
     </div>
     
 	<div class="difficulty-group">
+		<button id="btn-mode-veryEasy" class="btn-diff btn-very-easy" onclick="selectMode('veryEasy')" data-i18n="modeVeryEasy">🌱 매우 쉬움 (혼일색)</button>
 		<button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" data-i18n="modeEasy">🌱 쉬움</button>
 		<button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" data-i18n="modeNormal">🌿 보통</button>
 		<button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" data-i18n="modeHard">🔥 어려움</button>
@@ -129,7 +130,7 @@
     <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
     <div class="start-action-area">
-        <button id="btn-start-game" class="btn-start-game" onclick="startGame()" style="display: none;">🎮 게임 시작하기</button>
+        <button id="btn-start-game" class="btn-start-game" onclick="startGame()" style="display: none;" data-i18n="btnStartGame">🎮 게임 시작하기</button>
     </div>
 </div>
 

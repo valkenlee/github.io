@@ -77,23 +77,6 @@ function updateModeUI() {
 }
 
 
-async function renderHand() {
-    const container = document.getElementById('hand-container');
-    container.innerHTML = '';
-    for (const num of currentHand) {
-        const img = document.createElement('img');
-        img.src = await getTileImageSrc(currentSuitObj.code, num);
-        img.className = 'tile-img';
-        img.alt = `${currentSuitObj.code}${num}`;
-        container.appendChild(img);
-    }
-
-    // 레이아웃 스케일 및 줄 적용 (script_gameboard.js 연동)
-    if (typeof updateHandDisplayLayout === 'function') {
-        updateHandDisplayLayout();
-    }
-}
-
 /**
  * 선택 버튼 생성 함수 (모든 모드 공통 사용)
  */

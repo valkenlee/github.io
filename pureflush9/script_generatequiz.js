@@ -12,7 +12,7 @@ function changeSuit() {
 
 /**
  * 패(hand)가 지정된 난이도(mode) 조건에 적합한지 판별합니다.
- * @param {string} mode - 난이도 ('easy', 'normal', 'hard')
+ * @param {string} mode - 난이도 ('veryEasy', 'easy', 'normal', 'hard')
  * @param {Array<number>} hand - 13장의 패 Array
  * @returns {boolean} 적합 여부
  */
@@ -20,7 +20,9 @@ function checkDifficulty(mode, hand) {
     const resultData = getWinningTiles(hand);
     const count = resultData.waits.length;
 
-    if (mode === 'easy') {
+    if (mode === 'veryEasy') {
+        return count >= 1 && count <= 2;
+    } else if (mode === 'easy') {
         return count >= 1 && count <= 2;
     } else if (mode === 'normal') {
         return count >= 2 && count <= 4;
@@ -31,6 +33,38 @@ function checkDifficulty(mode, hand) {
     }
 
     return false;
+}
+
+/**
+ * 매우 쉬움 (Very Easy) 모드용 13장 혼일색 손패 생성
+ * (1~2개의 자패 커츠 포함 + 나머지 수패)
+ */
+function generateVeryEasyHand() {
+    // 자패 커츠 개수 결정 (1개 또는 2개)
+    const meldCount = Math.random() < 0.5 ? 1 : 2;
+    const suitTileCount = 13 - (meldCount * 3); // 1개일 때 10장, 2개일 때 7장
+
+    // 무작위 자패 선정
+    const shuffledHonors = [...HONORS].sort(() => Math.random() - 0.5);
+    const chosenHonors = shuffledHonors.slice(0, meldCount);
+
+    // 수패 생성 (suitTileCount 매수만큼 추출)
+    let hand = [];
+    while (true) {
+        const slots = Array.from({ length: 36 }, (_, i) => i);
+        for (let i = slots.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [slots[i], slots[j]] = [slots[j], slots[i]];
+        }
+        hand = slots.slice(0, suitTileCount).map(slot => (slot % 9) + 1).sort((a, b) => a - b);
+
+        // 텐파이 형태 검증 및 대기 존재 여부 확인
+        if (checkDifficulty('veryEasy', hand)) {
+            break;
+        }
+    }
+
+    return { suitHand: hand, honorMelds: chosenHonors };
 }
 
 /**
@@ -59,12 +93,18 @@ function generateQuizData() {
     }
 
     let hand = [];
+    currentHonorHand = [];
 
-    // 적합한 난이도의 패가 나올 때까지 반복
-    while (true) {
-        hand = generateRandom13Tiles();
-        if (checkDifficulty(targetDifficulty, hand)) {
-            break;
+    if (currentMode === 'veryEasy') {
+        const generated = generateVeryEasyHand();
+        hand = generated.suitHand;
+        currentHonorHand = generated.honorMelds; // 울어둔 자패 커츠 저장
+    } else {
+        while (true) {
+            hand = generateRandom13Tiles();
+            if (checkDifficulty(targetDifficulty, hand)) {
+                break;
+            }
         }
     }
 
@@ -83,7 +123,67 @@ function generateQuizData() {
 }
 
 /**
- * 현재 상태에 맞춰 화면(UI)을 업데이트 및 렌더링합니다.
+ * 손패 화면 렌더링 (매우 쉬움 모드의 자패 울음패 포함)
+ */
+async function renderHand() {
+    const container = document.getElementById('hand-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // 1. 수패(만/통/삭) 렌더링
+    for (const num of currentHand) {
+        const img = document.createElement('img');
+        img.src = await getTileImageSrc(currentSuitObj.code, num);
+        img.className = 'tile-img';
+        img.alt = `${currentSuitObj.code}${num}`;
+        container.appendChild(img);
+    }
+
+	// 2. 매우 쉬움(Very Easy) 모드 자패 커츠(울은 패) 우측 배치
+	if (currentMode === 'veryEasy' && currentHonorHand && currentHonorHand.length > 0) {
+	    const meldDivider = document.createElement('span');
+	    meldDivider.style.display = 'inline-block';
+	    meldDivider.style.width = '2px';
+	    meldDivider.style.height = '40px';
+	    meldDivider.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+	    meldDivider.style.margin = '0 10px';
+	    meldDivider.style.verticalAlign = 'middle';
+	    container.appendChild(meldDivider);
+
+	    for (const honor of currentHonorHand) {
+            // 객체 형태, 문자열 형태, 숫자 형태에 맞게 자패 코드 추출
+            let honorCode = honor;
+            if (typeof honor === 'object' && honor !== null) {
+                honorCode = honor.code || honor.num || honor.name;
+            }
+
+            // 이미지 경로 가져오기 테스트용 로그 확인
+            const imgSrc = await getTileImageSrc(honorCode, '');
+
+            for (let i = 0; i < 3; i++) {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.className = 'tile-img honor-meld-tile';
+                img.alt = String(honorCode);
+
+                // [강제 스타일 적용] 이미지가 잘 보이는지 테스트
+                img.style.width = '40px'; 
+                img.style.height = 'auto';
+                img.style.display = 'inline-block';
+                img.style.visibility = 'visible';
+
+                container.appendChild(img);
+            }
+	    }
+	}
+
+    if (typeof updateHandDisplayLayout === 'function') {
+        updateHandDisplayLayout();
+    }
+}
+
+/**
+ * UI 업데이트 및 힌트 영역 처리
  */
 function renderQuizUI() {
     updateModeUI();
@@ -96,13 +196,15 @@ function renderQuizUI() {
     const timerElem = document.getElementById('timer-display');
     const timerGaugeContainer = document.getElementById('timer-gauge-container');
 
-    if (currentMode === 'easy') {
+    // 힌트 텍스트 갱신
+    if (currentMode === 'veryEasy' || currentMode === 'easy') {
         hintElem.innerText = t('hintEasy', { count: winningTiles.length });
         hintElem.style.display = 'inline-block';
     } else {
         hintElem.style.display = 'none';
     }
 
+    // 연승 모드 텍스트 갱신
     if (currentMode === 'streak') {
         streakElem.innerText = t('streakCount', { count: streakCount });
         streakElem.style.display = 'inline-block';
@@ -113,6 +215,18 @@ function renderQuizUI() {
         streakElem.style.display = 'none';
         timerElem.style.display = 'none';
         timerGaugeContainer.style.display = 'none';
+    }
+
+    // [추가] 모드별 문제 지시어(quizInstruction) 언어 적용
+    const quizInstElem = document.getElementById('quiz-instruction');
+    if (quizInstElem) {
+        if (currentMode === 'best') {
+            quizInstElem.innerHTML = t('quizInstruction_best');
+        } else if (currentMode === 'discard') {
+            quizInstElem.innerHTML = t('quizInstruction_discard');
+        } else {
+            quizInstElem.innerHTML = t('quizInstruction');
+        }
     }
 
     const submitBtn = document.getElementById('btn-submit');

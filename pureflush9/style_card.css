@@ -74,6 +74,8 @@
     box-shadow: 0 0 10px rgba(26, 115, 232, 0.6);
 }
 
+.btn-very-easy { background-color: #2ecc71; color: white; }
+.btn-very-easy:hover { background-color: #27ae60; }
 .btn-easy { background-color: #27ae60; }
 .btn-normal { background-color: #e67e22; }
 .btn-hard { background-color: #c0392b; }
@@ -81,6 +83,12 @@
 .btn-best { background-color: #e84393; }
 .btn-discard { background-color: #16a085; }
 .btn-discard:hover:not(:disabled) { background-color: #1abc9c; }
+
+/* 울은 자패 구분 스타일 */
+.honor-meld-tile {
+    opacity: 0.9;
+    filter: brightness(0.95);
+}
 
 /* 상태바 및 타이머/연승 표시 */
 .status-bar {

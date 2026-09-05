@@ -72,6 +72,7 @@ function getOrCreateUserId() {
  */
 function getGameModes() {
     return [
+        { id: 'mode0', name: t('modeVeryEasy') },
         { id: 'mode1', name: t('modeEasy') },
         { id: 'mode2', name: t('modeNormal') },
         { id: 'mode3', name: t('modeHard') },
