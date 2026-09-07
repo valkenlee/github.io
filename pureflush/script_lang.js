@@ -70,10 +70,17 @@ function setLanguage(lang) {
         updateModeUI();
     }
 
-    // 3. 게임 영역 동적 UI 텍스트 갱신
+    // 3. 게임 기록 테이블(모드명 포함) 동적 재로딩
+    if (typeof renderUserStatsTable === 'function') {
+        renderUserStatsTable();
+    } else if (typeof renderStatsTable === 'function') {
+        renderStatsTable();
+    }
+
+    // 4. 게임 영역 동적 UI 텍스트 갱신
     updateGameCardLanguage();
 
-    // 4. 광고 노출 제어
+    // 5. 광고 노출 제어
     if (typeof updateAdVisibility === 'function') {
         updateAdVisibility(lang);
     }
@@ -110,3 +117,63 @@ function updateGameCardLanguage() {
 
 // 초기 언어 전역 설정 (로컬스토리지 복원)
 window.currentLang = localStorage.getItem('preferred_lang') || 'ko';
+
+
+// 언어 데이터 맵 (선택 시 UI 동적 반영용)
+const LANG_DATA = {
+    'ko': { label: '한국어', flags: ['flag/Flag_of_South_Korea.svg'] },
+    'ja': { label: '日本語', flags: ['flag/Flag_of_Japan.svg'] },
+    'zh_CN': { label: '简体中文', flags: ['flag/Flag_of_the_Peoples_Republic_of_China.svg'] },
+    'zh_TW': { label: '繁體中文', flags: ['flag/Flag_of_the_Republic_of_China.svg'] },
+    'en': { label: 'English', flags: ['flag/Flag_of_the_United_Kingdom.svg', 'flag/Flag_of_the_United_States.svg'] }
+};
+
+// 드롭다운 토글
+function toggleLangDropdown() {
+    const options = document.getElementById('lang-options');
+    if (options) {
+        options.classList.toggle('open');
+    }
+}
+
+// 언어 선택 처리
+function selectLanguage(langCode) {
+    updateSelectedLangUI(langCode);
+    
+    // 드롭다운 닫기
+    const options = document.getElementById('lang-options');
+    if (options) {
+        options.classList.remove('open');
+    }
+
+    // 기존 언어 적용 함수 호출
+    if (typeof setLanguage === 'function') {
+        setLanguage(langCode);
+    }
+}
+
+// 선택된 언어 헤더 UI 업데이트
+function updateSelectedLangUI(langCode) {
+    const langInfo = LANG_DATA[langCode] || LANG_DATA['ko'];
+    const container = document.getElementById('selected-lang');
+    if (!container) return;
+
+    let flagHTML = '';
+    if (langInfo.flags.length === 1) {
+        flagHTML = `<img src="${langInfo.flags[0]}" class="flag-img" alt="${langCode}">`;
+    } else {
+        flagHTML = `<div class="flag-group">` + 
+            langInfo.flags.map(f => `<img src="${f}" class="flag-img">`).join('') + 
+            `</div>`;
+    }
+
+    container.innerHTML = `${flagHTML} ${langInfo.label}`;
+}
+
+// 외부 영역 클릭 시 드롭다운 닫기
+window.addEventListener('click', function(e) {
+    const wrapper = document.querySelector('.custom-select-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('lang-options')?.classList.remove('open');
+    }
+});

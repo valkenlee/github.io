@@ -88,8 +88,6 @@ function saveRecord() {
         signature: signature
     };
 
-    console.log('[DEBUG] [saveRecord] Sending payload:', payload);
-
     // Google Apps Script Web App으로 JSON 데이터 전송
     fetch(GAS_CONFIG.apiUrl, {
         method: 'POST',
@@ -100,11 +98,9 @@ function saveRecord() {
         body: JSON.stringify(payload)
     })
     .then(res => {
-        console.log('[DEBUG] [saveRecord] HTTP Status:', res.status);
         return res.json();
     })
     .then(data => {
-        console.log('[DEBUG] [saveRecord] GAS Response:', data);
         if (data.result === 'success') {
             alert(`🎉 ${playerName} (${streak})`);
             const nameContainer = document.getElementById('name-input-container');
@@ -117,7 +113,6 @@ function saveRecord() {
     })
     .catch(err => {
         alert('Error');
-        console.error('[DEBUG] [saveRecord] Error:', err);
     })
     .finally(() => {
         if (saveBtn) {
@@ -131,13 +126,11 @@ function saveRecord() {
    📊 구글 시트 실시간 리더보드 조회 (Read)
 ------------------------------------------------------------- */
 function loadLeaderboard() {
-    console.group('[DEBUG] Leaderboard Loading Process');
     console.log('GAS Config CSV URL:', GAS_CONFIG.csvUrl);
 
     const recordListUl = document.getElementById('record-list-ul');
 
     if (!GAS_CONFIG.csvUrl || GAS_CONFIG.csvUrl.includes('YOUR_SHEET_ID')) {
-        console.error('[DEBUG] Invalid CSV URL configuration.');
         if (recordListUl) {
             recordListUl.innerHTML = 
                 '<li style="text-align:center; padding:10px; color:#e74c3c;">CSV URL Error</li>';

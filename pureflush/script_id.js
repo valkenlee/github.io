@@ -46,9 +46,19 @@ function regenerateUserId() {
  * 게임 기록 전체 삭제 및 모달 테이블 초기화
  */
 function resetUserStats() {
-    if (confirm(t('stats.confirmReset'))) {
+    const confirmMsg = (typeof t === 'function' && t('stats.confirmReset')) 
+        ? t('stats.confirmReset') 
+        : '정말로 모든 게임 기록을 초기화하시겠습니까?';
+
+    if (confirm(confirmMsg)) {
         localStorage.removeItem('mahjong_user_stats');
-        openStatsModal();
+        
+        // 테이블만 갱신하거나 안전하게 통계 표시 함수 호출
+        if (typeof renderStatsTable === 'function') {
+            renderStatsTable();
+        } else {
+            openStatsModal();
+        }
     }
 }
 
@@ -68,17 +78,18 @@ function getOrCreateUserId() {
 }
 
 /**
- * 💡 호출 시점의 현재 언어(t)를 반영하여 6개 게임 모드 리스트를 반환하는 함수
+ * 💡 호출 시점의 현재 언어(t)를 반영하여 7개 게임 모드 리스트를 반환하는 함수
  */
 function getGameModes() {
+    const getText = (key, fallback) => (typeof t === 'function' ? t(key) : fallback);
     return [
-        { id: 'mode0', name: t('modes.veryEasy') },
-        { id: 'mode1', name: t('modes.easy') },
-        { id: 'mode2', name: t('modes.normal') },
-        { id: 'mode3', name: t('modes.hard') },
-        { id: 'mode4', name: t('modes.best') },
-        { id: 'mode5', name: t('modes.discard') },
-        { id: 'mode6', name: t('modes.streak') }
+        { id: 'mode0', name: getText('modes.veryEasy', '🌱 매우 쉬움') },
+        { id: 'mode1', name: getText('modes.easy', '🌿 쉬움') },
+        { id: 'mode2', name: getText('modes.normal', '🌿 보통') },
+        { id: 'mode3', name: getText('modes.hard', '🌾 어려움') },
+        { id: 'mode4', name: getText('modes.best', '🏆 최고의 오름패') },
+        { id: 'mode5', name: getText('modes.discard', '🀄 무엇을 버릴까?') },
+        { id: 'mode6', name: getText('modes.streak', '⚡ 연승 모드') }
     ];
 }
 
@@ -100,16 +111,16 @@ function getUserStats() {
 }
 
 /**
- * 기록 모달 열기 및 테이블 갱신
+ * 통계 표 UI 렌더링 함수 (독리적 실행 가능)
  */
-function openStatsModal() {
+function renderStatsTable() {
     const stats = getUserStats();
     const tbody = document.getElementById('stats-table-body');
     
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    // 모달을 열 때 최신 언어가 반영된 게임 모드 목록을 가져옴
+    // 최신 언어가 반영된 게임 모드 목록을 가져옴
     const gameModes = getGameModes();
 
     gameModes.forEach(mode => {
@@ -121,7 +132,7 @@ function openStatsModal() {
         const wrong = data.wrong || 0;
         const unsubmitted = Math.max(0, playCount - correct - wrong);
 
-        // 📌 정답률1 (미제출 미고려: correct / (correct + wrong) * 100)
+        // 📌 정답률1 (미제출 미고려)
         let rate1Text = '-';
         const totalSubmitted = correct + wrong;
         if (totalSubmitted > 0) {
@@ -129,7 +140,7 @@ function openStatsModal() {
             rate1Text = `${rate1}%`;
         }
 
-        // 📌 정답률2 (미제출 고려: correct / playCount * 100)
+        // 📌 정답률2 (미제출 고려)
         let rate2Text = '-';
         if (playCount > 0) {
             const rate2 = ((correct / playCount) * 100).toFixed(1);
@@ -149,25 +160,42 @@ function openStatsModal() {
         `;
         tbody.appendChild(row);
     });
+}
 
-    document.getElementById('stats-modal').style.display = 'flex';
+/**
+ * 기록 모달 열기 및 테이블 갱신
+ */
+function openStatsModal() {
+    renderStatsTable();
+
+    // stats-modal 또는 settings-modal 둘 중 하나를 찾아서 오픈
+    const modal = document.getElementById('stats-modal') || document.getElementById('settings-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
 }
 
 /**
  * 기록 모달 닫기
  */
 function closeStatsModal() {
-    document.getElementById('stats-modal').style.display = 'none';
+    const modal = document.getElementById('stats-modal') || document.getElementById('settings-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // 모달 바깥 배경 클릭 시 닫기
 window.addEventListener('click', (event) => {
-    const modal = document.getElementById('stats-modal');
-    if (event.target === modal) {
-        closeStatsModal();
+    const statsModal = document.getElementById('stats-modal');
+    const settingsModal = document.getElementById('settings-modal');
+
+    if (event.target === statsModal) {
+        statsModal.style.display = 'none';
+    } else if (event.target === settingsModal) {
+        settingsModal.style.display = 'none';
     }
 });
-
 
 /**
  * UI 상단에 ID 표시 함수
@@ -188,11 +216,34 @@ function displayUserId() {
     }
 }
 
+/**
+ * 설정 모달 열기/닫기
+ */
+function openSettingsModal() {
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+        settingsModal.style.display = 'flex';
+    }
+    
+    displayUserId();
+    renderStatsTable();
+
+    // 🀄 스킨 미리보기(Man2, Pin3, Sou4) 로드 실행
+    if (typeof loadSkinPreviews === 'function') {
+        loadSkinPreviews();
+    }
+}
+
+function closeSettingsModal() {
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+        settingsModal.style.display = 'none';
+    }
+}
+
 // DOM이 준비되면 바로 실행하여 화면에 표시
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', displayUserId);
 } else {
     displayUserId();
 }
-
-

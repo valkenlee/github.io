@@ -1,30 +1,33 @@
 /* =============================================================
-   📌 script_loadimg.js - 마작패 이미지 로딩 및 ZIP 해제 모듈
+   📌 script_loadimg.js - 스킨 변경 및 ZIP 로딩 통합 모듈
    ============================================================= */
 
 let zipInstance = null;
-const tileSvgCache = {};
+let tileSvgCache = {};
 let zipReadyResolve = null;
 
 // ZIP 로딩 완료 여부를 외부에서 await 할 수 있는 Promise 객체
-const zipReadyPromise = new Promise((resolve) => {
+let zipReadyPromise = new Promise((resolve) => {
     zipReadyResolve = resolve;
 });
 
-// DOMReady 및 즉시 실행 보장
-if (document.readyState === 'loading') {
-    window.addEventListener('DOMContentLoaded', initTileZip);
-} else {
-    initTileZip();
-}
-
-async function initTileZip() {
+/**
+ * 지정된 ZIP 스킨 파일을 네트워크에서 불러와 zipInstance 및 캐시를 갱신하는 핵심 함수
+ */
+async function loadTileZipPackage(zipFileName) {
     const statusElem = document.getElementById('status-msg');
-    if (statusElem) statusElem.innerText = '패 이미지 로딩 중...';
+    if (statusElem) {
+        statusElem.style.display = 'block';
+        statusElem.innerText = `📦 스킨(${zipFileName}) 로딩 중...`;
+    }
+
+    // 새로운 로딩을 위해 Promise 재생성
+    zipReadyPromise = new Promise((resolve) => {
+        zipReadyResolve = resolve;
+    });
 
     try {
-        // 경로 지정 (절대 경로 또는 현재 경로 상대 지정)
-        const zipUrl = './Regular.zip';
+        const zipUrl = `./${zipFileName}`;
         
         // 10초 타임아웃 설정
         const controller = new AbortController();
@@ -43,20 +46,34 @@ async function initTileZip() {
             throw new Error('JSZip 라이브러리가 로드되지 않았습니다.');
         }
 
+        // 1. 기존 SVG 캐시 및 Object URL 메모리 해제
+        for (const key in tileSvgCache) {
+            if (tileSvgCache[key]) {
+                URL.revokeObjectURL(tileSvgCache[key]);
+            }
+        }
+        tileSvgCache = {};
+
+        // 2. 새로운 ZIP 인스턴스 로드
         zipInstance = await JSZip.loadAsync(arrayBuffer);
+        window.currentTileSkinZip = zipFileName;
         
         const successMsg = (typeof window.t === 'function') ? window.t('loadingSuccess') : '패 이미지 로딩 완료!';
 
         if (statusElem) {
             statusElem.style.color = '#27ae60';
             statusElem.innerText = successMsg;
+            setTimeout(() => {
+                if (window.gameStarted) statusElem.style.display = 'none';
+            }, 1200);
         }
 
-        // 버튼 활성화
+        // 난이도 버튼 활성화
         document.querySelectorAll('.btn-diff').forEach(btn => btn.disabled = false);
 
         // 대기 중인 Promise 해제
         if (zipReadyResolve) zipReadyResolve(true);
+        return true;
 
     } catch (err) {
         console.error('[loadimg] ZIP 로딩 또는 초기화 실패:', err);
@@ -66,18 +83,16 @@ async function initTileZip() {
             statusElem.style.color = '#e74c3c';
             statusElem.innerText = errorMsg;
         }
-        // 에러가 발생해도 무한 대기를 방지하기 위해 Promise 해결 처리
         if (zipReadyResolve) zipReadyResolve(false);
+        throw err;
     }
 }
 
-
 /* =============================================================
-   📌 script_loadimg.js - getTileImageSrc 버그 수정
+   📌 getTileImageSrc - 이미지 변환 및 캐싱 함수
    ============================================================= */
 
 async function getTileImageSrc(suitCode, num) {
-    // 1. 자패 명칭 변환 매핑 (ZIP 내 파일명 기준)
     const honorFileMap = {
         'Ton': 'Ton.svg',
         'Nan': 'Nan.svg',
@@ -91,29 +106,22 @@ async function getTileImageSrc(suitCode, num) {
 
     let targetName = '';
 
-    // 1. suitCode 자체가 자패 명칭('Ton', 'Nan' 등)인 경우
     if (honorFileMap[suitCode]) {
         targetName = honorFileMap[suitCode];
-    } 
-    // 2. num에 자패 명칭이 전달된 경우
-    else if (honorFileMap[num]) {
+    } else if (honorFileMap[num]) {
         targetName = honorFileMap[num];
-    }
-    // 3. suitCode가 'Honor' 또는 'Z'이고 num이 숫자인 경우 (1~7)
-    else if ((suitCode === 'Honor' || suitCode === 'Z') && typeof num === 'number') {
+    } else if ((suitCode === 'Honor' || suitCode === 'Z') && typeof num === 'number') {
         const honorKeys = ['Ton', 'Nan', 'Sha', 'Pei', 'Haku', 'Hatsu', 'Chun'];
         const key = honorKeys[num - 1];
         targetName = honorFileMap[key] || `${key}.svg`;
-    } 
-    // 4. 일반 수패
-    else {
+    } else {
         targetName = `${suitCode}${num}.svg`;
     }
 
     const cacheKey = targetName;
     if (tileSvgCache[cacheKey]) return tileSvgCache[cacheKey];
 
-    // ZIP 파일 대기
+    // ZIP 로딩 대기
     if (!zipInstance) {
         await zipReadyPromise;
     }
@@ -123,11 +131,13 @@ async function getTileImageSrc(suitCode, num) {
         return '';
     }
 
-    // 3. ZIP 내에서 정확한 파일 검색 (경로 구분자 고려)
+    // 대소문자 및 경로 구분자 무시 검색
     let targetFile = null;
+    const lowerTarget = targetName.toLowerCase();
+
     zipInstance.forEach((relativePath, file) => {
-        // 파일명이 정확히 일치하거나 경로 끝자리가 일치하는지 확인
-        if (relativePath === targetName || relativePath.endsWith('/' + targetName)) {
+        const lowerPath = relativePath.toLowerCase();
+        if (lowerPath === lowerTarget || lowerPath.endsWith('/' + lowerTarget)) {
             targetFile = file;
         }
     });
@@ -147,4 +157,160 @@ async function getTileImageSrc(suitCode, num) {
 
     console.warn(`[loadimg] ZIP 내부에서 [${targetName}] 파일을 찾지 못했습니다.`);
     return '';
+}
+
+/**
+ * 스킨 변경 이벤트 핸들러 (라디오 버튼 change/click 시 실행)
+ */
+async function changeTileSkin(zipFileName) {
+    console.log(`[Skin Change] 스킨 변경 요청: ${zipFileName}`);
+
+    // 1. 선택한 스킨 LocalStorage 저장
+    localStorage.setItem('selectedTileSkinZip', zipFileName);
+
+    try {
+        // 2. 새로운 ZIP 로드
+        await loadTileZipPackage(zipFileName);
+
+        // 3. 현재 수패 정보 예외 방어
+        if (typeof currentSuitObj === 'undefined' || !currentSuitObj) {
+            if (typeof SUITS !== 'undefined' && SUITS.length > 0) {
+                currentSuitObj = SUITS[0];
+            }
+        }
+
+        // 4. 화면 렌더링 갱신
+        if (typeof renderQuizUI === 'function') {
+            await renderQuizUI();
+        } else if (typeof renderHand === 'function') {
+            await renderHand();
+        }
+
+        if (typeof renderCustomHand === 'function') {
+            renderCustomHand();
+        }
+
+        console.log(`[Skin Change] ${zipFileName} 적용 완료!`);
+    } catch (err) {
+        console.error('[Skin Change ERROR] 스킨 변경 실패:', err);
+        alert(`스킨 로드에 실패했습니다: ${err.message}`);
+    }
+}
+
+
+/**
+ * 지정된 ZIP 파일 내부에서 특정 SVG 파일(예: Man2.svg, Pin3.svg, Sou4.svg)을 찾아 SVG Object URL을 생성하는 함수
+ * (getTileImageSrc의 파일 검색 및 디렉토리 대응 로직 구조 활용)
+ */
+async function getTileSvgUrlFromZip(zip, targetFileName) {
+    let targetFile = null;
+    const lowerTarget = targetFileName.toLowerCase();
+
+    // ZIP 내부 디렉토리 구조 및 대소문자 무시 검색 (getTileImageSrc 함수 참조)
+    zip.forEach((relativePath, file) => {
+        const lowerPath = relativePath.toLowerCase();
+        if (lowerPath === lowerTarget || lowerPath.endsWith('/' + lowerTarget)) {
+            targetFile = file;
+        }
+    });
+
+    if (targetFile) {
+        try {
+            const svgText = await targetFile.async('string');
+            const blob = new Blob([svgText], { type: 'image/svg+xml' });
+            return URL.createObjectURL(blob);
+        } catch (e) {
+            console.error(`[Skin Preview Error] ${targetFileName} 변환 실패:`, e);
+        }
+    }
+    return null;
+}
+
+/**
+ * 스킨 선택창의 각 카드에 Man2.svg, Pin3.svg, Sou4.svg 패를 로드하여 표시
+ */
+async function loadSkinPreviews() {
+    const previewContainers = document.querySelectorAll('.skin-preview');
+    if (!previewContainers.length) return;
+
+    // 타겟 SVG 파일명 지정
+    const targets = [
+        { name: 'Man2.svg', label: 'Man2' },
+        { name: 'Pin3.svg', label: 'Pin3' },
+        { name: 'Sou4.svg', label: 'Sou4' }
+    ];
+
+    for (const container of previewContainers) {
+        // 이미 <img> 태그가 정상적으로 생성되어 있으면 건너뜀
+        if (container.querySelectorAll('img').length === targets.length) continue;
+
+        const zipFileName = container.getAttribute('data-skin');
+        if (!zipFileName) continue;
+
+        try {
+            // 1. ZIP 파일 읽기
+            const response = await fetch(`./${zipFileName}`);
+            if (!response.ok) continue;
+
+            const arrayBuffer = await response.arrayBuffer();
+            const zip = await JSZip.loadAsync(arrayBuffer);
+
+            // 기존 영역 초기화
+            container.innerHTML = '';
+
+            // 2. target별 SVG 검색 및 렌더링
+            for (const target of targets) {
+                const svgUrl = await getTileSvgUrlFromZip(zip, target.name);
+
+                if (svgUrl) {
+                    const img = document.createElement('img');
+                    img.src = svgUrl;
+                    img.alt = target.label;
+                    img.className = 'skin-preview-tile';
+                    container.appendChild(img);
+                }
+            }
+        } catch (err) {
+            console.error(`[Skin Preview Error] ${zipFileName} 로딩 실패:`, err);
+        }
+    }
+}
+
+
+// 설정 모달이 열리는 함수(openSettingsModal) 호출 시 함께 실행되도록 연동
+const originalOpenSettingsModal = window.openSettingsModal;
+window.openSettingsModal = function() {
+    if (typeof originalOpenSettingsModal === 'function') {
+        originalOpenSettingsModal();
+    }
+    loadSkinPreviews();
+};
+
+/**
+ * 스킨 시스템 초기화 및 라디오 버튼 이벤트 등록
+ */
+function initTileSkinSystem() {
+    const savedZip = localStorage.getItem('selectedTileSkinZip') || 'Set_01_Standard.zip';
+
+    // 라디오 버튼 상태 세팅 및 이벤트 바인딩
+    const skinRadios = document.querySelectorAll('input[name="tile-skin"]');
+    skinRadios.forEach(radio => {
+        if (radio.value === savedZip) {
+            radio.checked = true;
+        }
+
+        radio.addEventListener('change', (e) => {
+            changeTileSkin(e.target.value);
+        });
+    });
+
+    // 초기에 저장된 스킨 패키지 로드
+    loadTileZipPackage(savedZip);
+}
+
+// DOM 준비 완료 시 단 1회 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTileSkinSystem);
+} else {
+    initTileSkinSystem();
 }

@@ -3,9 +3,9 @@
 // 스플래시 화면을 숨기는 공통 함수
 function hideSplashScreen() {
   const splash = document.getElementById('splash-screen');
-  if (splash && splash.style.visibility !== 'hidden') {
-    splash.style.opacity = '0';
-    splash.style.visibility = 'hidden';
+
+  if (splash && !splash.classList.contains('hide')) {
+      splash.classList.add('hide');
   }
 }
 
@@ -18,7 +18,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// 2. 클릭하지 않더라도 3000ms(3초) 후 자동으로 숨김
+// 2. 클릭하지 않더라도 0.5초 후 자동으로 숨김
 setTimeout(() => {
   hideSplashScreen();
-}, 3000);
+}, 500);

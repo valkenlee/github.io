@@ -2,10 +2,6 @@
    📌 generateQuiz 관련 모듈 (script_generatequiz.js)
    ============================================================= */
 
-// 현재 렌더링 세션을 추적하기 위한 카운터 변수
-let currentRenderSession = 0;
-
-
 function changeSuit() {
     let availableSuits = SUITS;
     if (currentSuitObj) {
@@ -132,55 +128,36 @@ function generateQuizData() {
 async function renderHand() {
     const container = document.getElementById('hand-container') || document.getElementById('hand-display');
     if (!container) return;
-
-    // 1. 현재 렌더링 세션 번호 증가 (새로운 renderHand 실행 시 이전 렌더링 무효화)
-    const thisSession = ++currentRenderSession;
-
-    // 2. ZIP 준비 대기
-    if (typeof zipReadyPromise !== 'undefined') {
-        await zipReadyPromise;
-    }
-
-    // 비동기 대기 후, 더 새로운 renderHand가 호출되었다면 현재 실행 중단
-    if (thisSession !== currentRenderSession) return;
-
-    // 3. 비동기 대기가 끝난 직후 컨테이너를 완전히 비움
     container.innerHTML = '';
 
     const isDiscardMode = (currentMode === 'discard');
-
-    // discardMode일 때 전체 패 목록 구성
+    
+    // discardMode일 때 전체 패 목록 구성 (기본 13장 또는 13장 + 오름패/쯔모패 1장)
     let tilesToRender = [...currentHand];
     
+    // discardMode일 때 14번째 패(쯔모패/오름패) 데이터가 별도 전역 변수에 있다면 합쳐줍니다.
     if (isDiscardMode) {
         const extraTile = (typeof currentDrawTile !== 'undefined' && currentDrawTile !== null) 
             ? currentDrawTile 
             : (typeof drawnTile !== 'undefined' ? drawnTile : null);
             
+        // currentHand 길이가 13장이고 추가 오름패 변수가 존재하는 경우
         if (extraTile !== null && tilesToRender.length === 13) {
             tilesToRender.push(extraTile);
         }
     }
 
-    // 이미지 URL들을 병렬로 미리 로드 (비동기 병목 방지)
-    const tileImgSrcs = await Promise.all(
-        tilesToRender.map(num => getTileImageSrc(currentSuitObj.code, num))
-    );
-
-    // 이미지 로드 중에 다시 호출되었다면 중단
-    if (thisSession !== currentRenderSession) return;
-
     let totalTilesHandled = 0;
 
-    // 4. 수패(만/통/삭) 렌더링
+    // 1. 수패(만/통/삭) 렌더링
     for (let i = 0; i < tilesToRender.length; i++) {
         const num = tilesToRender[i];
         const img = document.createElement('img');
-        img.src = tileImgSrcs[i];
-
+        img.src = await getTileImageSrc(currentSuitObj.code, num);
         img.className = 'tile-img';
         img.alt = `${currentSuitObj.code}${num}`;
 
+        // discard 모드에서 마지막 패(14번째 오름패/쯔모패) 구분 클래스 추가
         if (isDiscardMode && i === tilesToRender.length - 1 && tilesToRender.length > 13) {
             img.classList.add('draw-tile');
         }
@@ -188,6 +165,7 @@ async function renderHand() {
         container.appendChild(img);
         totalTilesHandled++;
 
+        // 2줄 모드일 때 정확히 상단 7번째 패(인덱스 6) 뒤에 줄바꿈 요소를 삽입
         if (isMultiLine && totalTilesHandled === 7) {
             const lineBreak = document.createElement('div');
             lineBreak.className = 'line-break';
@@ -195,7 +173,7 @@ async function renderHand() {
         }
     }
 
-    // 5. 매우 쉬움(Very Easy) 모드 자패 커츠(울은 패) 우측 배치
+    // 2. 매우 쉬움(Very Easy) 모드 자패 커츠(울은 패) 우측 배치
     if (currentMode === 'veryEasy' && currentHonorHand && currentHonorHand.length > 0) {
         const meldDivider = document.createElement('span');
         meldDivider.className = 'meld-divider';
@@ -213,8 +191,8 @@ async function renderHand() {
                 honorCode = honor.code || honor.num || honor.name;
             }
 
+            // 이미지 경로 가져오기 테스트용 로그 확인
             const imgSrc = await getTileImageSrc(honorCode, '');
-            if (thisSession !== currentRenderSession) return;
 
             for (let i = 0; i < 3; i++) {
                 const img = document.createElement('img');
@@ -222,6 +200,7 @@ async function renderHand() {
                 img.className = 'tile-img honor-meld-tile';
                 img.alt = String(honorCode);
 
+                // [강제 스타일 적용] 이미지가 잘 보이는지 테스트
                 img.style.width = '40px'; 
                 img.style.height = 'auto';
                 img.style.display = 'inline-block';
@@ -230,6 +209,7 @@ async function renderHand() {
                 container.appendChild(img);
                 totalTilesHandled++;
 
+                // 수패가 7장 미만이고 자패를 포함하여 7번째가 되었을 경우 줄바꿈 처리
                 if (isMultiLine && totalTilesHandled === 7) {
                     const lineBreak = document.createElement('div');
                     lineBreak.className = 'line-break';
@@ -243,6 +223,7 @@ async function renderHand() {
         updateHandDisplayLayout();
     }
 }
+
 /**
  * UI 업데이트 및 힌트 영역 처리
  */
