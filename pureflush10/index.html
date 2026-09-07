@@ -13,7 +13,7 @@
 	
     <script> 
         window.MAIN_VER = "0.10"; 
-        window.JS_VER = "0.10.43"; 
+        window.JS_VER = "0.10.46"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -48,6 +48,10 @@
 
 </head>
 <body>
+
+<div id="splash-screen">
+  <img src="pureflush_splash01.png" alt="청일색 오프닝 이미지">
+</div>
 
 <!-- 🌐 상단 헤더 영역 (제목 & 우측 상단 언어 선택) -->
 <div class="header-container">
@@ -283,6 +287,7 @@
     loadCSS('style_modal.css');
     loadCSS('style_halloffame.css');
     loadCSS('style_hand.css');
+    loadCSS('style_splash.css');
 
     loadScript('script_global.js');
     loadScript('lang_tran_const.js');
@@ -302,6 +307,7 @@
     loadScript('script_hidden.js');
     loadScript('script_id.js');
 	loadScript('script_custom_url.js');
+	loadScript('script_splash.js');
 
     loadScript('script.js');
 </script>
