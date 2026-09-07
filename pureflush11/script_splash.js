@@ -3,9 +3,9 @@
 // 스플래시 화면을 숨기는 공통 함수
 function hideSplashScreen() {
   const splash = document.getElementById('splash-screen');
-  if (splash && splash.style.visibility !== 'hidden') {
-    splash.style.opacity = '0';
-    splash.style.visibility = 'hidden';
+
+  if (splash && !splash.classList.contains('hide')) {
+      splash.classList.add('hide');
   }
 }
 
