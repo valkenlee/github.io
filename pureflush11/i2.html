@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Loading...</title>
+</head>
+<body>
+  <script>
+    // 최신 index.html 가져오기 (캐시 방지)
+    fetch('index.html?t=' + new Date().getTime(), { cache: 'no-store' })
+      .then(response => response.text())
+      .then(html => {
+        // index.html의 <head> 바로 뒤 또는 맨 앞에 전역 변수 설정 스크립트 강제 주입
+        const injectedScript = '<script>window.__IS_WRAPPED__ = true;<\/script>';
+        
+        // <head> 태그가 있으면 head 뒤에, 없으면 맨 앞에 추가
+        let wrappedHtml = html;
+        if (wrappedHtml.includes('<head>')) {
+          wrappedHtml = wrappedHtml.replace('<head>', '<head>' + injectedScript);
+        } else {
+          wrappedHtml = injectedScript + wrappedHtml;
+        }
+
+        document.open();
+        document.write(wrappedHtml);
+        document.close();
+      })
+      .catch(err => console.error('index.html 로드 실패:', err));
+  </script>
+</body>
+</html>
