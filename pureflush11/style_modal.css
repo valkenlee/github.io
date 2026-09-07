@@ -36,6 +36,9 @@
     overflow-y: auto;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* 헤더 및 푸터 */
@@ -147,7 +150,117 @@
 .btn-reset-stats { background-color: #e74c3c; }
 .btn-reset-stats:hover { background-color: #c0392b; }
 
-/* 모달 내부 테이블 */
+/* --------------------------------------------------
+   ⚙️ 설정 섹션 및 모달 내부 구성
+-------------------------------------------------- */
+.settings-section {
+    background: #1a252f;
+    border: 1px solid #34495e;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.settings-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: #f1c40f;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.section-title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.section-title-bar h3 {
+    margin: 0;
+}
+
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.settings-row strong {
+    color: #f1c40f;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 0.5px;
+}
+
+/* 언어 선택 드롭다운 설정 모달 커스텀 */
+.settings-section .lang-select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: 1px solid #34495e;
+    background-color: #2c3e50;
+    color: #ffffff;
+    cursor: pointer;
+    outline: none;
+}
+.settings-section .lang-select:hover {
+    border-color: #27ae60;
+}
+
+/* 마작패 스킨 선택 그리드 */
+.skin-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.skin-option input[type="radio"] {
+    display: none;
+}
+
+.skin-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 8px;
+    border: 2px solid #34495e;
+    border-radius: 6px;
+    background: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.skin-card:hover {
+    border-color: #27ae60;
+    background: #34495e;
+}
+
+.skin-option input[type="radio"]:checked + .skin-card {
+    border-color: #2ecc71;
+    background-color: #1e3729;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+}
+
+.skin-name {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.skin-desc {
+    color: #bdc3c7;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* 모달 내부 기록 테이블 */
+.stats-table-wrapper {
+    overflow-x: auto;
+}
+
 .stats-table {
     width: 100%;
     border-collapse: collapse;
@@ -182,10 +295,118 @@
 @media (max-width: 600px) {
     .modal-overlay { padding: 10px; }
     .modal-content { max-height: 95vh; }
-    .modal-body { padding: 10px; }
-    .modal-header-id {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
+    .modal-body { padding: 10px; gap: 12px; }
+    .skin-selector-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* 1. 타일 스킨 카드 내부 세로 여백 및 간격 확장 */
+.skin-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 10px; /* 여백을 약간 확장 */
+    border: 2px solid #34495e;
+    border-radius: 6px;
+    background: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 2. 스킨 미리보기 컨테이너 높이 및 간격 조절 */
+.skin-preview {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 6px; /* 타일 간 간격 확장 (5px -> 6px) */
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    min-height: 48px; /* 미리보기 컨테이너 높이 확장 (32px -> 48px) */
+    width: 100%;
+}
+
+/* 3. 미리보기 타일 이미지 크기 확대 (가장 중요) */
+.skin-preview-tile {
+    width: 30px !important;  /* 기존 22px -> 30px로 확대 */
+    height: 41px !important; /* 기존 30px -> 41px로 확대 (마작패 비율 약 3:4 유지) */
+    object-fit: contain;
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    background-color: #fff;
+}
+
+/* 언어 선택 커스텀 드롭다운 */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    user-select: none;
+    font-size: 14px;
+}
+
+.custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #2c3e50;
+    color: #fff;
+    border: 1px solid #34495e;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.custom-select-trigger #selected-lang {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.custom-options {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: #2c3e50;
+    border: 1px solid #34495e;
+    border-radius: 6px;
+    z-index: 1000;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.custom-options.open {
+    display: block;
+}
+
+.custom-option {
+    padding: 10px 12px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.custom-option:hover {
+    background-color: #34495e;
+}
+
+/* 국기 이미지 스타일 */
+.flag-img {
+    width: 20px;
+    height: 14px;
+    object-fit: cover;
+    border-radius: 2px;
+    box-shadow: 0 0 2px rgba(0,0,0,0.4);
+}
+
+.flag-group {
+    display: flex;
+    gap: 3px;
+    align-items: center;
 }

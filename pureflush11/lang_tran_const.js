@@ -60,7 +60,7 @@ const TRANSLATIONS = {
 
         // 📊 나의 게임 기록 (stats)
         stats: {
-            title: "📊 나의 게임 기록",
+            title: "나의 게임 기록",
             mode: "게임 모드",
             plays: "게임 횟수",
             correct: "맞춤",
@@ -206,6 +206,22 @@ const TRANSLATIONS = {
             theoreticalWaits: "이론상 대기패",
             maxedNotice: "(※ {tiles}번 패는 오름패 형태이지만 4장을 모두 사용 중이어서 완성할 수 없음)",
             alertSelectTile: "오름패를 최소 1개 이상 선택해 주세요."
+        },
+        settings: {
+            title: "설정",
+            userInfo: "내 정보",        // ✨ 추가
+            langTitle: "언어 설정",      // ✨ 추가
+            skinTitle: "마작패 스킨 설정",
+            skinStandard: "표준 타일",
+            skinBlack: "흑백 타일",
+            skinSimple: "단순 타일",
+            skinRegular: "기본 타일",
+            creditTitle: "크레딧 & 저작권 정보",
+            copyrightHeader: "저작권 안내",
+            copyrightDesc: "외부 라이선스가 적용된 일부 이미지 자산(마작 타일)을 제외한 본 웹사이트의 모든 콘텐츠, 코드, 디자인 및 알고리즘에 대한 저작권은 Valken Net에 있습니다.",
+            creditTileHeader: "마작 패 이미지 출처 (Mahjong Tile Assets):",
+            creditTileDesc: "본 서비스의 마작 타일 그래픽은 Wikimedia Commons의 SVG Planar illustrations 컬렉션을 기반으로 제작되었습니다.",
+            creditLicense: "Licensed under CC BY-SA 4.0 / Public Domain"
         }
     },
     ja: {
@@ -263,7 +279,7 @@ const TRANSLATIONS = {
         },
 
         stats: {
-            title: "📊 個人戦績",
+            title: "個人戦績",
             mode: "ゲームモード",
             plays: "プレイ回数",
             correct: "正解",
@@ -400,6 +416,22 @@ const TRANSLATIONS = {
             theoreticalWaits: "理論上の待ち牌",
             maxedNotice: "(※ {tiles} は手牌で4枚使用中のためアガれません)",
             alertSelectTile: "アガリ牌を少なくとも1つ選択してください。"
+        },
+        settings: {
+            title: "設定",
+            userInfo: "マイ情報",        // ✨ 추가
+            langTitle: "言語設定",       // ✨ 추가
+            skinTitle: "麻雀牌スキン設定",
+            skinStandard: "標準牌",
+            skinBlack: "モノクロ牌",
+            skinSimple: "シンプル牌",
+            skinRegular: "基本牌",
+            creditTitle: "クレジット＆著作権情報",
+            copyrightHeader: "著作権案内",
+            copyrightDesc: "外部ライセンスが適用された一部の画像資産（麻雀牌）を除く、本ウェブサイトのすべてのコンテンツ、コード、デザイン、およびアルゴリズムに関する著作権は Valken Net に帰属します。",
+            creditTileHeader: "麻雀牌画像の出典 (Mahjong Tile Assets):",
+            creditTileDesc: "本サービスの麻雀牌グラフィックは、Wikimedia CommonsのSVG Planar illustrationsコレクションをベースに制作されました。",
+            creditLicense: "Licensed under CC BY-SA 4.0 / Public Domain"
         }
     },
     zh_CN: {
@@ -457,7 +489,7 @@ const TRANSLATIONS = {
         },
 
         stats: {
-            title: "📊 我的战绩",
+            title: "我的战绩",
             mode: "游戏模式",
             plays: "游戏次数",
             correct: "答对",
@@ -594,7 +626,23 @@ const TRANSLATIONS = {
             theoreticalWaits: "理论听牌",
             maxedNotice: "(※ {tiles} 已经被手牌使用4张，无法完成和牌)",
             alertSelectTile: "请至少选择一张和牌。"
-        }
+        },
+        settings: {
+            title: "设置",
+            userInfo: "个人信息",       // ✨ 추가
+            langTitle: "语言设置",       // ✨ 추가
+            skinTitle: "麻将牌皮肤设置",
+            skinStandard: "标准牌",
+            skinBlack: "黑白牌",
+            skinSimple: "简约牌",
+            skinRegular: "常规牌",
+            creditTitle: "鸣谢与版权信息",
+            copyrightHeader: "版权说明",
+            copyrightDesc: "除应用外部许可证的部分图片资产（麻将牌）外，本网站的所有内容、代码、设计及算法的版权均归 Valken Net 所有。",
+            creditTileHeader: "麻将牌图片来源 (Mahjong Tile Assets):",
+            creditTileDesc: "本服务的麻将牌图案基于 Wikimedia Commons 的 SVG Planar illustrations 系列制作。",
+            creditLicense: "Licensed under CC BY-SA 4.0 / Public Domain"
+        },
     },
     zh_TW: {
         title: "清一色 聽牌 猜謎",
@@ -651,7 +699,7 @@ const TRANSLATIONS = {
         },
 
         stats: {
-            title: "📊 我的戰績",
+            title: "我的戰績",
             mode: "遊戲模式",
             plays: "遊戲次數",
             correct: "答對",
@@ -788,7 +836,23 @@ const TRANSLATIONS = {
             theoreticalWaits: "理論聽牌",
             maxedNotice: "(※ {tiles} 已經在手牌中使用4張，無法完成胡牌)",
             alertSelectTile: "請至少選擇一張胡牌。"
-        }
+        },
+        settings: {
+            title: "設定",
+            userInfo: "個人資訊",       // ✨ 추가
+            langTitle: "語言設定",       // ✨ 추가
+            skinTitle: "麻將牌外觀設定",
+            skinStandard: "標準牌",
+            skinBlack: "黑白牌",
+            skinSimple: "簡約牌",
+            skinRegular: "常規牌",
+            creditTitle: "鳴謝與版權資訊",
+            copyrightHeader: "版權說明",
+            copyrightDesc: "除套用外部授權的部分圖片資產（麻將牌）外，本網站的所有內容、程式碼、設計及演算法之版權均歸 Valken Net 所有。",
+            creditTileHeader: "麻將牌圖片來源 (Mahjong Tile Assets):",
+            creditTileDesc: "本服務的麻將牌圖案基於 Wikimedia Commons 的 SVG Planar illustrations 系列製作。",
+            creditLicense: "Licensed under CC BY-SA 4.0 / Public Domain"
+        },
     },
     en: {
         title: "Chinitsu Tenpai Waiting Tile Quiz",
@@ -845,7 +909,7 @@ const TRANSLATIONS = {
         },
 
         stats: {
-            title: "📊 My Game Records",
+            title: "My Game Records",
             mode: "Game Mode",
             plays: "Plays",
             correct: "Correct",
@@ -982,6 +1046,22 @@ const TRANSLATIONS = {
             theoreticalWaits: "Theoretical Waits",
             maxedNotice: "(※ Tile {tiles} is maxed out with 4 copies in hand, so it cannot complete the hand)",
             alertSelectTile: "Please select at least one winning tile."
+        },
+        settings: {
+            title: "Settings",
+            userInfo: "My Info",        // ✨ 추가
+            langTitle: "Language Settings", // ✨ 추가
+            skinTitle: "Tile Skin Settings",
+            skinStandard: "Standard",
+            skinBlack: "Monochrome",
+            skinSimple: "Simple",
+            skinRegular: "Regular",
+            creditTitle: "Credits & Copyright Info",
+            copyrightHeader: "Copyright Notice",
+            copyrightDesc: "Except for certain image assets (Mahjong tiles) subject to external licenses, all content, code, design, and algorithms on this website are copyrighted by Valken Net.",
+            creditTileHeader: "Mahjong Tile Assets Source:",
+            creditTileDesc: "The Mahjong tile graphics in this service were created based on the SVG Planar illustrations collection from Wikimedia Commons.",
+            creditLicense: "Licensed under CC BY-SA 4.0 / Public Domain"
         }
     }
 };
