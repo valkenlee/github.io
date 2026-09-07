@@ -18,7 +18,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// 2. 클릭하지 않더라도 3000ms(3초) 후 자동으로 숨김
+// 2. 클릭하지 않더라도 0.5초 후 자동으로 숨김
 setTimeout(() => {
   hideSplashScreen();
-}, 3000);
+}, 500);
