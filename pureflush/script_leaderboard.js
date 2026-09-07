@@ -122,7 +122,7 @@ function saveRecord() {
     .finally(() => {
         if (saveBtn) {
             saveBtn.disabled = false;
-            saveBtn.innerText = typeof t === 'function' ? t('btnSaveRecord') : '저장';
+            saveBtn.innerText = typeof t === 'function' ? t('buttons.saveRecord') : '저장';
         }
     });
 }
@@ -227,7 +227,7 @@ function loadLeaderboard() {
 
                     if (top10.length === 0) {
                         console.warn('No records matched the criteria (streak >= 10).');
-                        ul.innerHTML = `<li style="text-align:center; padding: 10px; color:#7f8c8d;">${typeof t === 'function' ? t('hallOfFameLoading') : '기록이 없습니다.'}</li>`;
+                        ul.innerHTML = `<li style="text-align:center; padding: 10px; color:#7f8c8d;">${typeof t === 'function' ? t('hallOfFame.loading') : '기록이 없습니다.'}</li>`;
                         console.groupEnd();
                         return;
                     }

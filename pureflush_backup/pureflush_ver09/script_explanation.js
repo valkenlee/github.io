@@ -7,11 +7,11 @@
  */
 function getWaitTypeBadgeHtml(waitType) {
     switch(waitType) {
-        case '양면': return `<span class="wait-type-badge badge-ryanmen">${t('waits.ryanmen')}</span>`;
-        case '단기': return `<span class="wait-type-badge badge-tanki">${t('waits.tanki')}</span>`;
-        case '샤보': return `<span class="wait-type-badge badge-shanpon">${t('waits.shanpon')}</span>`;
-        case '간짱': return `<span class="wait-type-badge badge-kanchan">${t('waits.kanchan')}</span>`;
-        case '변짱': return `<span class="wait-type-badge badge-penchan">${t('waits.penchan')}</span>`;
+        case '양면': return `<span class="wait-type-badge badge-ryanmen">${t('waitRyanmen')}</span>`;
+        case '단기': return `<span class="wait-type-badge badge-tanki">${t('waitTanki')}</span>`;
+        case '샤보': return `<span class="wait-type-badge badge-shanpon">${t('waitShanpon')}</span>`;
+        case '간짱': return `<span class="wait-type-badge badge-kanchan">${t('waitKanchan')}</span>`;
+        case '변짱': return `<span class="wait-type-badge badge-penchan">${t('waitPenchan')}</span>`;
         default: return `<span class="wait-type-badge badge-tanki">${waitType}</span>`;
     }
 }
@@ -92,7 +92,7 @@ function getShanponExplanationItems(d, tile, validWaitsSet, origCounts) {
                 let noteStr = '';
                 if (st1Is4Count || st2Is4Count) {
                     const overTiles = [st1Is4Count ? st1 : null, st2Is4Count ? st2 : null].filter(Boolean);
-                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">${t('result.maxedNotice', { tiles: overTiles.join(', ') })}</span>`;
+                    noteStr = ` <span style="color:#e74c3c; font-size:0.9em; font-weight:normal;">${t('maxedNotice', { tiles: overTiles.join(', ') })}</span>`;
                 }
 
                 const remainingTriplets = d.triplets.filter(tr => tr !== p && tr !== t).sort().join('_');
@@ -169,7 +169,7 @@ function renderDecompositionExplanation() {
     if (currentMode === 'streak') return ''; 
 
     let html = `<div class="explanation-box">`;
-    html += `<h4>${t('result.actualWaits')}</h4>`;
+    html += `<h4>${t('explanationTitle')}</h4>`;
 
     let origCounts = Array(10).fill(0);
     currentHand.forEach(n => origCounts[n]++);
@@ -242,9 +242,9 @@ function renderDecompositionExplanation() {
 function getAnswerString() {
     let tagNotice = '';
     if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('waits.ryanpeikouNotice')}</div><br>`;
+        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('ryanpeikouNotice')}</div><br>`;
     } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">${t('waits.chiitoiNotice')}</div><br>`;
+        tagNotice = `<div class="special-tag chiitoi-tag">${t('chiitoiNotice')}</div><br>`;
     }
 
     const actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '-';
@@ -252,9 +252,9 @@ function getAnswerString() {
 
     if (maxedOutWinningTiles.length > 0) {
         const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        baseText = `${tagNotice}${t('result.actualWaits')}: [ ${actualStr} ] &nbsp;|&nbsp; ${t('result.theoreticalWaits')}: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('result.maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
+        baseText = `${tagNotice}${t('actualWaits')}: [ ${actualStr} ] &nbsp;|&nbsp; ${t('theoreticalWaits')}: [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
     } else {
-        baseText = `${tagNotice}${t('result.actualWaits')}: [ ${actualStr} ]`;
+        baseText = `${tagNotice}${t('actualWaits')}: [ ${actualStr} ]`;
     }
 
     if (currentMode !== 'streak') {

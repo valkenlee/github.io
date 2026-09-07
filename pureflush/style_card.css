@@ -74,6 +74,7 @@
     box-shadow: 0 0 10px rgba(26, 115, 232, 0.6);
 }
 
+/* 게임 모드별 버튼 스타일 */
 .btn-very-easy { background-color: #2ecc71; color: white; }
 .btn-very-easy:hover { background-color: #27ae60; }
 .btn-easy { background-color: #27ae60; }

@@ -387,18 +387,18 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
   const translate = (key, opt) => (typeof t === 'function' ? t(key, opt) : key);
 
   let html = `<div class="explanation-box" style="margin-top:15px; text-align:left;">`;
-  html += `<h4>📊 ${translate('bestReport.headerTitle')}</h4>`;
+  html += `<h4>📊 ${translate('bestReportHeaderTitle', '최고의 오름패 판수 분석 리포트')}</h4>`;
 
   // 역만 텐파이 상태인 경우 보조 안내 문구 표기
   if (typeof checkYakumanTenpai === 'function') {
     const tenpaiInfo = checkYakumanTenpai(suitNum, handArr);
     if (tenpaiInfo.isYakumanTenpai) {
       const yakumanNames = tenpaiInfo.possibleYakuman.map((k) => translate(k)).join(', ');
-      html += `<p style="font-size:13px; color:#d35400; font-weight:bold; margin-bottom:5px;">⚡ ${translate('bestReport.yakumanTenpaiAlert', { yaku: yakumanNames })}</p>`;
+      html += `<p style="font-size:13px; color:#d35400; font-weight:bold; margin-bottom:5px;">⚡ ${translate('bestReportYakumanTenpaiAlert', { yaku: yakumanNames })}</p>`;
     }
   }
 
-  html += `<p style="font-size:13px; color:#555; margin-bottom:10px;">${translate('bestReport.condition')}</p>`;
+  html += `<p style="font-size:13px; color:#555; margin-bottom:10px;">${translate('bestReportCondition', '조건: 멘젠 청일색 리치 쯔모 기준')}</p>`;
   html += `<ul style="list-style:none; padding:0; margin:0; font-family:monospace, monospace; font-size:14px; line-height:1.8;">`;
 
   if (resultData.analysis && Array.isArray(resultData.analysis)) {
@@ -409,7 +409,7 @@ function renderBestPanAnalysisHTML(suitNum, handArr, userSelectedTile, reach = 1
       if (isBest) {
         // 🏆 1. 최고 정답 패 강조
         html += `<li class="report-item best" style="font-weight:bold; color:#1e8449; background-color:#e8f8f5; padding:6px 10px; border-radius:4px; margin-bottom:4px; border:1px solid #2ecc71;">`;
-        html += `🏆 <b>${item.tile}</b> : ${item.text} <b>${translate('bestReport.optimalChoice')}</b>`;
+        html += `🏆 <b>${item.tile}</b> : ${item.text} <b>${translate('bestReportOptimalChoice', '[최적의 오름패]')}</b>`;
         html += `</li>`;
       } else if (isValid) {
         // ⭕ 2. 일반 청일색 화료 가능 패
@@ -439,7 +439,7 @@ function handleBestModeSubmit() {
     if (!selectedTiles || selectedTiles.size === 0) {
       if (resultDiv) {
          resultDiv.className = 'result-message incorrect';
-         resultDiv.innerHTML = `⚠️ <b>${translate('result.alertSelectTile')}</b>`;
+         resultDiv.innerHTML = `⚠️ <b>${translate('alertSelectTile')}</b>`;
          resultDiv.style.display = 'block';
       }
       return;
@@ -467,14 +467,14 @@ function handleBestModeSubmit() {
 
     if (isUserCorrect) {
       resultDiv.className = 'result-message correct';
-      resultDiv.innerHTML = `🎉 <b>${translate('result.correct')}</b><br>${translate('bestReport.correctMsg', { tile: userChoice, score: displayScore })}${html}`;
+      resultDiv.innerHTML = `🎉 <b>${translate('correct')}</b><br>${translate('bestResultCorrectMsg', { tile: userChoice, score: displayScore })}${html}`;
     } else {
       resultDiv.className = 'result-message incorrect';
-      resultDiv.innerHTML = `❌ <b>${translate('result.incorrect')}</b><br>${translate('bestReport.incorrectMsg', { tile: userChoice, bestTiles: bestTiles.join(', '), score: displayScore })}${html}`;
+      resultDiv.innerHTML = `❌ <b>${translate('incorrect')}</b><br>${translate('bestResultIncorrectMsg', { tile: userChoice, bestTiles: bestTiles.join(', '), score: displayScore })}${html}`;
     }
 
     if (btnSubmit) {
-      btnSubmit.innerText = translate('buttons.nextSame');
+      btnSubmit.innerText = translate('btnNextSame');
       btnSubmit.style.backgroundColor = '#27ae60';
     }
   } else {

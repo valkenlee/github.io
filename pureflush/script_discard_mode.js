@@ -325,7 +325,7 @@ function renderDiscardQuizUI() {
 
     const submitBtn = document.getElementById('btn-submit');
     if (submitBtn) {
-        submitBtn.innerText = typeof t === 'function' ? t('btnSubmit') : '제출';
+        submitBtn.innerText = typeof t === 'function' ? t('buttons.submit') : '제출 및 정답 확인';
         submitBtn.style.backgroundColor = '#2980b9';
     }
     selectedTiles.clear();
@@ -429,7 +429,7 @@ function renderDiscardReportHTML(suitNum, hand13, newCard, userDiscard) {
                 const translatedNames = res.yakumanNames.map(yKey => tr(yKey));
                 yakumanNamesStr = translatedNames.join(', ');
             } else if (isYak) {
-                yakumanNamesStr = tr('yakuman', '역만');
+                yakumanNamesStr = tr('bestReport.yakuman', '역만');
             }
 
             let badgeHtml = '';
@@ -476,7 +476,7 @@ function handleDiscardModeSubmit() {
         if (!selectedTiles || selectedTiles.size === 0) {
             if (resultDiv) {
                 resultDiv.className = 'result-message incorrect';
-                resultDiv.innerHTML = `⚠️ <b>${tr('alertSelectDiscardTile', '버릴 패를 선택해 주세요.')}</b>`;
+                resultDiv.innerHTML = `⚠️ <b>${tr('alertSelectDiscardTile', '버릴 패를 하나 선택해 주세요.')}</b>`;
                 resultDiv.style.display = 'block';
             }
             return;
@@ -536,11 +536,11 @@ function handleDiscardModeSubmit() {
                 recommendation += `<br>👉 ${tr('discardResult.recYakuman', { tiles: yakumanDiscardTiles.join(', ') })}`;
             }
 
-            resultDiv.innerHTML = `❌ <b>${tr('incorrect', '오답입니다.')}</b><br>${tr('discardResult.case5Desc', { tile: userChoice })}<br>${recommendation}${html}`;
+            resultDiv.innerHTML = `❌ <b>${tr('result.incorrect', '오답입니다.')}</b><br>${tr('discardResult.case5Desc', { tile: userChoice })}<br>${recommendation}${html}`;
         }
 
         if (btnSubmit) {
-            btnSubmit.innerText = tr('btnNextSame', '다음 문제');
+            btnSubmit.innerText = tr('buttons.nextSame', '같은 난이도로 새 문제 제출');
             btnSubmit.style.backgroundColor = '#27ae60';
         }
     } else {

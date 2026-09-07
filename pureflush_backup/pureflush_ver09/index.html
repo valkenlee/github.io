@@ -12,8 +12,8 @@
 	<meta property="og:description" content="마작 고수도 헷갈리는 청일색 다면대기! 당신은 모든 대기패를 찾을 수 있습니까? (日本語/中文/English Support)">
 	
     <script> 
-        window.MAIN_VER = "0.10"; 
-        window.JS_VER = "0.10.46"; 
+        window.MAIN_VER = "0.9"; 
+        window.JS_VER = "0.9"; 
 
         // 문서 타이틀 동적 적용
         document.title = `마작 청일색 텐파이 대기패 퀴즈 (v${window.MAIN_VER})`;
@@ -49,10 +49,6 @@
 </head>
 <body>
 
-<div id="splash-screen">
-  <img src="pureflush_splash01.png" alt="청일색 오프닝 이미지">
-</div>
-
 <!-- 🌐 상단 헤더 영역 (제목 & 우측 상단 언어 선택) -->
 <div class="header-container">
     <h1 style="user-select: none;">
@@ -61,14 +57,8 @@
     	<span id="app-version"></span>
         <script> document.getElementById('app-version').textContent = `(v${window.MAIN_VER})`; </script>
     </h1>
-</div>
-<div class="header-container-id">
-    <div class="user-info-bar" left>
-       <span>🔑 PID: <strong id="user-id-display">불러오는 중...</strong></span>
-       <button type="button" class="btn-stats" data-i18n="buttons.stats" onclick="openStatsModal()">기록</button>
-    </div>
     <div class="header-right-controls">
-	    <div class="lang-select-wrapper right">
+	    <div class="lang-select-wrapper">
 		    <select id="lang-select" class="lang-select" onchange="setLanguage(this.value)">
 			    <option value="ko">🇰🇷 한국어</option>
 			    <option value="ja">🇯🇵 日本語</option>
@@ -77,6 +67,10 @@
 			    <option value="en">🇬🇧🇺🇸 English</option>
 		    </select>
 	    </div>
+        <div class="user-info-bar">
+            <span>🔑 PID: <strong id="user-id-display">불러오는 중...</strong></span>
+            <button type="button" class="btn-stats" onclick="openStatsModal()">기록</button>
+        </div>
     </div>
 </div>
 
@@ -124,19 +118,19 @@
     </div>
     
 	<div class="difficulty-group">
-		<button id="btn-mode-veryEasy" class="btn-diff btn-very-easy" onclick="selectMode('veryEasy')" data-i18n="modes.veryEasy">🌱 매우 쉬움 (혼일색)</button>
-		<button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" data-i18n="modes.easy">🌿 쉬움</button>
-		<button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" data-i18n="modes.normal">🌿 보통</button>
-		<button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" data-i18n="modes.hard">🌾 어려움</button>
-		<button id="btn-mode-best" class="btn-diff btn-best" onclick="selectMode('best')" data-i18n="modes.best">🏆 최고의 오름패</button>
-		<button id="btn-mode-discard" class="btn-diff btn-discard" onclick="selectMode('discard')" data-i18n="modes.discard">🀄 무엇을 버릴까?</button>
-		<button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" data-i18n="modes.streak">⚡ 연승 모드</button>
+		<button id="btn-mode-veryEasy" class="btn-diff btn-very-easy" onclick="selectMode('veryEasy')" data-i18n="modeVeryEasy">🌱 매우 쉬움 (혼일색)</button>
+		<button id="btn-mode-easy" class="btn-diff btn-easy" onclick="selectMode('easy')" data-i18n="modeEasy">🌱 쉬움</button>
+		<button id="btn-mode-normal" class="btn-diff btn-normal" onclick="selectMode('normal')" data-i18n="modeNormal">🌿 보통</button>
+		<button id="btn-mode-hard" class="btn-diff btn-hard" onclick="selectMode('hard')" data-i18n="modeHard">🔥 어려움</button>
+		<button id="btn-mode-best" class="btn-diff btn-best" onclick="selectMode('best')" data-i18n="modeBest">🏆 최고의 오름패</button>
+		<button id="btn-mode-discard" class="btn-diff btn-discard" onclick="selectMode('discard')" data-i18n="modeDiscard">🀄 무엇을 버릴까?</button>
+		<button id="btn-mode-streak" class="btn-diff btn-streak" onclick="selectMode('streak')" data-i18n="modeStreak">⚡ 연승 모드</button>
 	</div>
 
     <div id="mode-info-box" class="mode-info-box" style="display: none;"></div>
 
     <div class="start-action-area">
-        <button id="btn-start-game" class="btn-start-game" onclick="startGame()" style="display: none;" data-i18n="buttons.startGame">🎮 게임 시작하기</button>
+        <button id="btn-start-game" class="btn-start-game" onclick="startGame()" style="display: none;" data-i18n="btnStartGame">🎮 게임 시작하기</button>
     </div>
 </div>
 
@@ -159,8 +153,8 @@
         <!-- 손패 조작 컨트롤바 -->
         <div class="hand-controls">
             <div class="control-group">
-                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" data-i18n="zoomctrl.zoomOut">🔍- 축소</button>
-                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" data-i18n="zoomctrl.zoomIn">🔍+ 확대</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-out" data-i18n-title="zoomctrl.zoomOut" title="축소">🔍-</button>
+                <button type="button" class="btn-hand-ctrl" id="btn-zoom-in" data-i18n-title="zoomctrl.zoomIn" title="확대">🔍+</button>
                 <button type="button" class="btn-hand-ctrl" id="btn-line-toggle" data-i18n="zoomctrl.lineToggle">줄 바꿈 (1줄/2줄)</button>
             </div>
             <button type="button" class="btn-hand-ctrl btn-reset" id="btn-hand-reset" data-i18n="zoomctrl.reset">초기화 🔄</button>
@@ -205,13 +199,13 @@
 
 <div class="card" id="quiz-area" style="display: none;">
     <h3 style="margin-top:0;">
-	<span id="quiz-instruction" data-i18n="quizInstruction.default">오름패(대기패)가 되는 숫자를 모두 선택하세요:</span>
+	<span id="quiz-instruction" data-i18n="quizInstruction">오름패(대기패)가 되는 숫자를 모두 선택하세요:</span>
         <small style="font-size:12px; font-weight:normal; color:#666;" data-i18n="shortcutHint">(단축키: 1~9, Enter)</small>
     </h3>
     <div class="selection-grid" id="selection-buttons"></div>
     <div class="discard-selection-grid" id="discard-selection-buttons" style="display: none;"></div>
 
-    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()" data-i18n="buttons.submit">제출 및 정답 확인</button>
+    <button class="btn-submit" id="btn-submit" onclick="handleSubmitOrNext()" data-i18n="btnSubmit">제출 및 정답 확인</button>
     <div id="result" class="result-message" style="display: none;"></div>
     
     <div id="name-input-container" style="display: none;" class="hall-of-fame">
@@ -225,13 +219,13 @@
 </div>
 
 <div class="card hall-of-fame">
-    <h3 data-i18n="hallOfFame.title">🏆 연승 모드 글로벌 명예의 전당 (Top 10)</h3>
-    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;" data-i18n="hallOfFame.subtitle">
+    <h3 data-i18n="hallOfFameTitle">🏆 연승 모드 글로벌 명예의 전당 (Top 10)</h3>
+    <p style="text-align:center; font-size:12px; color:#7f8c8d; margin: 0 0 10px 0;" data-i18n="hallOfFameSubtitle">
         🌐 Google Sheets 연동 글로벌 실시간 리더보드입니다.
     </p>
     <div id="leaderboard-content">
         <ul class="record-list" id="record-list-ul">
-            <li style="text-align:center; padding: 10px; color:#7f8c8d;" data-i18n="hallOfFame.loading">기록을 불러오는 중...</li>
+            <li style="text-align:center; padding: 10px; color:#7f8c8d;" data-i18n="hallOfFameLoading">기록을 불러오는 중...</li>
         </ul>
     </div>
 </div>
@@ -287,7 +281,6 @@
     loadCSS('style_modal.css');
     loadCSS('style_halloffame.css');
     loadCSS('style_hand.css');
-    loadCSS('style_splash.css');
 
     loadScript('script_global.js');
     loadScript('lang_tran_const.js');
@@ -306,8 +299,6 @@
     loadScript('script_ads.js');
     loadScript('script_hidden.js');
     loadScript('script_id.js');
-	loadScript('script_custom_url.js');
-	loadScript('script_splash.js');
 
     loadScript('script.js');
 </script>

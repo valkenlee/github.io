@@ -34,6 +34,21 @@ function updateHandDisplayLayout() {
     container.style.setProperty('--tile-scale', handScale);
 }
 
+// UI 버튼 텍스트 다국어 업데이트
+function updateHandControlsLanguage() {
+    if (typeof t !== 'function') return;
+
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnLineToggle = document.getElementById('btn-line-toggle');
+    const btnReset = document.getElementById('btn-hand-reset');
+
+    if (btnZoomOut) btnZoomOut.textContent = t('zoomctrl.zoomOut');
+    if (btnZoomIn) btnZoomIn.textContent = t('zoomctrl.zoomIn');
+    if (btnLineToggle) btnLineToggle.textContent = t('zoomctrl.lineToggle');
+    if (btnReset) btnReset.textContent = t('zoomctrl.reset');
+}
+
 // 이벤트 리스너 바인딩
 function initHandControls() {
     const btnZoomOut = document.getElementById('btn-zoom-out');
@@ -92,7 +107,43 @@ function initHandControls() {
 
     // 최초 실행 시 기본 배치 설정
     applyAutoLineMode();
+    updateHandControlsLanguage();
 }
+
+
+function updateTileScaleForLandscape() {
+    const wrapper = document.getElementById('main-hand-wrapper');
+    const handDisplay = wrapper ? wrapper.querySelector('.hand-display') : null;
+    
+    if (!wrapper || !handDisplay) return;
+
+    // 가로 모드일 때만 자동 계산
+    if (window.matchMedia("(orientation: landscape)").matches) {
+        // padding(left, right 각 10px)을 제외한 실제 사용 가능 너비
+        const wrapperWidth = wrapper.clientWidth - 20; 
+        
+        // 14패 기준 기본 패 너비(44px) + gap(4px) + 쯔모패 여백(10px) = 약 700px~730px 필요
+        const baseRequiredWidth = 720; 
+        
+        if (wrapperWidth < baseRequiredWidth) {
+            // 컨테이너 폭에 맞추어 scale 축소 비율 계산
+            const autoScale = (wrapperWidth / baseRequiredWidth).toFixed(2);
+            handDisplay.style.setProperty('--tile-scale', autoScale);
+        } else {
+            handDisplay.style.setProperty('--tile-scale', '1');
+        }
+    } else {
+        // 세로 모드일 때는 기본 스케일(1) 또는 기존 스케일 적용
+        handDisplay.style.setProperty('--tile-scale', '1');
+    }
+}
+
+// 리사이즈 및 화면 회전 시 실행
+window.addEventListener('resize', updateTileScaleForLandscape);
+window.addEventListener('orientationchange', updateTileScaleForLandscape);
+
+// 초기 실행
+document.addEventListener('DOMContentLoaded', updateTileScaleForLandscape);
 
 // DOM 로드 완료 여부에 따른 초기화 실행
 if (document.readyState === 'loading') {

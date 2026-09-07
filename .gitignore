@@ -1,0 +1,8 @@
+# 특정 확장자(예: ctags/etags 파일) 제외
+*.tags
+*.tag
+tags
+
+# 특정 디렉터리 내의 태그 파일 제외
+build/tags/
+

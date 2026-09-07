@@ -72,13 +72,13 @@ function getOrCreateUserId() {
  */
 function getGameModes() {
     return [
-        { id: 'mode0', name: t('modeVeryEasy') },
-        { id: 'mode1', name: t('modeEasy') },
-        { id: 'mode2', name: t('modeNormal') },
-        { id: 'mode3', name: t('modeHard') },
-        { id: 'mode4', name: t('modeBest') },
-        { id: 'mode5', name: t('modeDiscard') },
-        { id: 'mode6', name: t('modeStreak') }
+        { id: 'mode0', name: t('modes.veryEasy') },
+        { id: 'mode1', name: t('modes.easy') },
+        { id: 'mode2', name: t('modes.normal') },
+        { id: 'mode3', name: t('modes.hard') },
+        { id: 'mode4', name: t('modes.best') },
+        { id: 'mode5', name: t('modes.discard') },
+        { id: 'mode6', name: t('modes.streak') }
     ];
 }
 

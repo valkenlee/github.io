@@ -55,14 +55,14 @@ function handleTimeout() {
     if (resultDiv) {
         resultDiv.style.display = 'block';
         resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `${tr('timeout', '⏰ 제한시간 초과!')}<br>👉 ${getAnswerString()}`;
+        resultDiv.innerHTML = `${tr('result.timeout', '⏰ 시간 초과로 실패했습니다!')}<br>👉 ${getAnswerString()}`;
     }
 
     checkStreakRecordAndReset();
 
     const submitBtn = document.getElementById('btn-submit');
     if (submitBtn) {
-        submitBtn.innerText = tr('btnNextSame', '다음 문제');
+        submitBtn.innerText = tr('buttons.nextSame', '같은 난이도로 새 문제 제출');
         submitBtn.style.backgroundColor = '#8e44ad';
     }
 }

@@ -99,11 +99,11 @@ function updateGameCardLanguage() {
     const quizInstElem = document.getElementById('quiz-instruction');
     if (quizInstElem && typeof currentMode !== 'undefined') {
         if (currentMode === 'best') {
-            quizInstElem.innerHTML = t('quizInstruction_best');
+            quizInstElem.innerHTML = t('quizInstruction.best');
         } else if (currentMode === 'discard') {
-            quizInstElem.innerHTML = t('quizInstruction_discard');
+            quizInstElem.innerHTML = t('quizInstruction.discard');
         } else {
-            quizInstElem.innerHTML = t('quizInstruction');
+            quizInstElem.innerHTML = t('quizInstruction.default');
         }
     }
 }

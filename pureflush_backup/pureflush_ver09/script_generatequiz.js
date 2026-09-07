@@ -263,22 +263,22 @@ function renderQuizUI() {
     const quizInstElem = document.getElementById('quiz-instruction');
     if (quizInstElem) {
         if (currentMode === 'best') {
-            quizInstElem.innerHTML = t('quizInstruction.best');
+            quizInstElem.innerHTML = t('quizInstruction_best');
         } else if (currentMode === 'discard') {
-            quizInstElem.innerHTML = t('quizInstruction.discard');
+            quizInstElem.innerHTML = t('quizInstruction_discard');
         } else {
-            quizInstElem.innerHTML = t('quizInstruction.default');
+            quizInstElem.innerHTML = t('quizInstruction');
         }
     }
 
-    // [수정] 그룹화된 buttons 변경 사항 적용 (buttons.submit)
+    // 제출 버튼 텍스트 언어 적용
     const submitBtn = document.getElementById('btn-submit');
     if (submitBtn) {
-        submitBtn.innerText = t('buttons.submit');
+        submitBtn.innerText = t('btnSubmit');
         submitBtn.style.backgroundColor = '#2980b9';
     }
 
-    // 💡 언어 변경 시 이전 결과창을 닫고 내용 초기화
+    // 💡 [수정 핵심] 언어 변경 시 이전 결과창을 닫고 내용 초기화
     const resultElem = document.getElementById('result');
     if (resultElem) {
         resultElem.style.display = 'none';

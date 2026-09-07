@@ -58,11 +58,11 @@ function updateModeUI() {
     // 📌 quizInstruction 안내문구 갱신 로직
     const instructionElem = document.getElementById('quiz-instruction');
     if (instructionElem) {
-        let key = 'quizInstruction';
+        let key = 'quizInstruction.default';
         if (currentMode === 'best')
-            key = 'quizInstruction_best';
+            key = 'quizInstruction.best';
         else if (currentMode === 'discard')
-            key = 'quizInstruction_discard';
+            key = 'quizInstruction.discard';
         instructionElem.innerHTML = t(key);
     }
 
@@ -191,7 +191,7 @@ function handleSubmitOrNext() {
     if (!selectedTiles || selectedTiles.size === 0) {
         if (resultDiv) {
             resultDiv.className = 'result-message incorrect';
-            resultDiv.innerHTML = `⚠️ <b>${t('alertSelectTile', '오름패를 최소 1개 이상 선택해 주세요.')}</b>`;
+            resultDiv.innerHTML = `⚠️ <b>${t('result.alertSelectTile', '오름패를 최소 1개 이상 선택해 주세요.')}</b>`;
             resultDiv.style.display = 'block';
         }
         return;
@@ -218,10 +218,10 @@ function handleSubmitOrNext() {
 
     if (isCorrect) {
         resultDiv.className = 'result-message correct';
-        resultDiv.innerHTML = `${t('correct')}<br>👉 ${answerText}`;
+        resultDiv.innerHTML = `${t('result.correct')}<br>👉 ${answerText}`;
     } else {
         resultDiv.className = 'result-message incorrect';
-        resultDiv.innerHTML = `${t('incorrect')}<br>👉 ${answerText}`;
+        resultDiv.innerHTML = `${t('result.incorrect')}<br>👉 ${answerText}`;
     }
 
     // 연승 모드에서 연승 관리 (script_streak_mode.js 함수 연동)
@@ -244,7 +244,7 @@ function handleSubmitOrNext() {
 
     isSubmitted = true;
     const submitBtn = document.getElementById('btn-submit');
-    submitBtn.innerText = currentMode === 'streak' ? t('btnNextStreak') : t('btnNextSame');
+    submitBtn.innerText = currentMode === 'streak' ? t('buttons.nextStreak') : t('buttons.nextSame');
     submitBtn.style.backgroundColor = currentMode === 'streak' ? '#8e44ad' : '#27ae60';
 }
 
@@ -287,6 +287,21 @@ async function initApp() {
         }
     });
 }
+
+// 페이지 및 데이터 로드 완료 후 실행되는 초기화 함수 내부에 추가
+window.addEventListener('DOMContentLoaded', () => {
+    // 마작 패 및 기초 데이터 로드가 끝난 시점에서 호출
+    setTimeout(() => {
+        if (typeof checkAndLoadCustomUrlProblem === 'function') {
+            const isCustomLoaded = checkAndLoadCustomUrlProblem();
+            
+            // 수동 URL 문제가 로드되지 않은 일반 접속일 경우에만 기본 메인화면 처리
+            if (!isCustomLoaded) {
+                // 기존의 기본 퀴즈 초기화 로직 수행
+            }
+        }
+    }, 300); // 스크립트 모듈 로딩 대기시간 고려
+});
 
 /* ==========================================
    📌 initApp() 자동으로 실행하기 (script.js 최하단에 배치)

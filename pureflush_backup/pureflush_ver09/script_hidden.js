@@ -1,6 +1,6 @@
-/* =============================================================
-   🔒 히든 패 분석기 트리거 (script_hidden.js)
-   ============================================================= */
+/* -------------------------------------------------------------
+   🔒 히든 패 분석기 트리거
+------------------------------------------------------------- */
 function isWrappedEnvironment() {
     return Boolean(
         window.__IS_WRAPPED__ === true ||
@@ -105,7 +105,7 @@ async function updateCustomHandDisplay() {
     container.innerHTML = '';
 
     if (customHand.length === 0) {
-        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">${t('analyzer.emptyHint')}</span>`;
+        container.innerHTML = `<span style="color:#a3b18a; font-size:14px;">${t('analyzerEmptyHint')}</span>`;
         return;
     }
 
@@ -163,17 +163,17 @@ function analyzeCustomHand() {
     let actualStr = winningTiles.length > 0 ? winningTiles.join(', ') : '-';
     let tagNotice = '';
     if (isRyanpeikouHand) {
-        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('waits.ryanpeikouNotice')}</div><br>`;
+        tagNotice = `<div class="special-tag ryanpeikou-tag">${t('ryanpeikouNotice')}</div><br>`;
     } else if (isChiitoiHand) {
-        tagNotice = `<div class="special-tag chiitoi-tag">${t('waits.chiitoiNotice')}</div><br>`;
+        tagNotice = `<div class="special-tag chiitoi-tag">${t('chiitoiNotice')}</div><br>`;
     }
 
     let htmlStr = '';
     if (maxedOutWinningTiles.length > 0) {
         const theoreticalList = [...winningTiles, ...maxedOutWinningTiles].sort((a, b) => a - b);
-        htmlStr = `${tagNotice}<b>${t('result.actualWaits')}:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>${t('result.theoreticalWaits')}:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('result.maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
+        htmlStr = `${tagNotice}<b>${t('actualWaits')}:</b> [ ${actualStr} ] &nbsp;|&nbsp; <b>${t('theoreticalWaits')}:</b> [ ${theoreticalList.join(', ')} ]<br><small style="color:#d35400;">${t('maxedNotice', { tiles: maxedOutWinningTiles.join(', ') })}</small>`;
     } else {
-        htmlStr = `${tagNotice}<b>${t('result.actualWaits')}:</b> [ ${actualStr} ]`;
+        htmlStr = `${tagNotice}<b>${t('actualWaits')}:</b> [ ${actualStr} ]`;
     }
 
     if (winningTiles.length > 0 || maxedOutWinningTiles.length > 0) {
