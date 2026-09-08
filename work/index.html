@@ -5,283 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Valken Net - 리치마작 청일색(清一色) 대기패 연습기</title>
   <meta name="description" content="리치마작 청일색(清一色) 다면창 대기패를 빠르게 읽고 계산할 수 있는 온라인 연습 도구 및 공략 가이드, 비하인드 스토리를 제공합니다.">
-  <style>
-    /* 기본 스타일 리셋 및 레이아웃 설정 */
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --accent-color: #38bdf8;
-      --border-color: #334155;
-      --code-bg: #0b1329;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      line-height: 1.6;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    a {
-      color: var(--accent-color);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* Header */
-    header {
-      background-color: rgba(15, 23, 42, 0.9);
-      border-bottom: 1px solid var(--border-color);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(8px);
-    }
-
-    header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-    }
-
-    header nav a {
-      font-size: 0.875rem;
-      color: var(--text-sub);
-      margin-left: 1.2rem;
-    }
-
-    /* Main Content Containers */
-    main {
-      flex: 1;
-      max-width: 900px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-
-    /* Section 1: Pureflush App Container */
-    .app-section {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 3rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      text-align: center;
-    }
-
-    .app-title {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      color: #fff;
-    }
-
-    .app-subtitle {
-      font-size: 0.9rem;
-      color: var(--text-sub);
-      margin-bottom: 1.5rem;
-    }
-
-    /* PUREFLUSH 인터랙티브 앱 플레이스홀더 */
-    #pureflush-app {
-      min-height: 250px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: var(--code-bg);
-      border: 1px dashed var(--border-color);
-      border-radius: 8px;
-      padding: 1.5rem;
-    }
-
-    /* Common Section Styles */
-    .section-title {
-      font-size: 1.1rem;
-      color: var(--text-sub);
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Section 2: Articles Grid (가이드 및 스토리) */
-    .articles-section {
-      margin-bottom: 3rem;
-    }
-
-    .article-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.25rem;
-    }
-
-    .article-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-
-    .article-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--accent-color);
-    }
-
-    .article-card h3 {
-      font-size: 1.1rem;
-      color: #fff;
-      margin-bottom: 0.5rem;
-      line-height: 1.4;
-    }
-
-    .article-card p {
-      font-size: 0.875rem;
-      color: var(--text-sub);
-      margin-bottom: 1rem;
-      flex-grow: 1;
-    }
-
-    .article-card .read-more {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--accent-color);
-    }
-
-    /* Section 3: Overview Text (애드센스 기본 텍스트 수집용) */
-    .guide-overview {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    .guide-overview h2 {
-      font-size: 1.25rem;
-      color: var(--accent-color);
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 0.5rem;
-    }
-
-    .guide-overview p {
-      color: var(--text-sub);
-      font-size: 0.95rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Section 4: Other Projects */
-    .other-projects {
-      margin-bottom: 3rem;
-    }
-
-    .project-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-    }
-
-    .project-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 1.25rem;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-
-    .project-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent-color);
-    }
-
-    .project-card h3 {
-      font-size: 1rem;
-      margin-bottom: 0.3rem;
-      color: #fff;
-    }
-
-    .project-card p {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-    }
-
-    /* Footer */
-    footer {
-      background-color: #0b1120;
-      border-top: 1px solid var(--border-color);
-      padding: 2rem 1rem;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-sub);
-    }
-
-    .footer-links {
-      margin-bottom: 1rem;
-    }
-
-    .footer-links a {
-      margin: 0 0.5rem;
-      color: var(--text-sub);
-    }
-
-    /* Privacy Modal Style */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: var(--card-bg);
-      padding: 2rem;
-      border-radius: 8px;
-      max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      color: var(--text-sub);
-      font-size: 0.9rem;
-    }
-
-    .modal-close {
-      float: right;
-      cursor: pointer;
-      color: #fff;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Header -->
   <header>
-    <h1><a href="index.html" style="color: inherit; text-decoration: none;">VALKEN.NET</a></h1>
+    <h1><a href="index.html">VALKEN.NET</a></h1>
     <nav>
       <a href="#articles">가이드 & 스토리</a>
       <a href="#projects">기타 프로젝트</a>
@@ -290,65 +19,57 @@
   </header>
 
   <main>
-    <!-- 1. Pureflush App 영역 -->
+    <!-- Pureflush App 영역 -->
     <section class="app-section">
-      <h2 class="app-title">pureflush: 청일색(清一色) 대기패 연습기</h2>
-      <p class="app-subtitle">리치마작 다면창 대기패를 빠르게 판단하는 감각을 훈련하세요.</p>
+      <h2 style="font-size: 1.5rem; color: #fff; margin-bottom: 0.5rem;">pureflush: 청일색(清一色) 대기패 연습기</h2>
+      <p style="font-size: 0.9rem; color: var(--text-sub); margin-bottom: 1.5rem;">리치마작 다면창 대기패를 빠르게 판단하는 감각을 훈련하세요.</p>
       
-      <!-- PUREFLUSH APP START -->
-      <div id="pureflush-app">
-        <!-- 기존 pureflush HTML/JS 게임 UI가 들어갈 위치입니다. -->
+      <div id="pureflush-app" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: var(--code-bg); border: 1px dashed var(--border-color); border-radius: 8px; padding: 1.5rem;">
         <p style="color: var(--accent-color); font-weight: bold;">[ pureflush 퀴즈 게임 인터페이스 영역 ]</p>
       </div>
-      <!-- PUREFLUSH APP END -->
     </section>
 
-    <!-- 2. 청일색 아티클 심화 섹션 -->
-<!-- Section 2: Articles Grid (4개 카드로 확장) -->
-<section id="articles" class="articles-section">
-  <h2 class="section-title">Chinitsu Guides & Stories</h2>
-  <div class="article-grid">
-    
-    <!-- 아티클 1: 기본 공략 가이드 -->
-    <a href="chinitsu-guide.html" class="article-card">
-      <div>
-        <h3>청일색 완전 공략 가이드</h3>
-        <p>개념부터 다면창을 빠르게 읽는 4가지 분해 법칙, 실전 조패 노하우를 상세히 안내합니다.</p>
+    <!-- 아티클 목록 섹션 -->
+    <section id="articles" class="articles-section">
+      <h2 class="section-title">Chinitsu Guides & Stories</h2>
+      <div class="article-grid">
+        
+        <a href="chinitsu-guide.html" class="article-card">
+          <div>
+            <h3>청일색 완전 공략 가이드</h3>
+            <p>개념부터 다면창을 빠르게 읽는 4가지 분해 법칙, 실전 조패 노하우를 상세히 안내합니다.</p>
+          </div>
+          <span class="read-more">가이드 읽기 &rarr;</span>
+        </a>
+
+        <a href="chinitsu-advanced.html" class="article-card">
+          <div>
+            <h3>청일색과 역만(役滿)의 관계</h3>
+            <p>구련보등, 녹일색과의 연결 구조 및 사암각 중첩 시의 상위 역 우선 적용 규칙을 파헤칩니다.</p>
+          </div>
+          <span class="read-more">심화편 읽기 &rarr;</span>
+        </a>
+
+        <a href="chinitsu-cheatsheet.html" class="article-card">
+          <div>
+            <h3>패턴 치트시트 & 수비 전략</h3>
+            <p>자주 나오는 핵심 4가지 다면창 패턴 요약표와 타가 청일색 시의 안전 대처법을 다룹니다.</p>
+          </div>
+          <span class="read-more">치트시트 보기 &rarr;</span>
+        </a>
+
+        <a href="chinitsu-episodes.html" class="article-card">
+          <div>
+            <h3>청일색 에피소드 & 괴담</h3>
+            <p>프로 리그 실전 사고, 구련보등 괴담, 만화/애니 속 명장면 등 흥미로운 이야기를 소개합니다.</p>
+          </div>
+          <span class="read-more">스토리 읽기 &rarr;</span>
+        </a>
+
       </div>
-      <span class="read-more">가이드 읽기 &rarr;</span>
-    </a>
+    </section>
 
-    <!-- 아티클 2: 역만 심화편 -->
-    <a href="chinitsu-advanced.html" class="article-card">
-      <div>
-        <h3>청일색과 역만(役滿)의 관계</h3>
-        <p>구련보등, 녹일색과의 연결 구조 및 사암각 중첩 시의 상위 역 우선 적용 규칙을 파헤칩니다.</p>
-      </div>
-      <span class="read-more">심화편 읽기 &rarr;</span>
-    </a>
-
-    <!-- 아티클 3: 패턴 치트시트 & 수비 전략 (신규 추가) -->
-    <a href="chinitsu-cheatsheet.html" class="article-card">
-      <div>
-        <h3>패턴 치트시트 & 수비 전략</h3>
-        <p>자주 나오는 핵심 4가지 다면창 패턴 요약표와 타가 청일색 시의 안전 대처법을 다룹니다.</p>
-      </div>
-      <span class="read-more">치트시트 보기 &rarr;</span>
-    </a>
-
-    <!-- 아티클 4: 비하인드 스토리 -->
-    <a href="chinitsu-episodes.html" class="article-card">
-      <div>
-        <h3>청일색 에피소드 & 괴담</h3>
-        <p>프로 리그 실전 사고, 구련보등 괴담, 만화/애니 속 명장면 등 흥미로운 이야기를 소개합니다.</p>
-      </div>
-      <span class="read-more">스토리 읽기 &rarr;</span>
-    </a>
-
-  </div>
-</section>
-
-    <!-- 3. 메인 페이지 요약 설명 -->
+    <!-- 요약 설명 -->
     <section class="guide-overview">
       <h2>마작 청일색(清一色)이란?</h2>
       <p>
@@ -359,10 +80,10 @@
       </p>
     </section>
 
-    <!-- 4. 기타 프로젝트 링크 영역 -->
+    <!-- 기타 프로젝트 -->
     <section id="projects" class="other-projects">
       <h2 class="section-title">Other Projects</h2>
-      <div class="project-grid">
+      <div class="project-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
         
         <a href="/kbo" class="project-card">
           <h3>KBO 승차 그래프</h3>
@@ -383,20 +104,18 @@
     </section>
   </main>
 
-  <!-- Footer 및 정책 정보 -->
   <footer>
     <div class="footer-links">
       <a href="chinitsu-guide.html">기본 가이드</a> | 
       <a href="chinitsu-advanced.html">역만 심화편</a> | 
+      <a href="chinitsu-cheatsheet.html">치트시트</a> | 
       <a href="chinitsu-episodes.html">에피소드</a> | 
       <a href="javascript:void(0)" onclick="openModal('privacyModal')">개인정보처리방침</a> | 
-      <a href="javascript:void(0)" onclick="openModal('termsModal')">이용약관</a> | 
-      <a href="mailto:valken@valken.net">문의하기</a>
+      <a href="javascript:void(0)" onclick="openModal('termsModal')">이용약관</a>
     </div>
     <p>&copy; Valken Net. All rights reserved.</p>
   </footer>
 
-  <!-- 개인정보처리방침 모달 -->
   <div id="privacyModal" class="modal">
     <div class="modal-content">
       <span class="modal-close" onclick="closeModal('privacyModal')">&times;</span>
@@ -406,13 +125,9 @@
       <br>
       <p><strong>1. 쿠키 및 광고 수집</strong><br>
       본 웹사이트는 구글(Google)을 포함한 제3자 광고 제공업체의 맞춤형 광고 서비스(Google AdSense)를 이용할 수 있습니다. 구글은 쿠키를 사용하여 사용자의 이전 방문 기록을 바탕으로 광고를 게재합니다.</p>
-      <br>
-      <p><strong>2. 문의처</strong><br>
-      관련 문의사항은 valken@valken.net으로 연락해 주시기 바랍니다.</p>
     </div>
   </div>
 
-  <!-- 이용약관 모달 -->
   <div id="termsModal" class="modal">
     <div class="modal-content">
       <span class="modal-close" onclick="closeModal('termsModal')">&times;</span>
@@ -423,17 +138,9 @@
   </div>
 
   <script>
-    function openModal(id) {
-      document.getElementById(id).style.display = 'flex';
-    }
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
-    window.onclick = function(event) {
-      if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
-      }
-    }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; }
   </script>
 </body>
 </html>
