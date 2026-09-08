@@ -281,7 +281,7 @@
 
   <!-- Header -->
   <header>
-    <h1><a href="/" style="color: inherit; text-decoration: none;">VALKEN.NET</a></h1>
+    <h1><a href="index.html" style="color: inherit; text-decoration: none;">VALKEN.NET</a></h1>
     <nav>
       <a href="#articles">가이드 & 스토리</a>
       <a href="#projects">기타 프로젝트</a>
@@ -299,20 +299,17 @@
       <div id="pureflush-app">
         <!-- 기존 pureflush HTML/JS 게임 UI가 들어갈 위치입니다. -->
         <p style="color: var(--accent-color); font-weight: bold;">[ pureflush 퀴즈 게임 인터페이스 영역 ]</p>
-        <p style="font-size: 0.85rem; color: var(--text-sub); margin-top: 0.5rem;">
-          기존 pureflush의 패 출력 UI, 선택 버튼, 타이머 코드를 이 div 안에 배치하세요.
-        </p>
       </div>
       <!-- PUREFLUSH APP END -->
     </section>
 
-    <!-- 2. 청일색 아티클 심화 섹션 (새로 작성한 페이지 연결) -->
+    <!-- 2. 청일색 아티클 심화 섹션 -->
     <section id="articles" class="articles-section">
       <h2 class="section-title">Chinitsu Guides & Stories</h2>
       <div class="article-grid">
         
-        <!-- 아티클 1: 기본 공략 가이드 -->
-        <a href="/chinitsu-guide.html" class="article-card">
+        <!-- 아티클 1: 기본 공략 가이드 (상대 경로 적용) -->
+        <a href="chinitsu-guide.html" class="article-card">
           <div>
             <h3>청일색 완전 공략 가이드</h3>
             <p>개념부터 다면창을 빠르게 읽는 4가지 분해 법칙, 실전 조패 노하우를 상세히 안내합니다.</p>
@@ -320,8 +317,8 @@
           <span class="read-more">가이드 읽기 &rarr;</span>
         </a>
 
-        <!-- 아티클 2: 역만 심화편 -->
-        <a href="/chinitsu-advanced.html" class="article-card">
+        <!-- 아티클 2: 역만 심화편 (상대 경로 적용) -->
+        <a href="chinitsu-advanced.html" class="article-card">
           <div>
             <h3>청일색과 역만(役滿)의 관계</h3>
             <p>구련보등, 녹일색과의 연결 구조 및 사암각 중첩 시의 상위 역 우선 적용 규칙을 파헤칩니다.</p>
@@ -329,8 +326,8 @@
           <span class="read-more">심화편 읽기 &rarr;</span>
         </a>
 
-        <!-- 아티클 3: 비하인드 스토리 -->
-        <a href="/chinitsu-episodes.html" class="article-card">
+        <!-- 아티클 3: 비하인드 스토리 (상대 경로 적용) -->
+        <a href="chinitsu-episodes.html" class="article-card">
           <div>
             <h3>청일색 에피소드 & 괴담</h3>
             <p>프로 리그 실전 사고, 구련보등 괴담, 만화/애니 속 명장면 등 흥미로운 이야기를 소개합니다.</p>
@@ -341,7 +338,7 @@
       </div>
     </section>
 
-    <!-- 3. 메인 페이지 요약 설명 (애드센스 텍스트 검수용) -->
+    <!-- 3. 메인 페이지 요약 설명 -->
     <section class="guide-overview">
       <h2>마작 청일색(清一色)이란?</h2>
       <p>
@@ -379,9 +376,9 @@
   <!-- Footer 및 정책 정보 -->
   <footer>
     <div class="footer-links">
-      <a href="/chinitsu-guide.html">기본 가이드</a> | 
-      <a href="/chinitsu-advanced.html">역만 심화편</a> | 
-      <a href="/chinitsu-episodes.html">에피소드</a> | 
+      <a href="chinitsu-guide.html">기본 가이드</a> | 
+      <a href="chinitsu-advanced.html">역만 심화편</a> | 
+      <a href="chinitsu-episodes.html">에피소드</a> | 
       <a href="javascript:void(0)" onclick="openModal('privacyModal')">개인정보처리방침</a> | 
       <a href="javascript:void(0)" onclick="openModal('termsModal')">이용약관</a> | 
       <a href="mailto:valken@valken.net">문의하기</a>
@@ -389,7 +386,7 @@
     <p>&copy; Valken Net. All rights reserved.</p>
   </footer>
 
-  <!-- 개인정보처리방침 모달 (애드센스 필수) -->
+  <!-- 개인정보처리방침 모달 -->
   <div id="privacyModal" class="modal">
     <div class="modal-content">
       <span class="modal-close" onclick="closeModal('privacyModal')">&times;</span>
@@ -422,7 +419,6 @@
     function closeModal(id) {
       document.getElementById(id).style.display = 'none';
     }
-    // 모달 외부 클릭 시 닫기
     window.onclick = function(event) {
       if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
