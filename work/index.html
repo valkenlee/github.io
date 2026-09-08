@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valken Net - 리치마작 청일색(清一色) 대기패 연습기</title>
+  <meta name="description" content="리치마작 청일색(清一色) 다면창 대기패를 빠르게 읽고 계산할 수 있는 온라인 연습 도구 및 웹 서비스를 제공합니다.">
+  <style>
+    /* 기본 스타일 리셋 및 레이아웃 설정 */
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --accent-color: #38bdf8;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Header */
+    header {
+      background-color: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    header nav a {
+      font-size: 0.875rem;
+      color: var(--text-sub);
+      margin-left: 1.5rem;
+    }
+
+    /* Main Content Containers */
+    main {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* Section 1: Pureflush App Container */
+    .app-section {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .app-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .app-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      margin-bottom: 1.5rem;
+    }
+
+    /* PUREFLUSH 인터랙티브 앱 플레이스홀더 */
+    #pureflush-app {
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #0b1329;
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    /* Section 2: Text Article (애드센스 수집용 핵심 콘텐츠) */
+    .guide-section {
+      margin-bottom: 3rem;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    .guide-section h2 {
+      font-size: 1.3rem;
+      color: var(--accent-color);
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .guide-section h3 {
+      font-size: 1.05rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #e2e8f0;
+    }
+
+    .guide-section p {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    .guide-section ul {
+      list-style-type: disc;
+      margin-left: 1.5rem;
+      color: var(--text-sub);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Section 3: Other Projects */
+    .other-projects {
+      margin-bottom: 3rem;
+    }
+
+    .other-projects h2 {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .project-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .project-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-color);
+    }
+
+    .project-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+      color: #fff;
+    }
+
+    .project-card p {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    /* Footer */
+    footer {
+      background-color: #0b1120;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .footer-links {
+      margin-bottom: 1rem;
+    }
+
+    .footer-links a {
+      margin: 0 0.75rem;
+      color: var(--text-sub);
+    }
+
+    /* Privacy Modal Style */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: var(--text-sub);
+      font-size: 0.9rem;
+    }
+
+    .modal-close {
+      float: right;
+      cursor: pointer;
+      color: #fff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1><a href="/" style="color: inherit; text-decoration: none;">VALKEN.NET</a></h1>
+    <nav>
+      <a href="#guide">가이드</a>
+      <a href="#projects">기타 프로젝트</a>
+      <a href="mailto:valken@valken.net">문의</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 1. Pureflush App 영역 -->
+    <section class="app-section">
+      <h2 class="app-title">pureflush: 청일색(清一色) 대기패 연습기</h2>
+      <p class="app-subtitle">리치마작 다면창 대기패를 빠르게 판단하는 감각을 훈련하세요.</p>
+      
+      <!-- PUREFLUSH APP START -->
+      <div id="pureflush-app">
+        <!-- 기존 pureflush HTML/JS 게임 UI가 들어갈 위치입니다. -->
+        <p style="color: var(--accent-color); font-weight: bold;">[ pureflush 퀴즈 게임 인터페이스 영역 ]</p>
+        <p style="font-size: 0.85rem; color: var(--text-sub); margin-top: 0.5rem;">
+          기존 pureflush의 패 출력 UI, 선택 버튼, 타이머 코드를 이 div 안에 배치하세요.
+        </p>
+      </div>
+      <!-- PUREFLUSH APP END -->
+    </section>
+
+    <!-- 2. 가이드 및 아티클 영역 (애드센스 텍스트 검수용) -->
+    <article id="guide" class="guide-section">
+      <h2>마작 청일색(清一色) 다면창 분석 노하우</h2>
+      
+      <h3>1. 청일색 역의 이해와 연습의 필요성</h3>
+      <p>
+        리치마작에서 **청일색(清一色, Chinitsu)**은 울지 않고 완성 시 6한역, 울었을 시 5한역에 해당하는 고득점 역입니다. 한 가지 수패(만자, 통자, 삭자)만으로 손패를 구성하기 때문에 대기패의 형태가 매우 복잡해지는 **다면창(多面聽)** 구조가 자주 형성됩니다. 실전에서 한정된 시간 안에 정확한 대기패를 파악하지 못하면 멘진(착오)이나 훌륭한 고득점 기회를 놓치게 됩니다.
+      </p>
+
+      <h3>2. 다면창을 빠르게 읽는 3가지 인지 원리</h3>
+      <p>
+        복잡해 보이는 13장의 수패 구조도 몇 가지 규칙적인 패턴 분해를 통해 빠르게 해석할 수 있습니다.
+      </p>
+      <ul>
+        <li><strong>머리(작두) 후보 먼저 분리하기:</strong> 같은 패가 2장 이상 있는 조합을 순차적으로 머리로 가정하면, 남은 패들이 3장 단위의 슌츠(연속패)나 안코(동일패 3장)로 깔끔하게 떨어지는지 확인할 수 있습니다.</li>
+        <li><strong>안코(暗刻) 형태의 해석:</strong> 3장 연속으로 겹친 패는 슌츠 3개로도 해석할 수 있고, 하나의 안코로도 해석할 수 있어 대기패의 스펙트럼을 넓혀줍니다.</li>
+        <li><strong>중앙 복부 형태(Nakabukure) 주의:</strong> 4-5-5-6 형태처럼 중앙 패가 2장 겹친 구조는 인접한 패들과 복합적으로 작용하여 예외적인 대기패를 만들어내는 대표적인 구조입니다.</li>
+      </ul>
+
+      <h3>3. pureflush 활용 팁</h3>
+      <p>
+        본 연습기는 임의로 생성되는 청일색 13장 형태에서 대기패를 제한 시간 내에 찾아내는 훈련을 제공합니다. 매일 5~10분씩 반복 연습을 통해 실전 타패 시간 압박 속에서도 대기패를 순간적으로 인지하는 직관을 기를 수 있습니다.
+      </p>
+    </article>
+
+    <!-- 3. 기타 프로젝트 링크 영역 -->
+    <section id="projects" class="other-projects">
+      <h2>Other Projects</h2>
+      <div class="project-grid">
+        
+        <a href="/kbo" class="project-card">
+          <h3>KBO 승차 그래프</h3>
+          <p>KBO 리그 팀별 승차 변화와 순위 흐름을 한눈에 확인하는 인터랙티브 차트입니다.</p>
+        </a>
+
+        <a href="/flipclock" class="project-card">
+          <h3>3D Flip Clock</h3>
+          <p>CSS 3D 변형 기반의 입체적이고 깔끔한 플립 시계 웹 앱입니다.</p>
+        </a>
+
+        <a href="https://blog.valken.net" class="project-card" target="_blank" rel="noopener">
+          <h3>Valken Blog</h3>
+          <p>기술 개발 노하우, 프로젝트 기록 및 다양한 이야기를 담은 티스토리 블로그입니다.</p>
+        </a>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer 및 정책 정보 -->
+  <footer>
+    <div class="footer-links">
+      <a href="javascript:void(0)" onclick="openModal('privacyModal')">개인정보처리방침</a> | 
+      <a href="javascript:void(0)" onclick="openModal('termsModal')">이용약관</a> | 
+      <a href="mailto:valken@valken.net">문의하기</a>
+    </div>
+    <p>&copy; Valken Net. All rights reserved.</p>
+  </footer>
+
+  <!-- 개인정보처리방침 모달 (애드센스 필수) -->
+  <div id="privacyModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('privacyModal')">&times;</span>
+      <h3>개인정보처리방침</h3>
+      <br>
+      <p>Valken Net은 이용자의 개인정보를 중요시하며, 관련 법률을 준수합니다.</p>
+      <br>
+      <p><strong>1. 쿠키 및 광고 수집</strong><br>
+      본 웹사이트는 구글(Google)을 포함한 제3자 광고 제공업체의 맞춤형 광고 서비스(Google AdSense)를 이용할 수 있습니다. 구글은 쿠키를 사용하여 사용자의 이전 방문 기록을 바탕으로 광고를 게재합니다.</p>
+      <br>
+      <p><strong>2. 문의처</strong><br>
+      관련 문의사항은 valken@valken.net으로 연락해 주시기 바랍니다.</p>
+    </div>
+  </div>
+
+  <!-- 이용약관 모달 -->
+  <div id="termsModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('termsModal')">&times;</span>
+      <h3>이용약관</h3>
+      <br>
+      <p>Valken Net이 제공하는 모든 웹 앱 및 서비스는 비상업적 학습 및 편의 목적으로 무료 제공됩니다.</p>
+    </div>
+  </div>
+
+  <script>
+    function openModal(id) {
+      document.getElementById(id).style.display = 'flex';
+    }
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+    // 모달 외부 클릭 시 닫기
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
