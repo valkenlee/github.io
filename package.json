@@ -1,0 +1,13 @@
+{
+  "name": "chinitsu-daily-quiz",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "generate-daily": "node js/generate_quiz.js",
+    "upload": "node js/upload_quiz.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.1.0",
+    "firebase-admin": "^12.7.0"
+  }
+}
