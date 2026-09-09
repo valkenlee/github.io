@@ -1,0 +1,557 @@
+/* Sections & Cards */
+.content-section, .app-section, .guide-overview {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.app-section {
+  text-align: center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.article-header {
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+
+.article-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+}
+
+.article-meta {
+  font-size: 0.875rem;
+  color: var(--text-sub);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  color: var(--text-sub);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.content-section h2, .guide-overview h2 {
+  font-size: 1.35rem;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.content-section p, .guide-overview p {
+  color: var(--text-sub);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+/* Articles & Projects Grid */
+.articles-section, .other-projects {
+  margin-bottom: 3rem;
+}
+
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.article-card, .project-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, border-color 0.2s, background-color 0.3s;
+}
+
+.article-card:hover, .project-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-color);
+  text-decoration: none;
+}
+
+/* Callouts & Episode Cards */
+.episode-card {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.25rem 0;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.episode-card h3 {
+  font-size: 1.1rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.episode-card p {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  margin-bottom: 0;
+}
+
+.callout {
+  background-color: rgba(56, 189, 248, 0.1);
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+/* 치트시트 테이블 기본 스타일 및 테두리 적용 */
+.cheat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.cheat-table th,
+.cheat-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.cheat-table thead th {
+  background-color: var(--code-bg);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* 치트시트 테이블 컬럼 최소 너비 규격 */
+.cheat-table .col-pattern {
+  min-width: 130px;
+}
+
+.cheat-table .col-hand {
+  min-width: 210px;
+}
+
+/* 치트시트 표 내부 손패 정렬 및 크기 지정 */
+.cheat-table .mahjong-hand {
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 0;
+  margin-top: 0;
+}
+
+.cheat-table .mahjong-hand .tile {
+  height: 48px;
+  width: auto;
+}
+
+/* 치트시트 목록 카드 형태 */
+.cheat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.cheat-item {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.cheat-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.cheat-item-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.cheat-item-waits {
+  font-size: 0.95rem;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.cheat-item-hand {
+  margin: 0.8rem 0;
+  overflow-x: auto; /* 화면이 작아져도 패가 다음 줄로 깨지지 않고 스크롤 대응 */
+}
+
+.cheat-item-hand .mahjong-hand {
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 0;
+  margin: 0;
+}
+
+.cheat-item-hand .tile {
+  height: 48px;
+  width: auto;
+}
+
+.cheat-item-desc {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+
+/* 보조 설명용 소형 텍스트 */
+.sub-text-sm {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+}
+
+.pattern-tag {
+  font-family: monospace;
+  font-size: 1rem;
+  background-color: var(--card-bg);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: #f59e0b;
+}
+
+/* Buttons & Theme Toggle */
+.cta-button {
+  display: inline-block;
+  background-color: var(--accent-color);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+  transition: opacity 0.2s;
+}
+
+.cta-button:hover {
+  opacity: 0.9;
+  text-decoration: none;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Index Page Nav Grid Utility */
+.article-header.hero-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  position: static;
+}
+
+.article-header.hero-header .section-title,
+.article-header.hero-header .article-title,
+.article-header.hero-header .article-meta {
+  width: 100%;
+}
+
+.article-header.hero-header .article-title {
+  font-size: 2.2rem;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0;
+}
+
+.nav-card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nav-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.nav-card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.nav-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  line-height: 1.6;
+}
+
+.nav-card-button {
+  margin-top: 1rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* 본문 내 소제목 유틸리티 */
+.sub-label {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+/* 콜아웃 상단 간격 조절 */
+.callout.mt-1 {
+  margin-top: 1rem;
+}
+
+/* 아티클 헤더 상단 타이틀/메타 너비 제어 */
+.article-header .section-title,
+.article-header .article-title,
+.article-header .article-meta {
+  width: 100%;
+}
+
+/* 순서 있는 리스트 (ol) 스타일 */
+.callout ol, .episode-card ol {
+  padding-left: 1.2rem;
+  margin-top: 0.5rem;
+  line-height: 1.8;
+}
+
+/* 설명용 리스트 (ul) 스타일 */
+.episode-card ul {
+  padding-left: 1.2rem;
+  color: var(--text-sub);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.episode-card ul li {
+  margin-bottom: 0.5rem;
+}
+
+/* 경고/주의용 콜아웃 (주황색 테두리) */
+.callout.callout-warning {
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+/* 소제목 (h4) */
+.episode-card h4 {
+  color: var(--text-main);
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1rem;
+}
+
+/* 상단 여백 유틸리티 */
+.mt-1 {
+  margin-top: 1rem;
+}
+
+/* 설명용 보수적인 작은 글씨 텍스트 */
+.sub-text-sm {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  margin-top: 0.4rem;
+}
+
+.main-text-sm {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin-bottom: 0.2rem;
+}
+
+
+/* 서브 배경 및 테두리 박스 유틸리티 */
+.bg-sub-card {
+  background-color: var(--code-bg);
+  border-left: 4px solid var(--accent-color);
+  padding: 1rem 1.2rem;
+  border-radius: 4px;
+}
+
+.bg-sub-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.bg-sub-card ul {
+  padding-left: 1.2rem;
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-sub);
+}
+
+/* 외부 링크 유틸리티 */
+.external-link {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.external-link a {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+/* 하단 CTA 전용 박스 */
+.cta-box {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--code-bg);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.cta-box p {
+  color: var(--text-sub);
+  margin-bottom: 1rem;
+}
+
+/* Q&A 카드 및 항목 스타일 */
+.qna-list {
+  margin-top: 1rem;
+}
+
+.qna-item-title {
+  color: var(--accent-color);
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.qna-item-desc {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  margin-bottom: 1.2rem;
+}
+
+/* 퀴즈 박스 및 난이도 태그 */
+.quiz-card {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+}
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.quiz-title {
+  color: var(--text-main);
+  font-size: 1.05rem;
+}
+
+.quiz-desc {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  margin-bottom: 0.8rem;
+}
+
+.quiz-details {
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.quiz-summary {
+  color: var(--accent-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.quiz-solution {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
+
+.quiz-solution ul {
+  padding-left: 1.2rem;
+  margin-top: 0.3rem;
+}
+
+/* 난이도별 태그 색상 유틸리티 */
+.tag-easy {
+  color: #4ade80;
+}
+
+.tag-medium {
+  color: #f59e0b;
+}
+
+.tag-hard {
+  color: #f43f5e;
+}
+
+/* 기본 CTA 버튼 및 위치 조정 */
+.cta-box .cta-button {
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+/* 퀴즈 게임 시작 버튼 강조 스타일 */
+.cta-button-highlight {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(238, 82, 83, 0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.cta-button-highlight:hover {
+  background: linear-gradient(135deg, #ff5252 0%, #d63031 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(238, 82, 83, 0.6);
+}
+
+.cta-button-highlight:active {
+  transform: translateY(0);
+}

@@ -1,0 +1,163 @@
+.card {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+}
+
+/* 난이도 버튼/설명 전용 카드 */
+.difficulty-card {
+    border-left: 6px solid #27ae60;
+}
+
+/* 게임 플레이 카드 */
+.game-card {
+    border-left: 6px solid #2980b9;
+}
+
+/* 게임 시작 버튼 관련 스타일 */
+.start-action-area {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.btn-start-game {
+    padding: 12px 28px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #27ae60;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-start-game:hover {
+    background-color: #219150;
+    transform: translateY(-2px);
+}
+
+.btn-start-game:active {
+    transform: translateY(0);
+}
+
+/* 난이도 버튼 그룹 */
+.difficulty-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-diff {
+    width: 100%;
+    padding: 14px 4px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-diff:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-diff:disabled { background-color: #95a5a6 !important; cursor: not-allowed; filter: none; transform: none; } 
+
+.btn-diff.active { 
+    outline: 5px solid #1a73e8;
+    outline-offset: 2px; 
+    box-shadow: 0 0 10px rgba(26, 115, 232, 0.6);
+}
+
+/* 게임 모드별 버튼 스타일 */
+.btn-very-easy { background-color: #2ecc71; color: white; }
+.btn-very-easy:hover { background-color: #27ae60; }
+.btn-easy { background-color: #27ae60; }
+.btn-normal { background-color: #e67e22; }
+.btn-hard { background-color: #c0392b; }
+.btn-streak { background-color: #8e44ad; }
+.btn-best { background-color: #e84393; }
+.btn-discard { background-color: #16a085; }
+.btn-discard:hover:not(:disabled) { background-color: #1abc9c; }
+
+/* 울은 자패 구분 스타일 */
+.honor-meld-tile {
+    opacity: 0.9;
+    filter: brightness(0.95);
+}
+
+/* 상태바 및 타이머/연승 표시 */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.streak-badge {
+    background-color: #8e44ad;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+}
+.timer-badge {
+    background-color: #d35400;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+}
+
+/* 타이머 게이지 바 스타일 */
+.timer-gauge-container {
+    width: 100%;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+.timer-gauge-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #d35400, #e67e22);
+    border-radius: 5px;
+    transition: width 1s linear;
+}
+
+/* 동적 모드 안내 상자 */
+.mode-info-box {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #2c3e50;
+    line-height: 1.5;
+}
+
+.hint-badge {
+    display: inline-block;
+    background-color: #27ae60;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+    .card { padding: 15px 10px; }
+    .difficulty-group { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .btn-diff { font-size: 14px; padding: 12px 2px; }
+}

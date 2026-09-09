@@ -1,0 +1,38 @@
+/* style_splash.css */
+
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0d0f18; /* 배경 여백 색상 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  
+  /* 이미지 준비 완료 전까지 노출 숨김 */
+  visibility: hidden; 
+}
+
+#splash-screen.active {
+  visibility: visible;
+}
+
+#splash-screen.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 1:1 비율 이미지를 화면의 더 작은 축 크기에 딱 맞춤 */
+#splash-screen img {
+  width: 100vmin;
+  height: 100vmin;
+  object-fit: contain; /* 1:1 비율 유지 및 잘림 방지 */
+  display: block;
+}

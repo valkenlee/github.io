@@ -1,0 +1,85 @@
+/* 마작패 전시 컨테이너 */
+.mahjong-hand {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  margin-top: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+/* 손패 (일반 패) */
+.mahjong-hand > .tile {
+  width: calc((100% - 20px) / 14);
+  max-width: 40px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+/* 오름패 구분 영역 */
+.mahjong-hand .tile-draw {
+  display: flex;
+  align-items: center;
+  width: calc((100% - 20px) / 14);
+  max-width: 40px;
+  margin-left: 6px;
+  padding-left: 6px;
+  border-left: 2px dashed var(--accent-color, #38bdf8);
+  flex-shrink: 0;
+  box-sizing: content-box;
+}
+
+/* 오름패 이미지 */
+.mahjong-hand .tile-draw .tile {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+/* ==========================================
+   마작패 Hover 애니메이션 효과
+   ========================================== */
+.mahjong-hand .tile:hover {
+  transform: translateY(-6px);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* 인라인 타일 이미지 정렬 */
+.inline-tile {
+  width: 24px;
+  height: auto;
+  vertical-align: middle;
+  margin: 0 1px;
+}
+
+
+/* 마작패 기본 크기 예시: 가로 30px, 세로 40px */
+.tile-wrapper {
+  width: 30px;
+  height: 40px;
+  display: inline-block;
+}
+
+/* 눕힌 패 부모 영역: 가로/세로 크기를 반대로 교체 */
+.tile-wrapper.rotated {
+  width: 40px;
+  height: 30px;
+  position: relative;
+}
+
+.tile-wrapper.rotated img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+

@@ -1,11 +1,6 @@
+Plaintext
 User-agent: *
-Disallow: /guestbook
-Disallow: /m/guestbook
-Disallow: /manage
-Disallow: /owner
-Disallow: /admin
-Disallow: /search
-Disallow: /m/search
+Allow: /
 
-User-agent: bingbot
-Crawl-delay: 20
+# 사이트맵 위치 명시 (Google, Bing 등 검색 엔진 봇 전용)
+Sitemap: https://www.valken.net/sitemap.xml

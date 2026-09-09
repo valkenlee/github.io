@@ -2,16 +2,23 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>동적 처리</title>
+    <title>페이지 이동 중...</title>
 </head>
 <body>
     <script>
         // 접속한 경로 추출 (예: "/123" -> "123")
         const path = window.location.pathname.replace(/^\//, '');
         
-        console.log("현재 요청받은 ID:", path);
-        // 여기서 path(123) 값에 따라 동적으로 데이터를 불러오거나 화면을 구성
-        window.location.href = "https://blog.valken.net/" + path;
+        // 경로가 순수 숫자로만 구성되어 있는지 확인
+        const isNumeric = /^\d+$/.test(path);
+
+        if (isNumeric) {
+            console.log("숫자 ID 확인됨, 리다이렉트 진행:", path);
+            window.location.href = "https://blog.valken.net/" + path;
+        } else {
+            console.log("숫자가 아닌 경로 요청:", path);
+            document.body.innerHTML = "<h1>404 - 페이지를 찾을 수 없습니다.</h1>";
+        }
     </script>
 </body>
 </html>
