@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
-import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } 
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } 
   from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 // Firebase 프로젝트 설정
@@ -18,9 +18,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-
 let currentQuiz = null;
 let currentQuizKey = ""; 
+let currentDateStr = ""; // YYYYMMDD
 let selectedTiles = new Set(); 
 
 // 스팸 방지용 산수 변수
@@ -37,8 +37,8 @@ function seededRandom(seed) {
   };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initDailyQuiz();
+document.addEventListener("DOMContentLoaded", async () => {
+  await initDailyQuiz();
   initCaptcha();
   restoreSavedNickname(); // 저장된 닉네임 자동 불러오기
   setupTileSelectors();
@@ -147,53 +147,169 @@ function generateDailyTenpaiQuiz(seedNumber) {
     const waitArray = getWaitArray(hand13);
 
     if (waitArray.length > 0) {
-      return {
-        tiles: hand13,
-        waitArray: waitArray,
-        waitText: `${waitArray.join(', ')}만 (${waitArray.length}면대기)`,
-        explanation: `오늘의 알고리즘 계산 오름패는 총 ${waitArray.length}개 [ ${waitArray.map(v => v + '만').join(', ')} ] 입니다.`
-      };
+        return {
+          tiles: hand13,
+          waitArray: waitArray,
+          waitText: `${waitArray.join(', ')}만 (${waitArray.length}면대기)`,
+          explanation: `오늘의 알고리즘 계산 오름패는 총 ${waitArray.length}개 [ ${waitArray.map(v => v + '만').join(', ')} ] 입니다.`,
+          novelTitle: "📖 제미나이의 문학 작품",
+          novelContent: "오늘의 작품을 준비 중입니다." // 문구 변경[cite: 4]
+        };
     }
   }
 }
 
-function initDailyQuiz() {
-  const now = new Date();
-  const adjustedDate = new Date(now);
-  if (now.getHours() < 6) {
-    adjustedDate.setDate(adjustedDate.getDate() - 1);
-  }
+// chinitsu_today_quiz.js
 
-  const year = adjustedDate.getFullYear();
-  const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
-  const day = String(adjustedDate.getDate()).padStart(2, '0');
+function getAdjustedDateKey() {
+  const now = new Date();
+  const adjusted = new Date(now);
+  if (now.getHours() < 6) {
+    adjusted.setDate(adjusted.getDate() - 1);
+  }
+  const year = adjusted.getFullYear();
+  const month = String(adjusted.getMonth() + 1).padStart(2, '0');
+  const day = String(adjusted.getDate()).padStart(2, '0');
   
-  currentQuizKey = `quiz_${year}${month}${day}`;
+  return {
+    dateKey: `${year}${month}${day}`,         // 20260909
+    isoDate: `${year}-${month}-${day}`,       // 2026-09-09 (Firestore Document ID 호환용)
+    formatted: `${year}년 ${month}월 ${day}일`
+  };
+}
+
+async function initDailyQuiz() {
+  const { dateKey, isoDate, formatted } = getAdjustedDateKey();
+  currentDateStr = dateKey;
+  currentQuizKey = `quiz_${currentDateStr}`;
 
   const dateDisplay = document.getElementById('quiz-date-display');
   if (dateDisplay) {
-    dateDisplay.innerText = `${year}년 ${month}월 ${day}일 문제 (06:00 갱신)`;
+    dateDisplay.innerText = `${formatted} 문제 (06:00 갱신)`;
   }
 
-  const seedNumber = parseInt(`${year}${month}${day}`, 10);
-  currentQuiz = generateDailyTenpaiQuiz(seedNumber);
+  // 1. Firebase daily_quiz_archives 에서 당일 데이터 가져오기 시도
+  try {
+    // "2026-09-09" 문서 ID로 먼저 조회
+    let docRef = doc(db, "daily_quiz_archives", isoDate);
+    let docSnap = await getDoc(docRef);
 
-  const handContainer = document.getElementById('daily-mahjong-hand');
-  if (handContainer) {
-    handContainer.innerHTML = '';
-    currentQuiz.tiles.forEach(num => {
-      const img = document.createElement('img');
-      img.src = `tile/Man${num}.svg`;
-      img.alt = `${num}만`;
-      img.className = 'tile';
-      handContainer.appendChild(img);
-    });
+    // 하이픈 없는 "20260909" 문서 ID로 이차 조회
+    if (!docSnap.exists()) {
+      docRef = doc(db, "daily_quiz_archives", currentDateStr);
+      docSnap = await getDoc(docRef);
+    }
+
+	if (docSnap.exists()) {
+	  const data = docSnap.data();
+
+	  // geminiWork가 객체인지 문자열인지 안전하게 파싱
+	  let extractedTitle = data.novel_title || data.novelTitle;
+	  let extractedContent = data.novel_content || data.novelContent;
+
+	  if (!extractedTitle && data.geminiWork) {
+		extractedTitle = typeof data.geminiWork === 'object' ? data.geminiWork.title : "📖 제미나이의 문학 작품";
+	  }
+	  if (!extractedContent && data.geminiWork) {
+		extractedContent = typeof data.geminiWork === 'object' ? data.geminiWork.content : data.geminiWork;
+	  }
+
+	  currentQuiz = {
+		tiles: data.tiles,
+		waitArray: data.waitArray || data.answers,
+		waitText: data.waitText || `${(data.waitArray || data.answers).join(', ')}만`,
+		explanation: data.explanation || `오늘의 오름패는 [ ${(data.waitArray || data.answers).map(v => v + '만').join(', ')} ] 입니다.`,
+		novelTitle: extractedTitle || "📖 제미나이의 문학 작품",
+		novelContent: extractedContent || "오늘의 작품을 준비 중입니다."
+	  };
+	} else {
+      // date 필드가 "2026-09-09" 형식으로 들어있는 경우 쿼리 검색
+      const q = query(collection(db, "daily_quiz_archives"), where("date", "==", isoDate), limit(1));
+      const querySnap = await getDocs(q);
+      if (!querySnap.empty) {
+        const data = querySnap.docs[0].data();
+        currentQuiz = {
+          tiles: data.tiles,
+          waitArray: data.waitArray || data.answers,
+          waitText: data.waitText || `${(data.waitArray || data.answers).join(', ')}만`,
+          explanation: data.explanation || `오늘의 오름패는 [ ${(data.waitArray || data.answers).map(v => v + '만').join(', ')} ] 입니다.`,
+          novelTitle: data.novel_title || data.novelTitle || (data.geminiWork ? data.geminiWork.title : null) || "📖 제미나이의 문학 작품",
+          novelContent: data.novel_content || data.novelContent || data.geminiWork || (data.geminiWork ? data.geminiWork.content : null) || "오늘의 작품을 준비 중입니다."
+        };
+      }
+    }
+  } catch (error) {
+    console.warn("Firestore 퀴즈 연동 실패, 클라이언트 생성기로 전환합니다:", error);
   }
 
+  // 2. Firebase에 데이터가 없을 경우 기존 Seed 알고리즘을 통한 폴백
+  if (!currentQuiz) {
+    const seedNumber = parseInt(currentDateStr, 10);
+    currentQuiz = generateDailyTenpaiQuiz(seedNumber);
+  }
+
+  // UI 렌더링 - 손패 이미지
+      const handContainer = document.getElementById('daily-mahjong-hand');
+      if (handContainer) {
+        handContainer.innerHTML = '';
+        
+        // 접두어 맵핑 테이블
+        const prefixMap = {
+          m: 'Man',
+          p: 'Pin',
+          s: 'Sou',
+          z: 'Ji' // 필요 시 자패(z) 대응용
+        };
+
+        currentQuiz.tiles.forEach(tile => {
+          let fileName = "";
+          const tileStr = String(tile).trim();
+
+          // 1. "1m", "1p", "1s" 형태 매칭 (숫자 + m/p/s/z)
+          const shortMatch = tileStr.match(/^([1-9])([mpsz])$/i);
+
+          // 2. 이미 "Man1", "Pin1" 형태인지 매칭 (Man/Pin/Sou/Ji + 숫자)
+          const fullNameMatch = tileStr.match(/^(Man|Pin|Sou|Ji)([1-9])$/i);
+
+          if (shortMatch) {
+            const num = shortMatch[1];
+            const suit = shortMatch[2].toLowerCase();
+            const prefix = prefixMap[suit] || suit.toUpperCase();
+            fileName = `${prefix}${num}`;
+          } else if (fullNameMatch) {
+            // 이미 Man1, Pin1 형태인 경우 대소문자 정규화 후 유지
+            const prefix = fullNameMatch[1].charAt(0).toUpperCase() + fullNameMatch[1].slice(1).toLowerCase();
+            const num = fullNameMatch[2];
+            fileName = `${prefix}${num}`;
+          } else if (!isNaN(tile)) {
+            // 숫자만 넘어오는 경우(예: 1) 기본 만수(Man) 처리
+            fileName = `Man${tile}`;
+          } else {
+            fileName = tileStr;
+          }
+
+          if (fileName) {
+            const img = document.createElement('img');
+            img.src = `tile/${fileName}.svg`;
+            img.alt = tileStr;
+            img.className = 'tile';
+            handContainer.appendChild(img);
+          }
+        });
+      }
+
+
+  // 정답 및 해설 세팅
   const answerTiles = document.getElementById('answer-tiles-text');
   const answerExp = document.getElementById('answer-explanation');
   if (answerTiles) answerTiles.innerText = currentQuiz.waitText;
   if (answerExp) answerExp.innerText = currentQuiz.explanation;
+
+  // 제미나이 문학 작품 세팅
+  const novelTitleEl = document.getElementById('novel-title');
+  const novelContentEl = document.getElementById('novel-content');
+  if (novelTitleEl && currentQuiz.novelTitle) novelTitleEl.innerText = currentQuiz.novelTitle;
+  if (novelContentEl && currentQuiz.novelContent) novelContentEl.innerText = currentQuiz.novelContent;
 }
 
 function checkAlreadySubmitted() {
@@ -231,6 +347,11 @@ function disableSubmissionUI(isCorrect, userChoice) {
   const answerContent = document.getElementById('answer-content');
   if (answerContent) answerContent.style.display = 'block';
 
+  // 제미나이 문학 작품 영역 노출
+  const geminiNovelCard = document.getElementById('gemini-novel-card');
+  if (geminiNovelCard) geminiNovelCard.style.display = 'block';
+
+  // 한줄 소통 게시판 노출
   const boardSection = document.getElementById('board-section');
   if (boardSection) boardSection.style.display = 'block';
 
@@ -294,7 +415,6 @@ function initCaptcha() {
   }
 }
 
-// 저장된 닉네임 자동 복원
 function restoreSavedNickname() {
   const savedNickname = localStorage.getItem("saved_comment_nickname");
   const nicknameInput = document.getElementById('nickname');
@@ -303,7 +423,6 @@ function restoreSavedNickname() {
   }
 }
 
-// Firebase 댓글 제출
 async function handleCommentSubmit(event) {
   event.preventDefault();
   
@@ -331,12 +450,10 @@ async function handleCommentSubmit(event) {
       createdAt: serverTimestamp()
     });
 
-    // 성공 시 닉네임 로컬스토리지에 저장
     if (nickname) {
       localStorage.setItem("saved_comment_nickname", nickname);
     }
 
-    // 본문 및 캡차 초기화 (닉네임은 유지)
     bodyInput.value = "";
     captchaInput.value = "";
 

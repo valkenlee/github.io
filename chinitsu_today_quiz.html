@@ -58,13 +58,22 @@
         </div>
 
         <p class="quiz-instruction">
-          ❓ 아래의 텐파이 형태에서 <strong>대기패(오름패)</strong>는 무엇일까요? 클릭하여 선택해 주세요.
+          ❓ 아래의 텐파이 형태에서 <strong>대기패(오름패)</strong>는 무엇일까요?
         </p>
 
-        <!-- Dynamic Hand Render Area -->
+        <!-- Dynamic Hand Render Area (문제 패) -->
         <div class="mahjong-hand" id="daily-mahjong-hand">
           <!-- JS로 문제 패 이미지가 자동 삽입됩니다. -->
         </div>
+
+        <!-- 2. Gemini Literary Work Section (문제 패와 답안 버튼 사이 위치) -->
+        <section class="gemini-novel-card" id="gemini-novel-card" style="margin: 1.5rem 0; padding: 1.25rem; background: rgba(0, 0, 0, 0.03); border-radius: 8px;">
+          <h3 class="novel-title" id="novel-title" style="margin-bottom: 0.5rem; font-size: 1.1rem;">📖 제미나이의 문학 작품</h3>
+          <p class="novel-sub" style="font-size: 0.85rem; color: #666; margin-bottom: 0.8rem;">오늘의 퀴즈 문제와 연관된 이야기입니다.</p>
+          <div class="novel-content" id="novel-content" style="white-space: pre-line; line-height: 1.7; font-family: serif; font-size: 0.95rem;">
+            작품을 불러오는 중입니다...
+          </div>
+        </section>
 
         <!-- Tile Selector Grid (1~9) -->
         <div class="tile-selector-wrapper">
@@ -95,7 +104,7 @@
           <!-- 제출 후 결과 및 정답 확인 메시지 출력 -->
         </div>
 
-        <!-- Revealed Answer Box (Directly shown without toggle button) -->
+        <!-- Revealed Answer Box -->
         <div class="quiz-answer-box" id="quiz-answer-box" style="display: none;">
           <div class="answer-content" id="answer-content" style="display: block;">
             <h4 class="answer-title">💡 정답: <span id="answer-tiles-text"></span></h4>
@@ -104,7 +113,7 @@
         </div>
       </section>
 
-      <!-- 2. Guestboard Section (Revealed after submission) -->
+      <!-- 3. Guestboard Section (Revealed after submission) -->
       <section class="board-section" id="board-section" style="display: none;">
         <h2>💬 한줄 한마디</h2>
         <p class="board-description">
