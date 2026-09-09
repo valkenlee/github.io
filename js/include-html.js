@@ -27,10 +27,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const includeElements = document.querySelectorAll("[data-include]");
   
   includeElements.forEach((el) => {
-    const filePath = el.getAttribute("data-include");
+    let filePath = el.getAttribute("data-include");
     if (filePath && el.id) {
+      // 경로가 '/'로 시작하지 않으면 앞에 '/'를 붙여 도메인 루트 기준 절대 경로로 보정
+      if (!filePath.startsWith('/')) {
+        filePath = '/' + filePath;
+      }
       includeHTML(el.id, filePath);
     }
   });
 });
-
