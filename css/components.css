@@ -555,3 +555,28 @@
 .cta-button-highlight:active {
   transform: translateY(0);
 }
+
+footer {
+  width: 100%;
+  padding: 20px 0;
+  margin-top: 50px;
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #666666;
+}
+
+.footer-nav {
+  margin-top: 8px;
+}
+
+.footer-nav a {
+  color: #555555;
+  text-decoration: none;
+  margin: 0 8px;
+}
+
+.footer-nav a:hover {
+  text-decoration: underline;
+  color: #111111;
+}
