@@ -177,3 +177,17 @@ body.dark-mode .author-td,
 .btn-go-quiz:hover {
   background-color: #047857;
 }
+
+/* 닉네임 및 보안확인 입력칸 50% 50% 균등 배치 */
+.comment-form .form-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.comment-form .form-row .form-input.nickname,
+.comment-form .form-row .form-input.captcha {
+  flex: 1 1 50%;
+  width: 50%;
+  box-sizing: border-box;
+}

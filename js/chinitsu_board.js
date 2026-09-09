@@ -32,6 +32,7 @@ let num2 = Math.floor(Math.random() * 8) + 1;
 let captchaSum = num1 + num2;
 
 document.addEventListener("DOMContentLoaded", () => {
+  restoreSavedNickname();	
   initCaptcha();
   loadPosts();
 
@@ -196,6 +197,11 @@ async function handlePostSubmit(event) {
     captchaSum = num1 + num2;
     initCaptcha();
 
+	// 댓글 등록 성공 블록 내부
+	if (nickname) {
+	  localStorage.setItem("saved_comment_nickname", nickname);
+    }
+
     // 작성 완료 후 데이터를 다시 불러와 최신글 1페이지 표시
     await loadPosts();
 
@@ -212,3 +218,12 @@ function escapeHtml(str) {
   if (!str) return "";
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
+
+function restoreSavedNickname() {
+  const savedNickname = localStorage.getItem("saved_comment_nickname");
+  const nicknameInput = document.getElementById('nickname');
+  if (savedNickname && nicknameInput) {
+    nicknameInput.value = savedNickname;
+  }
+}
+

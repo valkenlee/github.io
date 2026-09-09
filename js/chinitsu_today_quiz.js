@@ -18,6 +18,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+
 let currentQuiz = null;
 let currentQuizKey = ""; 
 let selectedTiles = new Set(); 
@@ -27,9 +28,6 @@ let num1 = Math.floor(Math.random() * 8) + 1;
 let num2 = Math.floor(Math.random() * 8) + 1;
 let captchaSum = num1 + num2;
 
-// ==========================================
-// 🎲 Seeded Pseudo-Random Generator (Mulberry32)
-// ==========================================
 function seededRandom(seed) {
   return function() {
     let t = seed += 0x6D2B79F5;
@@ -42,8 +40,9 @@ function seededRandom(seed) {
 document.addEventListener("DOMContentLoaded", () => {
   initDailyQuiz();
   initCaptcha();
+  restoreSavedNickname(); // 저장된 닉네임 자동 불러오기
   setupTileSelectors();
-  checkAlreadySubmitted(); // 기존 제출 상태 검사 및 반영
+  checkAlreadySubmitted();
 
   const btnSubmitAnswer = document.getElementById('btn-submit-answer');
   if (btnSubmitAnswer) {
@@ -55,10 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
     commentForm.addEventListener('submit', handleCommentSubmit);
   }
 });
-
-// ==========================================
-// 🀄 시드 기반 청일색 텐파이 자동 생성 알고리즘
-// ==========================================
 
 function generate14TileHand(rng) {
   while (true) {
@@ -162,7 +157,6 @@ function generateDailyTenpaiQuiz(seedNumber) {
   }
 }
 
-// 24시간 고정 퀴즈 초기화 (오전 6시 기준)
 function initDailyQuiz() {
   const now = new Date();
   const adjustedDate = new Date(now);
@@ -202,7 +196,6 @@ function initDailyQuiz() {
   if (answerExp) answerExp.innerText = currentQuiz.explanation;
 }
 
-// 당일 이미 제출했는지 확인 및 UI 상태 반영
 function checkAlreadySubmitted() {
   const submittedData = localStorage.getItem(currentQuizKey);
   if (submittedData) {
@@ -211,7 +204,6 @@ function checkAlreadySubmitted() {
   }
 }
 
-// 제출 비활성화 처리 및 정답/해설/게시판 자동 노출
 function disableSubmissionUI(isCorrect, userChoice) {
   const resultBox = document.getElementById('submission-result-box');
   if (resultBox) {
@@ -226,7 +218,6 @@ function disableSubmissionUI(isCorrect, userChoice) {
     }
   }
 
-  // 선택 버튼 및 제출 버튼 비활성화
   document.querySelectorAll('.btn-tile-select').forEach(b => b.disabled = true);
   const submitBtn = document.getElementById('btn-submit-answer');
   if (submitBtn) {
@@ -234,22 +225,18 @@ function disableSubmissionUI(isCorrect, userChoice) {
     submitBtn.innerText = "오늘 제출 완료됨";
   }
 
-  // 해답 박스 및 상세 풀이 즉시 노출
   const quizAnswerBox = document.getElementById('quiz-answer-box');
   if (quizAnswerBox) quizAnswerBox.style.display = 'block';
 
   const answerContent = document.getElementById('answer-content');
   if (answerContent) answerContent.style.display = 'block';
 
-  // 게시판 영역 노출
   const boardSection = document.getElementById('board-section');
   if (boardSection) boardSection.style.display = 'block';
 
-  // 댓글 실시간 동기화 구독 시작
   subscribeFirebaseComments();
 }
 
-// 선택 버튼 로직
 function setupTileSelectors() {
   const buttons = document.querySelectorAll('.btn-tile-select');
   const submitBtn = document.getElementById('btn-submit-answer');
@@ -257,7 +244,6 @@ function setupTileSelectors() {
 
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // 이미 오늘 제출했다면 클릭 방지
       if (localStorage.getItem(currentQuizKey)) return;
 
       const val = parseInt(btn.getAttribute('data-val'), 10);
@@ -283,7 +269,6 @@ function setupTileSelectors() {
   });
 }
 
-// 답 제출 처리 함수
 function handleAnswerSubmission() {
   if (selectedTiles.size === 0 || localStorage.getItem(currentQuizKey)) return;
 
@@ -293,7 +278,6 @@ function handleAnswerSubmission() {
   const isCorrect = userChoice.length === targetAnswer.length &&
     userChoice.every((val, index) => val === targetAnswer[index]);
 
-  // localStorage에 오늘 제출 결과 저장 (24시간 보존)
   localStorage.setItem(currentQuizKey, JSON.stringify({
     isCorrect: isCorrect,
     userChoice: userChoice,
@@ -307,6 +291,15 @@ function initCaptcha() {
   const input = document.getElementById('captcha-answer');
   if (input) {
     input.placeholder = `보안확인: ${num1} + ${num2} = ?`;
+  }
+}
+
+// 저장된 닉네임 자동 복원
+function restoreSavedNickname() {
+  const savedNickname = localStorage.getItem("saved_comment_nickname");
+  const nicknameInput = document.getElementById('nickname');
+  if (savedNickname && nicknameInput) {
+    nicknameInput.value = savedNickname;
   }
 }
 
@@ -338,7 +331,15 @@ async function handleCommentSubmit(event) {
       createdAt: serverTimestamp()
     });
 
-    document.getElementById('comment-form').reset();
+    // 성공 시 닉네임 로컬스토리지에 저장
+    if (nickname) {
+      localStorage.setItem("saved_comment_nickname", nickname);
+    }
+
+    // 본문 및 캡차 초기화 (닉네임은 유지)
+    bodyInput.value = "";
+    captchaInput.value = "";
+
     num1 = Math.floor(Math.random() * 8) + 1;
     num2 = Math.floor(Math.random() * 8) + 1;
     captchaSum = num1 + num2;
@@ -353,7 +354,6 @@ async function handleCommentSubmit(event) {
   }
 }
 
-// Firebase 최근 10개 댓글 실시간 테이블 동기화
 function subscribeFirebaseComments() {
   const tbody = document.getElementById('comment-list-tbody');
   if (!tbody) return;
