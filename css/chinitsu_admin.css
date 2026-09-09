@@ -1,0 +1,104 @@
+/* Admin Page Layout */
+.admin-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Authentication Card */
+.auth-card {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.auth-card h2 {
+  margin-top: 0;
+}
+
+.auth-card p {
+  margin: 1rem 0 2rem;
+  color: var(--text-muted, #64748b);
+}
+
+/* Google Login Button */
+.btn-google {
+  background: #4285f4;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-google:hover {
+  background: #357ae8;
+}
+
+/* Admin Dashboard Header */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.admin-header h2 {
+  margin: 0;
+}
+
+.total-count-text {
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+}
+
+/* User Profile & Logout */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.btn-logout {
+  background: #64748b;
+  color: #ffffff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-logout:hover {
+  background: #475569;
+}
+
+/* Delete Button */
+.btn-delete {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
+}
+
+/* Utility Class */
+.hidden {
+  display: none !important;
+}

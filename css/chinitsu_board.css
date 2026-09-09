@@ -1,0 +1,179 @@
+/* 글쓰기 카드 */
+.board-write-card {
+  background-color: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.board-write-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.comment-form .form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.comment-form .form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  background-color: var(--input-bg, #ffffff);
+  color: var(--text-color, #1e293b);
+  font-size: 0.95rem;
+}
+
+.comment-form textarea.form-input {
+  height: 80px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.form-submit-row {
+  text-align: right;
+}
+
+.btn-submit {
+  padding: 8px 20px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submit:hover {
+  background-color: #1d4ed8;
+}
+
+/* 게시판 목록 테이블 */
+.board-list-card {
+  background-color: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.board-table-wrapper {
+  overflow-x: auto;
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.board-table th,
+.board-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.board-table th {
+  background-color: var(--table-header-bg, #f8fafc);
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+/* 작성자 닉네임 다크/라이트 모드 고시독성 색상 */
+.author-td {
+  font-weight: 600;
+  color: #2563eb;
+  word-break: break-all;
+}
+
+body.dark-mode .author-td,
+[data-theme="dark"] .author-td {
+  color: #60a5fa;
+}
+
+.text-td {
+  word-break: break-all;
+}
+
+.time-td {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.no-data {
+  text-align: center;
+  color: #94a3b8;
+  padding: 2rem !important;
+}
+
+/* 페이징 네비게이션 */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.5rem;
+}
+
+.btn-page {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background-color: var(--btn-bg, #ffffff);
+  color: var(--text-color, #334155);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-page:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-page-num {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background-color: var(--btn-bg, #ffffff);
+  color: var(--text-color, #334155);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-page-num.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  font-weight: bold;
+}
+
+/* 하단 버튼 */
+.back-action {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+.btn-go-quiz {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #059669;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.btn-go-quiz:hover {
+  background-color: #047857;
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - 청일색 소통 게시판</title>
+  <meta name="description" content="청일색 다면대기 퀴즈 풀이 소감과 마작 전략을 공유하는 소통 게시판입니다.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chinitsu_board.css">
+
+  <!-- Core Scripts -->
+  <script src="js/include-html.js" defer></script>  
+  <script src="js/theme.js" defer></script>
+  
+  <!-- Firebase & Board Logic (ES Module) -->
+  <script type="module" src="js/chinitsu_board.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Board',
+      'page_title': '청일색 소통 게시판'
+    });
+  </script>
+
+  <!-- ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Header 영역 -->
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+  
+  <!-- Main Content -->
+  <main>
+    <article class="content-section">
+      <!-- Article Header -->
+      <header class="article-header hero-header">
+        <div class="section-title">COMMUNITY BOARD</div>
+        <h1 class="article-title">청일색 소통 게시판</h1>
+        <p class="article-meta">
+          오늘의 퀴즈 풀이 소감, 다면대기 팁, 리치 마작 이야기를 자유롭게 나누는 공간입니다.
+        </p>
+      </header>
+
+      <!-- 1. Write Form Section -->
+      <section class="board-write-card">
+        <h3>✏️ 한줄 의견 작성하기</h3>
+        <form class="comment-form" id="board-write-form">
+          <div class="form-row">
+            <input type="text" id="nickname" class="form-input nickname" placeholder="닉네임" maxlength="12" required>
+            <input type="text" id="captcha-answer" class="form-input captcha" placeholder="" required>
+          </div>
+          <textarea id="comment-body" class="form-input" placeholder="소감이나 풀이 경로, 질문 사항을 남겨주세요." maxlength="200" required></textarea>
+          <div class="form-submit-row">
+            <button type="submit" class="btn-submit" id="btn-submit">등록하기</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 2. Board Table Section -->
+      <section class="board-list-card">
+        <div class="board-table-wrapper">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th style="width: 20%;">닉네임</th>
+                <th style="width: 60%;">메시지</th>
+                <th style="width: 20%;">작성시간</th>
+              </tr>
+            </thead>
+            <tbody id="board-tbody">
+              <tr>
+                <td colspan="3" class="no-data">게시글을 불러오는 중입니다...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Navigation -->
+        <div class="pagination-wrapper">
+          <button type="button" class="btn-page" id="btn-prev" disabled>◀ 이전</button>
+          <div class="page-numbers" id="page-numbers"></div>
+          <button type="button" class="btn-page" id="btn-next" disabled>다음 ▶</button>
+        </div>
+
+        <!-- Back to Quiz Link -->
+        <div class="back-action">
+          <a href="chinitsu_today_quiz.html" class="btn-go-quiz">🧩 오늘의 퀴즈 풀러가기</a>
+        </div>
+      </section>
+
+      <!-- Bottom Interactive CTA Box -->
+      <div id="cta-box-container" data-include="/components/comp_cta_box.html"></div>
+    </article>
+  </main>
+
+  <!-- ads 영역 -->
+  <aside id="ads-container" class="ads-wrapper" data-include="/components/comp_ads.html"></aside>
+
+  <!-- Footer 영역 -->
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>

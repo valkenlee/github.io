@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - 청일색 게시판 관리자</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chinitsu_board.css">
+  <link rel="stylesheet" href="css/chinitsu_admin.css">
+
+  <!-- Core Scripts -->
+  <script src="js/include-html.js" defer></script>  
+  <script src="js/theme.js" defer></script>
+  
+  <!-- Firebase & Admin Logic -->
+  <script type="module" src="js/chinitsu_admin.js" defer></script>
+</head>
+<body>
+
+  <!-- Header 영역 -->
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+
+  <!-- Main Content -->
+  <main class="admin-container">
+    <!-- 1. 인증 대기 / 비로그인 화면 -->
+    <section id="auth-section" class="auth-card">
+      <h2>🛡️ 관리자 인증 필요</h2>
+      <p>이 페이지는 허용된 구글 계정 전용 관리자 화면입니다.</p>
+      <button type="button" id="btn-login" class="btn-google">
+        🔑 Google 계정으로 로그인
+      </button>
+    </section>
+
+    <!-- 2. 인증 완료 후 데이터 관리 화면 -->
+    <section id="admin-main-section" class="hidden">
+      <div class="admin-header">
+        <div>
+          <h2>⚙️ 게시글 관리 제어반</h2>
+          <span id="total-count" class="total-count-text"></span>
+        </div>
+        <div class="user-profile">
+          <span id="user-info"></span>
+          <button type="button" id="btn-logout" class="btn-logout">로그아웃</button>
+        </div>
+      </div>
+
+      <!-- 상단 컨트롤 영역 (일괄 삭제 버튼 및 보기 개수 선택) -->
+      <div class="admin-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+        <button type="button" id="btn-delete-selected" class="btn-delete" style="padding: 8px 16px;">
+          🗑️ 선택 일괄 삭제
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+          <label for="select-page-size">보기 개수:</label>
+          <select id="select-page-size" style="padding: 4px 8px; border-radius: 4px; background: var(--card-bg, #fff); color: inherit; border: 1px solid var(--border-color, #ccc);">
+            <option value="20" selected>20개씩 보기</option>
+            <option value="50">50개씩 보기</option>
+            <option value="100">100개씩 보기</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="board-list-card">
+        <div class="board-table-wrapper">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">닉네임</th>
+                <th style="width: 57%;">메시지</th>
+                <th style="width: 20%;">작성시간</th>
+                <th style="width: 8%; text-align: center;">
+                  <input type="checkbox" id="chk-all">
+                </th>				
+              </tr>
+            </thead>
+            <tbody id="admin-tbody">
+              <tr>
+                <td colspan="4" class="no-data">데이터를 확인하는 중...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Navigation -->
+        <div class="pagination-wrapper">
+          <button type="button" class="btn-page" id="btn-prev" disabled>◀ 이전</button>
+          <div class="page-numbers" id="page-numbers"></div>
+          <button type="button" class="btn-page" id="btn-next" disabled>다음 ▶</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer 영역 -->
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>

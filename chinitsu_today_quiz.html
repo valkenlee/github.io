@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - 오늘의 청일색 퀴즈 & 소통 게시판</title>
+  <meta name="description" content="매일 오전 6시마다 새롭게 업데이트되는 청일색 다면대기 퀴즈와 유저 의견 공유 게시판입니다.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chinitsu_today_quiz.css">
+
+  <!-- Core Scripts -->
+  <script src="js/include-html.js" defer></script>  
+  <script src="js/theme.js" defer></script>
+  
+  <!-- Firebase & Page Logic (ES Module) -->
+  <script type="module" src="js/chinitsu_today_quiz.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Daily_Quiz',
+      'page_title': '오늘의 청일색 퀴즈'
+    });
+  </script>
+
+  <!-- ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Header 영역 -->
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+  
+  <!-- Main Content -->
+  <main>
+    <article class="content-section">
+      <!-- Article Header / Hero -->
+      <header class="article-header hero-header">
+        <div class="section-title">DAILY CHINITSU CHALLENGE</div>
+        
+        <h1 class="article-title">오늘의 청일색 퀴즈</h1>
+        
+        <p class="article-meta">
+          매일 오전 6시 정각에 갱신되는 수패 맞추기 훈련 & 유저 자율 소통 공간
+        </p>
+      </header>
+
+      <!-- 1. Daily Quiz Section -->
+      <section class="daily-quiz-card">
+        <div class="quiz-info-bar">
+          <span class="quiz-date" id="quiz-date-display">2026년 09월 10일 문제</span>
+        </div>
+
+        <p class="quiz-instruction">
+          ❓ 아래의 텐파이 형태에서 <strong>대기패(오름패)</strong>는 무엇일까요? 클릭하여 선택해 주세요.
+        </p>
+
+        <!-- Dynamic Hand Render Area -->
+        <div class="mahjong-hand" id="daily-mahjong-hand">
+          <!-- JS로 문제 패 이미지가 자동 삽입됩니다. -->
+        </div>
+
+        <!-- Tile Selector Grid (1~9) -->
+        <div class="tile-selector-wrapper">
+          <div class="selector-title">대기패 선택 (1개 이상 선택 필요):</div>
+          <div class="tile-btn-grid" id="tile-btn-grid">
+            <button type="button" class="btn-tile-select" data-val="1">1만</button>
+            <button type="button" class="btn-tile-select" data-val="2">2만</button>
+            <button type="button" class="btn-tile-select" data-val="3">3만</button>
+            <button type="button" class="btn-tile-select" data-val="4">4만</button>
+            <button type="button" class="btn-tile-select" data-val="5">5만</button>
+            <button type="button" class="btn-tile-select" data-val="6">6만</button>
+            <button type="button" class="btn-tile-select" data-val="7">7만</button>
+            <button type="button" class="btn-tile-select" data-val="8">8만</button>
+            <button type="button" class="btn-tile-select" data-val="9">9만</button>
+          </div>
+
+          <div class="selected-summary">
+            선택한 대기패: <span id="selected-tiles-display" class="selected-tiles-text">선택 없음</span>
+          </div>
+
+          <div class="submit-action-bar">
+            <button type="button" class="btn-submit-answer" id="btn-submit-answer" disabled>정답 제출하기</button>
+          </div>
+        </div>
+
+        <!-- Result Message Banner -->
+        <div class="submission-result-box" id="submission-result-box" style="display: none;">
+          <!-- 제출 후 결과 및 정답 확인 메시지 출력 -->
+        </div>
+
+        <!-- Revealed Answer Box (Directly shown without toggle button) -->
+        <div class="quiz-answer-box" id="quiz-answer-box" style="display: none;">
+          <div class="answer-content" id="answer-content" style="display: block;">
+            <h4 class="answer-title">💡 정답: <span id="answer-tiles-text"></span></h4>
+            <p id="answer-explanation" class="answer-explanation-text"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Guestboard Section (Revealed after submission) -->
+      <section class="board-section" id="board-section" style="display: none;">
+        <h2>💬 한줄 한마디</h2>
+        <p class="board-description">
+          오늘 문제에 대한 소감이나 정답 형태 풀이 소감을 자유롭게 공유해 주세요.
+        </p>
+
+        <!-- Write Form -->
+        <form class="comment-form" id="comment-form">
+          <div class="form-row">
+            <input type="text" id="nickname" class="form-input nickname" placeholder="닉네임" maxlength="12" required>
+            <input type="text" id="captcha-answer" class="form-input captcha" placeholder="" required>
+          </div>
+          <textarea id="comment-body" class="form-input" placeholder="오늘 문제의 느낀 점이나 풀이 경로를 자유롭게 남겨주세요." maxlength="200" required></textarea>
+          <button type="submit" class="btn-submit" id="btn-submit">등록하기</button>
+        </form>
+
+        <!-- Comment List Table Container -->
+        <div class="comment-list-wrapper">
+          <table class="comment-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">아이디</th>
+                <th style="width: 75%;">메시지</th>
+              </tr>
+            </thead>
+            <tbody id="comment-list-tbody">
+              <tr>
+                <td colspan="2" class="no-comments">댓글을 불러오는 중입니다...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 게시판 보러가기 버튼 -->
+        <div class="board-more-action">
+          <a href="/chinitsu_board.html" class="btn-go-board">게시판 보러가기 ➔</a>
+        </div>
+      </section>
+
+      <!-- Bottom Interactive CTA Box -->
+      <div id="cta-box-container" data-include="/components/comp_cta_box.html"></div>
+    </article>
+  </main>
+
+  <!-- ads 영역 -->
+  <aside id="ads-container" class="ads-wrapper" data-include="/components/comp_ads.html"></aside>
+
+  <!-- Footer 영역 -->
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>
