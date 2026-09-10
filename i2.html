@@ -1,37 +1,285 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Valken의 홈페이지</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - 스타트페이지</title>
+  
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023"
-    crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #212529;
+      --text-muted: #6c757d;
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border-color: #e9ecef;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #1e293b;
+      letter-spacing: -0.025em;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Section Card */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Link List */
+    .link-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .link-item a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.8rem;
+      background-color: #f8fafc;
+      border-radius: 8px;
+      color: var(--text-color);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .link-item a:hover {
+      background-color: #eff6ff;
+      color: var(--primary-color);
+      border-color: #bfdbfe;
+      transform: translateX(3px);
+    }
+
+    .link-item .url-tag {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to VALKEN NET </h1>
 
-    <h4> KBO 승차 그래프는 <a href="https://www.valken.net/kbo">www.valken.net/kbo</a> </h4>
-    <h4> 3D flip Clock <a href="https://www.valken.net/flipclock">www.valken.net/flipclock</a> </h4>
-    <h4> 청일색 퀴즈 <a href="https://www.valken.net/pureflush">www.valken.net/pureflush</a>  </h4>
-    <h4> 마작패 계산기 <a href="https://mahjong-calc.livewing.net/">https://mahjong-calc.livewing.net/</a> </h4>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>VALKEN.NET Portal</h1>
+      <p>개인 서비스 및 자주 방문하는 주요 관리 사이트모음</p>
+    </header>
 
-    <h4> <a href="https://blog.valken.net">티스토리</a>  </h4>
-    <h4> <a href="https://mail.daum.net/top/INBOX">다음 메일</a>  </h4>
-    <h4> <a href="https://gmail.com">지메일</a>  </h4>
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
 
-    <h4> <a href="https://github.com/valkenlee/github.io"> GitHub.IO </a>  </h4>
-    <h4> <a href="https://framer.com/"> FRAMER </a>  </h4>    
-    <h4> <a href="https://console.firebase.google.com/?hl=ko"> FIREBASE </a>  </h4>    
-    <h4> <a href="https://aistudio.google.com/api-keys?hl=ko&project=gen-lang-client-0162383967"> GEMINI KEY </a>  </h4>   
+      <!-- Category 1: 자체 서비스 & 도구 -->
+      <div class="card">
+        <h2 class="card-title">🚀 서비스 & Tools</h2>
+        <ul class="link-list">
+          <li class="link-item">
+            <a href="https://www.valken.net/kbo" target="_blank">
+              <span>KBO 승차 그래프</span>
+              <span class="url-tag">valken.net/kbo</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://www.valken.net/flipclock" target="_blank">
+              <span>3D Flip Clock</span>
+              <span class="url-tag">valken.net/flipclock</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://www.valken.net/pureflush" target="_blank">
+              <span>청일색 퀴즈</span>
+              <span class="url-tag">valken.net/pureflush</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://mahjong-calc.livewing.net/" target="_blank">
+              <span>마작패 계산기</span>
+              <span class="url-tag">livewing.net</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
+      <!-- Category 2: 개발 & 클라우드 -->
+      <div class="card">
+        <h2 class="card-title">💻 개발 & 클라우드</h2>
+        <ul class="link-list">
+          <li class="link-item">
+            <a href="https://github.com/valkenlee/github.io" target="_blank">
+              <span>GitHub.IO Repository</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://framer.com/" target="_blank">
+              <span>Framer</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://console.firebase.google.com/?hl=ko" target="_blank">
+              <span>Firebase Console</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://aistudio.google.com/api-keys?hl=ko&project=gen-lang-client-0162383967" target="_blank">
+              <span>Gemini API Key</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-    <h4> <a href="https://analytics.google.com/analytics/web"> 구글 애널리틱스 </a> </h4>
-    <h4> <a href="https://search.google.com/search-console?hl=ko"> 구글 서치 콘솔 </a> </h4>
-    <h4> <a href="https://adsense.google.com/adsense/u/0/pub-9689426453798023/onboarding">구글 애드 센스 </a> </h4>    
-    <h4> <a href="https://admob.google.com/v2/home"> 구글 애드몹 </a> </h4>        
-    <h4> <a href="https://adfit.kakao.com/dashboard"> 카카오 애드핏 </a> </h4>          
-    
-    <hr/>        
-    <h3> 메일 문의는 <a href="mailto:valken@valken.net">valken@valken.net</a>으로 보내주십시오. </h3>
+      <!-- Category 3: 애널리틱스 & 수익화 -->
+      <div class="card">
+        <h2 class="card-title">📊 분석 & 수익화</h2>
+        <ul class="link-list">
+          <li class="link-item">
+            <a href="https://analytics.google.com/analytics/web" target="_blank">
+              <span>구글 애널리틱스 (GA4)</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://search.google.com/search-console?hl=ko" target="_blank">
+              <span>구글 서치 콘솔</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://adsense.google.com/adsense/u/0/pub-9689426453798023/onboarding" target="_blank">
+              <span>구글 애드센스</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://admob.google.com/v2/home" target="_blank">
+              <span>구글 애드몹</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://adfit.kakao.com/dashboard" target="_blank">
+              <span>카카오 애드핏</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Category 4: 블로그 & 메일 -->
+      <div class="card">
+        <h2 class="card-title">📬 블로그 & 메일</h2>
+        <ul class="link-list">
+          <li class="link-item">
+            <a href="https://blog.valken.net" target="_blank">
+              <span>티스토리 블로그</span>
+              <span class="url-tag">blog.valken.net</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://gmail.com" target="_blank">
+              <span>지메일 (Gmail)</span>
+            </a>
+          </li>
+          <li class="link-item">
+            <a href="https://mail.daum.net/top/INBOX" target="_blank">
+              <span>다음 메일</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>메일 문의: <a href="mailto:valken@valken.net">valken@valken.net</a></p>
+    </footer>
+  </div>
+
 </body>
 </html>
