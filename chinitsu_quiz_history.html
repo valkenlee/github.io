@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - 지난 청일색 퀴즈 & 제미나이 작품 아카이브</title>
+  <meta name="description" content="지난 청일색 다면대기 퀴즈와 제미나이의 문학 작품, 정답 및 해설 모음집입니다.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/chinitsu_today_quiz.css">
+  <link rel="stylesheet" href="css/chinitsu_quiz_history.css">
+
+  <!-- Core Scripts -->
+  <script src="js/include-html.js" defer></script>  
+  <script src="js/theme.js" defer></script>
+  
+  <!-- History Page Logic (ES Module) -->
+  <script type="module" src="js/chinitsu_quiz_history.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Quiz_History',
+      'page_title': '지난 청일색 퀴즈 아카이브'
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Header 영역 -->
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+
+  <!-- Main Content -->
+  <main>
+    <article class="content-section">
+      <!-- Article Header / Hero -->
+      <header class="article-header hero-header">
+        <div class="section-title">CHINITSU QUIZ ARCHIVE</div>
+        <h1 class="article-title">지난 퀴즈 & 제미나이의 작품 목록</h1>
+        <p class="article-meta">
+          지나간 날짜의 청일색 문제와 제미나이가 집필한 문학 작품 및 정답 해설을 보실 수 있습니다.
+        </p>
+      </header>
+
+      <!-- History Table Section -->
+      <section class="history-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">날짜</th>
+              <th style="width: 75%;">제미나이의 문학 작품</th>
+            </tr>
+          </thead>
+          <tbody id="history-list-tbody">
+            <tr>
+              <td colspan="2" class="no-history">아카이브 데이터를 불러오는 중입니다...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Bottom Navigation Button -->
+      <div style="margin-top: 2rem; text-align: center;">
+        <a href="/index.html" class="btn-go-board" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--accent-color, #1976d2); color: white; border-radius: 6px; text-decoration: none;">오늘의 퀴즈 풀러가기 ➔</a>
+      </div>
+
+    </article>
+  </main>
+
+  <!-- Modal Component for Viewing Details -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      
+      <div class="modal-date" id="modal-date">2026년 00월 00일</div>
+      <h2 style="margin-bottom: 1rem;" id="modal-title">청일색 퀴즈 및 작품 상세</h2>
+
+      <!-- Mahjong Hand Render -->
+      <div class="mahjong-hand" id="modal-mahjong-hand" style="margin-bottom: 1.5rem;">
+        <!-- JS Image Injection -->
+      </div>
+
+      <!-- Gemini Novel Section -->
+      <section class="modal-novel-box">
+        <div class="modal-novel-title" id="modal-novel-title">📖 제미나이의 문학 작품</div>
+        <div class="modal-novel-text" id="modal-novel-content">작품 내용</div>
+      </section>
+
+      <!-- Answer & Explanation Box -->
+      <div class="modal-answer-box">
+        <h4 style="margin-bottom: 0.5rem; color: #4dabf7;" id="modal-answer-title">💡 정답: </h4>
+        <p id="modal-answer-explanation" style="font-size: 0.9rem; line-height: 1.5; margin: 0;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer 영역 -->
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>
