@@ -31,7 +31,22 @@
 
   <!-- 청일색 가이드 페이지들 -->
   <url>
+    <loc>https://www.valken.net/chinitsu_hub.html</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.valken.net/chinitsu_about.html</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.valken.net/chinitsu_admin.html</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://www.valken.net/chinitsu_board.html</loc>
     <lastmod>2026-09-09</lastmod>
     <priority>0.8</priority>
   </url>
@@ -57,6 +72,11 @@
   </url>
   <url>
     <loc>https://www.valken.net/chinitsu_qna.html</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.valken.net/chinitsu_quiz_history.html</loc>
     <lastmod>2026-09-09</lastmod>
     <priority>0.8</priority>
   </url>
