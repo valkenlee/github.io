@@ -248,10 +248,14 @@ async function initDailyQuiz() {
     currentQuiz = generateDailyTenpaiQuiz(seedNumber);
   }
 
-  // UI 렌더링 - 손패 이미지
+
+    // UI 렌더링 - 손패 이미지
       const handContainer = document.getElementById('daily-mahjong-hand');
-      if (handContainer) {
-        handContainer.innerHTML = '';
+      const handRepeatContainer = document.getElementById('daily-mahjong-hand-repeat'); // 신규 추가
+
+      if (handContainer || handRepeatContainer) {
+        if (handContainer) handContainer.innerHTML = '';
+        if (handRepeatContainer) handRepeatContainer.innerHTML = ''; // 초기화
         
         // 접두어 맵핑 테이블
         const prefixMap = {
@@ -289,15 +293,26 @@ async function initDailyQuiz() {
           }
 
           if (fileName) {
-            const img = document.createElement('img');
-            img.src = `tile/${fileName}.svg`;
-            img.alt = tileStr;
-            img.className = 'tile';
-            handContainer.appendChild(img);
+            // 상단 손패 이미지 생성
+            if (handContainer) {
+              const img = document.createElement('img');
+              img.src = `tile/${fileName}.svg`;
+              img.alt = tileStr;
+              img.className = 'tile';
+              handContainer.appendChild(img);
+            }
+
+            // [신규] 하단 재노출 손패 이미지 생성
+            if (handRepeatContainer) {
+              const imgRepeat = document.createElement('img');
+              imgRepeat.src = `tile/${fileName}.svg`;
+              imgRepeat.alt = tileStr;
+              imgRepeat.className = 'tile';
+              handRepeatContainer.appendChild(imgRepeat);
+            }
           }
         });
       }
-
 
   // 정답 및 해설 세팅
   const answerTiles = document.getElementById('answer-tiles-text');
