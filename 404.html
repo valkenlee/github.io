@@ -6,17 +6,17 @@
 </head>
 <body>
     <script>
-        // 접속한 경로 추출 (예: "/123" -> "123")
+        // 접속한 경로 추출 (예: "/123" -> "123", "/m/123" -> "m/123")
         const path = window.location.pathname.replace(/^\//, '');
         
-        // 경로가 순수 숫자로만 구성되어 있는지 확인
-        const isNumeric = /^\d+$/.test(path);
+        // 경로가 숫자 단독 또는 "m/숫자" 형태인지 확인 (/^\d+$/ -> /^(m\/)?\d+$/)
+        const isValidPath = /^(m\/)?\d+$/.test(path);
 
-        if (isNumeric) {
-            console.log("숫자 ID 확인됨, 리다이렉트 진행:", path);
+        if (isValidPath) {
+            console.log("리다이렉트 경로 확인됨, 이동 진행:", path);
             window.location.href = "https://blog.valken.net/" + path;
         } else {
-            console.log("숫자가 아닌 경로 요청:", path);
+            console.log("유효하지 않은 경로 요청:", path);
             document.body.innerHTML = "<h1>404 - 페이지를 찾을 수 없습니다.</h1>";
         }
     </script>
