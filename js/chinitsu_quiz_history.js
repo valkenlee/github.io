@@ -144,7 +144,29 @@ function openDetailModal(index) {
   document.getElementById("modal-novel-title").innerText = title || "📖 제미나이의 문학 작품";
   document.getElementById("modal-novel-content").innerText = content || "작품 내용이 없습니다.";
 
-  // 손패 이미지 렌더링
+  // 1. 수패 종류(suit) 및 단위(suitUnit) 기본값 및 대소문자 정제
+  const rawSuit = (item.suit || 'man').toLowerCase(); // 'man', 'pin', 'sou'
+  
+  // suitUnit 기본값 보정 (없을 경우 suit에 따라 추론)
+  let suitUnit = item.suitUnit;
+  if (!suitUnit) {
+    if (rawSuit === 'pin') suitUnit = '통';
+    else if (rawSuit === 'sou') suitUnit = '삭';
+    else suitUnit = '만';
+  }
+
+  // 이미지 파일명 생성을 위한 수패Prefix 매핑 (예: man -> Man, pin -> Pin, sou -> Sou)
+  const suitPrefixMap = {
+    man: 'Man',
+    pin: 'Pin',
+    sou: 'Sou',
+    m: 'Man',
+    p: 'Pin',
+    s: 'Sou'
+  };
+  const defaultPrefix = suitPrefixMap[rawSuit] || 'Man';
+
+  // 2. 손패 이미지 렌더링
   const handContainer = document.getElementById("modal-mahjong-hand");
   handContainer.innerHTML = "";
 
@@ -160,13 +182,14 @@ function openDetailModal(index) {
 
     if (shortMatch) {
       const num = shortMatch[1];
-      const suit = shortMatch[2].toLowerCase();
-      fileName = `${prefixMap[suit] || suit.toUpperCase()}${num}`;
+      const suitKey = shortMatch[2].toLowerCase();
+      fileName = `${prefixMap[suitKey] || suitKey.toUpperCase()}${num}`;
     } else if (fullNameMatch) {
       const prefix = fullNameMatch[1].charAt(0).toUpperCase() + fullNameMatch[1].slice(1).toLowerCase();
       fileName = `${prefix}${fullNameMatch[2]}`;
     } else if (!isNaN(tile)) {
-      fileName = `Man${tile}`;
+      // 숫자 형태(1~9)일 경우 item.suit에서 지정된 수패 이미지 사용
+      fileName = `${defaultPrefix}${tile}`;
     } else {
       fileName = tileStr;
     }
@@ -174,16 +197,20 @@ function openDetailModal(index) {
     if (fileName) {
       const img = document.createElement("img");
       img.src = `tile/${fileName}.svg`;
-      img.alt = tileStr;
+      img.alt = `${tileStr}${suitUnit}`;
       img.className = "tile";
       handContainer.appendChild(img);
     }
   });
 
-  // 정답 및 해설 세팅
+  // 3. 정답 및 해설 동적 세팅 (suitUnit 적용)
   const answers = item.waitArray || item.answers || [];
-  const waitText = item.waitText || `${answers.join(', ')}만`;
-  const explanation = item.explanation || `오름패는 [ ${answers.map(v => v + '만').join(', ')} ] 입니다.`;
+  
+  // waitText 가 없는 경우 suitUnit을 적용하여 동적 생성
+  const waitText = item.waitText || `${answers.join(', ')}${suitUnit} (${answers.length}면대기)`;
+  
+  // explanation 이 없는 경우 suitUnit을 적용하여 동적 생성
+  const explanation = item.explanation || `오름패는 [ ${answers.map(v => v + suitUnit).join(', ')} ] 입니다.`;
 
   document.getElementById("modal-answer-title").innerText = `💡 정답: ${waitText}`;
   document.getElementById("modal-answer-explanation").innerText = explanation;
