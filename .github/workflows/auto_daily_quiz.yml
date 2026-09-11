@@ -11,6 +11,10 @@ on:
         required: false
         default: ''
 
+# GITHUB_TOKEN에 쓰기 권한 부여
+permissions:
+  contents: write
+
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
