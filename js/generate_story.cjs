@@ -11,6 +11,29 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// 대기(sleep) 헬퍼 함수
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 재시도 로직이 포함된 Gemini 호출 함수
+async function generateContentWithRetry(model, prompt, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (error) {
+      // 503 (Server Unavailable) 및 429 (Rate Limit) 등에 대한 재시도 처리
+      const isRetryable = error.status === 503 || error.status === 429 || error.message?.includes('503');
+      
+      if (isRetryable && attempt < maxRetries) {
+        const waitTime = attempt * 3000; // 1차 3초, 2차 6초 대기 (지수 대기)
+        console.warn(`[Gemini API] 일시적 오류 발생 (${error.status || '503'}). ${attempt}/${maxRetries} 재시도 중... (${waitTime / 1000}초 후 시도)`);
+        await delay(waitTime);
+      } else {
+        throw error; // 재시도 횟수 초과 또는 기타 오류 시 에러 발생
+      }
+    }
+  }
+}
+
 async function generateStory() {
   try {
     // 1. 날짜 처리 (YYYY-MM-DD 또는 YYYYMMDD 입력 대응)
@@ -71,8 +94,8 @@ async function generateStory() {
 }
 `;
 
-    // 5. 스토리 생성 요청
-    const result = await model.generateContent(prompt);
+    // 5. 스토리 생성 요청 (Retry 로직 반영)
+    const result = await generateContentWithRetry(model, prompt, 3);
     const responseText = result.response.text();
     const storyJson = JSON.parse(responseText);
 

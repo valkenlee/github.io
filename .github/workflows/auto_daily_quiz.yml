@@ -43,7 +43,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add data/
+          git add js/data/
           git status
           git diff-index --quiet HEAD || git commit -m "auto: Generate daily quiz data [skip ci]"
           git push
