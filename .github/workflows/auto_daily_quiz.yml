@@ -1,0 +1,49 @@
+name: Auto Daily Quiz Pipeline
+
+on:
+  schedule:
+    # 매일 한국 시간 05:00 (UTC 20:00) 자동 실행
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: '실행할 날짜 (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Auto Daily Quiz Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          if [ -n "${{ inputs.target_date }}" ]; then
+            node js/auto_daily_quiz.cjs ${{ inputs.target_date }}
+          else
+            node js/auto_daily_quiz.cjs
+          fi
+
+      - name: Commit and Push generated JSON data
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/
+          git status
+          git diff-index --quiet HEAD || git commit -m "auto: Generate daily quiz data [skip ci]"
+          git push
