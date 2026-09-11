@@ -120,3 +120,63 @@
   padding: 2rem;
   color: #888;
 }
+
+/* 모달 하단 버튼 컨테이너 */
+.modal-nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 네비게이션 버튼 공통 스타일 */
+.modal-nav-btn {
+  flex: 1;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #2b303b;
+  border: 1px solid #404859;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.modal-nav-btn:hover:not(:disabled) {
+  background-color: #3b4252;
+  border-color: #5e81ac;
+}
+
+/* 닫기 버튼 */
+.modal-nav-btn.close-btn {
+  background-color: #4c566a;
+}
+
+.modal-nav-btn.close-btn:hover {
+  background-color: #d08770;
+  border-color: #bf616a;
+}
+
+/* 비활성화 상태 (미래/범위 초과 시) */
+.modal-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+
+/* 모바일 반응형 최적화 */
+@media (max-width: 480px) {
+  .modal-nav-container {
+    gap: 6px;
+  }
+  .modal-nav-btn {
+    padding: 0.6rem 0.25rem;
+    font-size: 0.78rem;
+  }
+}

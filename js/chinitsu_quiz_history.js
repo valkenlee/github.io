@@ -17,8 +17,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let archivesData = [];
+let currentModalIndex = -1; // 현재 모달에 표시 중인 데이터 인덱스
 
-// 오전 6시 기준 오늘 날짜 계산 함수
 function getAdjustedTodayKey() {
   const now = new Date();
   const adjusted = new Date(now);
@@ -68,6 +68,7 @@ async function loadQuizHistory() {
       const docDateRaw = data.date || data.id || "";
       const docDateFormatted = docDateRaw.replace(/-/g, "");
 
+      // 오늘보다 과거인 데이터만 포함
       if (docDateFormatted < todayKey) {
         archivesData.push(data);
       }
@@ -117,8 +118,10 @@ function renderHistoryList(list) {
 }
 
 function openDetailModal(index) {
+  if (index < 0 || index >= archivesData.length) return;
+  
+  currentModalIndex = index;
   const item = archivesData[index];
-  if (!item) return;
 
   const rawDate = item.date || item.id || "";
   let displayDate = rawDate;
@@ -144,10 +147,8 @@ function openDetailModal(index) {
   document.getElementById("modal-novel-title").innerText = title || "📖 제미나이의 문학 작품";
   document.getElementById("modal-novel-content").innerText = content || "작품 내용이 없습니다.";
 
-  // 1. 수패 종류(suit) 및 단위(suitUnit) 기본값 및 대소문자 정제
-  const rawSuit = (item.suit || 'man').toLowerCase(); // 'man', 'pin', 'sou'
-  
-  // suitUnit 기본값 보정 (없을 경우 suit에 따라 추론)
+  // 1. 수패 종류 및 단위 기본값 처리
+  const rawSuit = (item.suit || 'man').toLowerCase();
   let suitUnit = item.suitUnit;
   if (!suitUnit) {
     if (rawSuit === 'pin') suitUnit = '통';
@@ -155,15 +156,7 @@ function openDetailModal(index) {
     else suitUnit = '만';
   }
 
-  // 이미지 파일명 생성을 위한 수패Prefix 매핑 (예: man -> Man, pin -> Pin, sou -> Sou)
-  const suitPrefixMap = {
-    man: 'Man',
-    pin: 'Pin',
-    sou: 'Sou',
-    m: 'Man',
-    p: 'Pin',
-    s: 'Sou'
-  };
+  const suitPrefixMap = { man: 'Man', pin: 'Pin', sou: 'Sou', m: 'Man', p: 'Pin', s: 'Sou' };
   const defaultPrefix = suitPrefixMap[rawSuit] || 'Man';
 
   // 2. 손패 이미지 렌더링
@@ -188,7 +181,6 @@ function openDetailModal(index) {
       const prefix = fullNameMatch[1].charAt(0).toUpperCase() + fullNameMatch[1].slice(1).toLowerCase();
       fileName = `${prefix}${fullNameMatch[2]}`;
     } else if (!isNaN(tile)) {
-      // 숫자 형태(1~9)일 경우 item.suit에서 지정된 수패 이미지 사용
       fileName = `${defaultPrefix}${tile}`;
     } else {
       fileName = tileStr;
@@ -203,36 +195,71 @@ function openDetailModal(index) {
     }
   });
 
-  // 3. 정답 및 해설 동적 세팅 (suitUnit 적용)
+  // 3. 정답 및 해설 세팅
   const answers = item.waitArray || item.answers || [];
-  
-  // waitText 가 없는 경우 suitUnit을 적용하여 동적 생성
   const waitText = item.waitText || `${answers.join(', ')}${suitUnit} (${answers.length}면대기)`;
-  
-  // explanation 이 없는 경우 suitUnit을 적용하여 동적 생성
   const explanation = item.explanation || `오름패는 [ ${answers.map(v => v + suitUnit).join(', ')} ] 입니다.`;
 
   document.getElementById("modal-answer-title").innerText = `💡 정답: ${waitText}`;
   document.getElementById("modal-answer-explanation").innerText = explanation;
 
+  // 4. 하단 이전/다음 버튼 상태 업데이트 (날짜 경계 조건 적용)
+  updateNavButtonsState();
+
   // 모달 열기
   document.getElementById("history-modal").classList.add("active");
+}
+
+// 이전/다음 버튼 활성화/비활성화 상태 제어
+function updateNavButtonsState() {
+  const prevBtn = document.getElementById("modal-prev-btn");
+  const nextBtn = document.getElementById("modal-next-btn");
+
+  if (prevBtn) {
+    // 더 더 더 과거 데이터(배열의 더 큰 인덱스)가 없으면 비활성화
+    prevBtn.disabled = (currentModalIndex >= archivesData.length - 1);
+  }
+
+  if (nextBtn) {
+    // 가장 최근 과거 데이터(인덱스 0)에 도달했으면 비활성화 (오늘/미래 데이터 접근 금지)
+    nextBtn.disabled = (currentModalIndex <= 0);
+  }
 }
 
 function setupModalEvents() {
   const modal = document.getElementById("history-modal");
   const closeBtn = document.getElementById("modal-close-btn");
+  const centerCloseBtn = document.getElementById("modal-center-close-btn");
+  const prevBtn = document.getElementById("modal-prev-btn");
+  const nextBtn = document.getElementById("modal-next-btn");
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      modal.classList.remove("active");
+  const closeModal = () => modal.classList.remove("active");
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (centerCloseBtn) centerCloseBtn.addEventListener("click", closeModal);
+
+  // 이전 날짜 (더 과거 항목 -> 인덱스 증가)
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (currentModalIndex < archivesData.length - 1) {
+        openDetailModal(currentModalIndex + 1);
+      }
+    });
+  }
+
+  // 다음 날짜 (최신 과거 항목 쪽으로 -> 인덱스 감소)
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (currentModalIndex > 0) {
+        openDetailModal(currentModalIndex - 1);
+      }
     });
   }
 
   if (modal) {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
-        modal.classList.remove("active");
+        closeModal();
       }
     });
   }
