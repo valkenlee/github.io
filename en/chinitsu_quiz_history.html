@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - Past Quizzes & Gemini Stories Archive</title>
+  <meta name="description" content="Archive of past Chinitsu daily quizzes, short stories written by Gemini, and step-by-step solutions.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/chinitsu_today_quiz.css">
+  <link rel="stylesheet" href="/css/chinitsu_quiz_history.css">
+
+  <!-- Core Scripts -->
+  <script src="/js/include-html.js" defer></script>  
+  <script src="/js/theme.js" defer></script>
+  
+  <!-- History Page Logic -->
+  <script type="module" src="/js/chinitsu_quiz_history.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Quiz_History',
+      'page_title': 'Chinitsu Quiz Archive'
+    });
+  </script>
+</head>
+<body>
+
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+
+  <main>
+    <article class="content-section">
+      <header class="article-header hero-header">
+        <div class="section-title">CHINITSU QUIZ ARCHIVE</div>
+        <h1 class="article-title">Past Quizzes & Gemini Stories Archive</h1>
+        <p class="article-meta">
+          Browse previous daily Chinitsu quizzes, accompanying short stories written by Gemini, and solutions.
+        </p>
+      </header>
+
+      <section class="history-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Date</th>
+              <th style="width: 75%;">Story Title by Gemini</th>
+            </tr>
+          </thead>
+          <tbody id="history-list-tbody">
+            <tr>
+              <td colspan="2" class="no-history">Loading archive data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div style="margin-top: 2rem; text-align: center;">
+        <a href="/en/index.html" class="btn-go-board" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--accent-color, #1976d2); color: white; border-radius: 6px; text-decoration: none;">Play Today's Quiz ➔</a>
+      </div>
+
+    </article>
+  </main>
+
+  <!-- Modal Component -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      
+      <div class="modal-date" id="modal-date">Date</div>
+      <h2 style="margin-bottom: 1rem;" id="modal-title">Quiz & Story Details</h2>
+
+      <!-- Hand Render -->
+      <div class="mahjong-hand" id="modal-mahjong-hand" style="margin-bottom: 1.5rem;"></div>
+
+      <!-- Novel Section -->
+      <section class="modal-novel-box">
+        <div class="modal-novel-title" id="modal-novel-title">📖 Story by Gemini</div>
+        <div class="modal-novel-text" id="modal-novel-content">Story content</div>
+      </section>
+
+      <!-- Answer Box -->
+      <div class="modal-answer-box">
+        <h4 style="margin-bottom: 0.5rem; color: #4dabf7;" id="modal-answer-title">💡 Answer: </h4>
+        <p id="modal-answer-explanation" style="font-size: 0.9rem; line-height: 1.5; margin: 0;"></p>
+      </div>
+
+      <!-- Modal Bottom Navigation -->
+      <div class="modal-nav-container">
+        <button id="modal-prev-btn" class="modal-nav-btn">◀ Previous Date</button>
+        <button id="modal-center-close-btn" class="modal-nav-btn close-btn">Close</button>
+        <button id="modal-next-btn" class="modal-nav-btn">Next Date ▶</button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>

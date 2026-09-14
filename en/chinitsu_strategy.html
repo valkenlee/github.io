@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pure Flush Strategy & Multi-Wait Decoding - VALKEN.NET</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/include-html.js" defer></script>
+  <script src="/js/theme.js" defer></script>
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Hand_Quiz',
+      'page_title': 'Mahjong Chinitsu Strategy'
+    });
+  </script>
+
+  <!-- ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <header id="header-container" data-include="/components/comp_header.html"></header>
+
+  <main>
+    <article class="content-section">
+      <header class="article-header hero-header">
+        <div class="section-title">CHINITSU STRATEGY</div>
+        <h1 class="article-title">Chinitsu Strategy & Multi-Wait Decoding</h1>
+        <p class="article-meta">
+          Topics: Wait decomposition algorithms / Nakabukure analysis / Furiten prevention / Wall pressure management
+        </p>
+      </header>	  
+
+      <section class="guide-overview">
+        <h2>A Practical Formula Beyond Multi-Wait Confusion</h2>
+        <p>
+          While Pure Flush packs enormous scoring power, concentrating all tiles in one suit makes identifying your exact winning tiles (waits) notoriously challenging. 
+          Misreading waits or accidentally discarding a winning tile into Furiten are common pitfalls for beginner and intermediate players alike. 
+          This guide provides practical techniques including hand decomposition formulas, Nakabukure analysis, meld timing, and wall-reading tactics.
+        </p>
+      </section>
+
+      <!-- 1. Decomposition Formula -->
+      <section class="episode-card">
+        <h3>1. The 3-Step Hand Decomposition Formula</h3>
+        <p>
+          Rather than trying to read a complex single-suit hand as a whole, break it down by isolating fixed blocks step by step.
+        </p>
+        
+        <div class="callout">
+          🔍 <strong>Key 3-Step Decomposition Formula</strong>
+          <ol>
+            <li><strong>Isolate Triplets (Anko):</strong> If you hold 3 identical tiles, calculate the remaining waits under two separate scenarios: treating them as a fixed triplet vs. splitting them into a pair + sequence.</li>
+            <li><strong>Isolate Quads (4-tile Groups):</strong> Holding 4 identical tiles means at least 1 tile connects to an adjacent sequence. Separate into 3+1 to evaluate wait shifts.</li>
+            <li><strong>Strip Terminal Sequences:</strong> Removing clean edge sequences (e.g., 1-2-3 or 7-8-9) from the edges clarifies the complex middle structure.</li>
+          </ol>
+        </div>
+
+        <p class="mt-1"><strong>Practical Example (13-tile Tenpai Hand):</strong></p>
+        
+        <div class="mahjong-hand">
+          <img src="/tile/Man1.svg" alt="1 Man" class="tile">
+          <img src="/tile/Man1.svg" alt="1 Man" class="tile">
+          <img src="/tile/Man1.svg" alt="1 Man" class="tile">
+          <img src="/tile/Man2.svg" alt="2 Man" class="tile">
+          <img src="/tile/Man3.svg" alt="3 Man" class="tile">
+          <img src="/tile/Man4.svg" alt="4 Man" class="tile">
+          <img src="/tile/Man5.svg" alt="5 Man" class="tile">
+          <img src="/tile/Man6.svg" alt="6 Man" class="tile">
+          <img src="/tile/Man7.svg" alt="7 Man" class="tile">
+          <img src="/tile/Man8.svg" alt="8 Man" class="tile">
+          <img src="/tile/Man9.svg" alt="9 Man" class="tile">
+          <img src="/tile/Man9.svg" alt="9 Man" class="tile">
+          <img src="/tile/Man9.svg" alt="9 Man" class="tile">
+        </div>
+
+        <p>
+          This is the famous <em>Pure Nine Gates (Junsei Chuuren Poutou)</em> structure. Decomposing it shows:
+        </p>
+        <ul>
+          <li><strong>Fixing 111 and 999 as Triplets:</strong> The middle sequence [2345678] accepts any tile from 1 to 9 (a true 9-sided wait).</li>
+          <li><strong>Fixing 11 and 99 as Pairs:</strong> The remaining tiles form neat sequences [123], [456], [789], connecting seamlessly with any drawn tile.</li>
+        </ul>
+      </section>
+
+      <!-- 2. Nakabukure -->
+      <section class="episode-card">
+        <h3>2. Nakabukure Structures and Reading Tips</h3>
+        <p>
+          A structure where the middle tiles bulge out—that is, <strong>having a triplet (3 tiles) or pair (2 tiles) embedded inside a continuous sequence</strong>—is known in Japanese mahjong as <em>Nakabukure (中膨らみ)</em>. This pattern significantly increases wait complexity.
+        </p>
+
+        <p class="mt-1"><strong>Nakabukure Example (3 4 5 5 5 6 7 Pin):</strong></p>
+        
+        <div class="mahjong-hand">
+          <img src="/tile/Pin3.svg" alt="3 Pin" class="tile">
+          <img src="/tile/Pin4.svg" alt="4 Pin" class="tile">
+          <img src="/tile/Pin5.svg" alt="5 Pin" class="tile">
+          <img src="/tile/Pin5.svg" alt="5 Pin" class="tile">
+          <img src="/tile/Pin5.svg" alt="5 Pin" class="tile">
+          <img src="/tile/Pin6.svg" alt="6 Pin" class="tile">
+          <img src="/tile/Pin7.svg" alt="7 Pin" class="tile">
+        </div>
+        
+        <p><strong>Decomposition Tips:</strong></p>
+        <ul>
+          <li>
+            <strong>Treating [5 Pin] as a Triplet (555):</strong> Offers wide expansion potential with 2, 5, and 8 as effective tiles.
+          </li>
+          <li>
+            <strong>Treating [5 Pin] as a Pair (55):</strong> Combines a [34] ryanmen (2-5 wait) and a [67] ryanmen (5-8 wait), resulting in a <strong>2-5-8 3-sided wait</strong>.
+          </li>
+          <li>
+            <strong>Splitting into Sequences (345, 567):</strong> Leaves the remaining [5 Pin] as a tanki (single) wait or connector.
+          </li>
+        </ul>
+        <div class="callout callout-warning">
+          ⚡ <strong>Nakabukure Rule:</strong> Always check if the tiles two steps away (e.g., 2 and 8) from the bulging central tile (5) are included in the waits! A central triplet acts as a catalyst spreading sequence waits outwards.
+        </div>
+      </section>
+
+      <!-- 3. Furiten Checklist -->
+      <section class="episode-card">
+        <h3>3. Furiten & Winning Error Prevention Checklist</h3>
+        <p>
+          Misidentifying your waits can lead to accidentally discarding a winning tile or passing on a ron declaration, causing <strong>Furiten</strong>. Run through this 4-point checklist during play:
+        </p>
+
+        <table class="cheat-table">
+          <thead>
+            <tr>
+              <th>Check Item</th>
+              <th>In-Game Inspection</th>
+              <th>Prevention Strategy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Discard Pool</strong></td>
+              <td>Is any of my current winning tiles in my discard pile?</td>
+              <td>If even 1 tile matches, Ron is disabled. You must win by Tsumo or change your hand structure.</td>
+            </tr>
+            <tr>
+              <td><strong>Pair (Head) Check</strong></td>
+              <td>Is a clear 2-tile pair established in the hand?</td>
+              <td>Without a fixed pair, single-wait (tanki) or dual-pair (shanpon) structures are present, completely altering wait coverage.</td>
+            </tr>
+            <tr>
+              <td><strong>Drawn Tile Fitting</strong></td>
+              <td>Virtually place a newly drawn tile at either edge of your hand.</td>
+              <td>Check if terminal tiles (1/9 or 2/8) complete Ittsu (Pure Straight) or Pinfu conditions smoothly.</td>
+            </tr>
+            <tr>
+              <td><strong>No-Ten Riichi Guard</strong></td>
+              <td>Are you declaring Riichi without 100% certainty of your waits?</td>
+              <td>Closed Chinitsu is already 6 Han. If waits are uncertain, avoid Riichi and take your time verifying the multi-wait pattern.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 4. Melds & Wall Pressure -->
+      <section class="episode-card">
+        <h3>4. Open Meld Timing & Wall Pressure Management</h3>
+        <p>
+          Although open Chinitsu retains a formidable 5 Han, calling melds reduces your hand size, limiting flexibility and revealing your target suit to the table.
+        </p>
+
+        <h4>① Meld Decision Guide</h4>
+        <ul>
+          <li><strong>When to Call:</strong> When an essential tile completing a bottleneck shape (kanchan/penchan) appears, or if calling still guarantees a 2-to-3-sided wait.</li>
+          <li><strong>When NOT to Call:</strong> When calling leaves you with a narrow wait (e.g., penchan or tanki). Reducing hand size destroys the structural advantages of multi-waits.</li>
+        </ul>
+
+        <h4>② Wall Pressure & Defense Response</h4>
+        <p>
+          When you hoard an entire suit, opponents will hold onto those tiles defensively (wall pressure).
+        </p>
+        <div class="callout">
+          💡 <strong>Pro Tip:</strong> If opponents lock up your suit, Ron win rates drop sharply. Pivot your strategy toward targeting middle suit tiles (4, 5, 6) that remain in the wall, or focus on winning by Tsumo.
+        </div>
+      </section>
+
+      <div id="cta-box-container" data-include="/components/comp_cta_box.html"></div>
+    </article>
+  </main>
+  
+  <aside id="ads-container" class="ads-wrapper" data-include="/components/comp_ads.html"></aside>
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - Daily Chinitsu Quiz</title>
+  <meta name="description" content="Daily updated Mahjong Pure Flush (Chinitsu) multi-wait quiz and community discussion board. Updated every day at 06:00 AM.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/chinitsu_today_quiz.css">
+
+  <!-- Core Scripts -->
+  <script src="/js/include-html.js" defer></script>  
+  <script src="/js/theme.js" defer></script>
+  
+  <!-- Firebase & Page Logic -->
+  <script type="module" src="/js/chinitsu_today_quiz.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Daily_Quiz',
+      'page_title': 'Daily Chinitsu Quiz'
+    });
+  </script>
+
+  <!-- ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+  
+  <!-- Main Content -->
+  <main>
+    <article class="content-section">
+      <!-- Article Header / Hero -->
+      <header class="article-header hero-header">
+        <div class="section-title">DAILY CHINITSU CHALLENGE</div>
+        
+        <h1 class="article-title">Daily Chinitsu Quiz</h1>
+        
+        <p class="article-meta">
+          Daily multi-wait tile reading training updated at 6:00 AM & Community space
+        </p>
+      </header>
+
+      <!-- 1. Daily Quiz Section -->
+      <section class="daily-quiz-card">
+        <div class="quiz-info-bar">
+          <span class="quiz-date" id="quiz-date-display">Quiz for Today</span>
+        </div>
+
+        <p class="quiz-instruction">
+          ❓ What are the <strong>winning tiles (waits)</strong> for the tenpai hand below?
+        </p>
+
+        <!-- Dynamic Hand Render Area -->
+        <div class="mahjong-hand" id="daily-mahjong-hand">
+          <!-- JS injects problem tile images -->
+        </div>
+
+        <!-- 2. Gemini Literary Work Section -->
+        <section class="gemini-novel-card" id="gemini-novel-card" style="margin: 1.5rem 0; padding: 1.25rem; background: rgba(0, 0, 0, 0.03); border-radius: 8px;">
+          <h3 class="novel-title" id="novel-title" style="margin-bottom: 0.5rem; font-size: 1.1rem;">📖 Story by Gemini</h3>
+          <p class="novel-sub" style="font-size: 0.85rem; color: #666; margin-bottom: 0.8rem;">A short story inspired by today's quiz hand.</p>
+          <div class="novel-content" id="novel-content" style="white-space: pre-line; line-height: 1.7; font-family: serif; font-size: 0.95rem;">
+            Loading story...
+          </div>
+        </section>
+
+        <!-- Tile Selector Grid Repeat -->
+        <div class="quiz-repeat-wrapper" style="margin-top: 1.5rem; margin-bottom: 1rem; text-align: center;">
+          <p class="quiz-instruction-repeat" style="font-size: 0.95rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--text-color, inherit);">
+            📌 [Review Hand] Select all winning tiles (waits):
+          </p>
+          <div class="mahjong-hand" id="daily-mahjong-hand-repeat">
+            <!-- JS injects repeated hand -->
+          </div>
+        </div>
+
+        <!-- Tile Selector Grid (1~9) -->
+        <div class="tile-selector-wrapper">
+          <div class="selector-title">Select Winning Tiles (Select at least 1):</div>
+          <div class="tile-btn-grid" id="tile-btn-grid">
+            <button type="button" class="btn-tile-select" data-val="1">1</button>
+            <button type="button" class="btn-tile-select" data-val="2">2</button>
+            <button type="button" class="btn-tile-select" data-val="3">3</button>
+            <button type="button" class="btn-tile-select" data-val="4">4</button>
+            <button type="button" class="btn-tile-select" data-val="5">5</button>
+            <button type="button" class="btn-tile-select" data-val="6">6</button>
+            <button type="button" class="btn-tile-select" data-val="7">7</button>
+            <button type="button" class="btn-tile-select" data-val="8">8</button>
+            <button type="button" class="btn-tile-select" data-val="9">9</button>
+          </div>
+
+          <div class="selected-summary">
+            Selected Tiles: <span id="selected-tiles-display" class="selected-tiles-text">None</span>
+          </div>
+
+          <div class="submit-action-bar">
+            <button type="button" class="btn-submit-answer" id="btn-submit-answer" disabled>Submit Answer</button>
+          </div>
+        </div>
+
+        <!-- Result Message Banner -->
+        <div class="submission-result-box" id="submission-result-box" style="display: none;"></div>
+
+        <!-- Revealed Answer Box -->
+        <div class="quiz-answer-box" id="quiz-answer-box" style="display: none;">
+          <div class="answer-content" id="answer-content" style="display: block;">
+            <h4 class="answer-title">💡 Answer: <span id="answer-tiles-text"></span></h4>
+            <p id="answer-explanation" class="answer-explanation-text"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Guestboard Section -->
+      <section class="board-section" id="board-section" style="display: none;">
+        <h2>💬 Discussion</h2>
+        <p class="board-description">
+          Share your thoughts or hand-reading path for today's problem!
+        </p>
+
+        <!-- Write Form -->
+        <form class="comment-form" id="comment-form">
+          <div class="form-row">
+            <input type="text" id="nickname" class="form-input nickname" placeholder="Nickname" maxlength="12" required>
+            <input type="text" id="captcha-answer" class="form-input captcha" placeholder="" required>
+          </div>
+          <textarea id="comment-body" class="form-input" placeholder="Leave your feedback or comments on today's quiz." maxlength="200" required></textarea>
+          <button type="submit" class="btn-submit" id="btn-submit">Post Comment</button>
+        </form>
+
+        <!-- Comment List Table -->
+        <div class="comment-list-wrapper">
+          <table class="comment-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">User</th>
+                <th style="width: 75%;">Message</th>
+              </tr>
+            </thead>
+            <tbody id="comment-list-tbody">
+              <tr>
+                <td colspan="2" class="no-comments">Loading comments...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="board-more-action">
+          <a href="/en/chinitsu_board.html" class="btn-go-board">Go to Board ➔</a>
+        </div>
+      </section>
+
+      <!-- Bottom Interactive CTA Box -->
+      <div id="cta-box-container" data-include="/components/comp_cta_box.html"></div>
+    </article>
+  </main>
+
+  <aside id="ads-container" class="ads-wrapper" data-include="/components/comp_ads.html"></aside>
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>

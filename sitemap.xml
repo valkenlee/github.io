@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
   <!-- 메인 페이지 -->
   <url>
     <loc>https://www.valken.net/</loc>
@@ -29,60 +31,137 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- 청일색 가이드 페이지들 -->
+  <!-- 청일색 가이드 페이지들 (다국어 매핑 적용 예시) -->
+  
+  <!-- chinitsu_hub.html -->
   <url>
     <loc>https://www.valken.net/chinitsu_hub.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_hub.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_hub.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_hub.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_hub.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_hub.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_hub.html"/>
     <lastmod>2026-09-09</lastmod>
     <priority>0.8</priority>
   </url>
+
+  <!-- chinitsu_about.html -->
   <url>
     <loc>https://www.valken.net/chinitsu_about.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_about.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_about.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_about.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_about.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_about.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_about.html"/>
     <lastmod>2026-09-09</lastmod>
     <priority>0.8</priority>
   </url>
+
+  <!-- chinitsu_board.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_board.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_board.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_board.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_board.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_board.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_board.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_board.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_strategy.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_strategy.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_strategy.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_strategy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_strategy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_strategy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_strategy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_strategy.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_yakuman.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_yakuman.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_yakuman.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_yakuman.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_yakuman.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_yakuman.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_yakuman.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_yakuman.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_cheatsheet.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_cheatsheet.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_cheatsheet.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_cheatsheet.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_cheatsheet.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_cheatsheet.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_cheatsheet.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_cheatsheet.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_episodes.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_episodes.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_episodes.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_episodes.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_episodes.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_episodes.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_episodes.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_episodes.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_qna.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_qna.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_qna.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_qna.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_qna.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_qna.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_qna.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_qna.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_quiz_history.html -->
+  <url>
+    <loc>https://www.valken.net/chinitsu_quiz_history.html</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://www.valken.net/chinitsu_quiz_history.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.valken.net/en/chinitsu_quiz_history.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.valken.net/ja/chinitsu_quiz_history.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_CN" href="https://www.valken.net/zh_CN/chinitsu_quiz_history.html"/>
+    <xhtml:link rel="alternate" hreflang="zh_TW" href="https://www.valken.net/zh_TW/chinitsu_quiz_history.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.valken.net/chinitsu_quiz_history.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- chinitsu_admin.html (관리자용 페이지는 보통 다국어에서 제외하거나 noindex 처리) -->
   <url>
     <loc>https://www.valken.net/chinitsu_admin.html</loc>
     <lastmod>2026-09-09</lastmod>
     <priority>0.1</priority>
   </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_board.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_strategy.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_yakuman.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_cheatsheet.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_episodes.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_qna.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.valken.net/chinitsu_quiz_history.html</loc>
-    <lastmod>2026-09-09</lastmod>
-    <priority>0.8</priority>
-  </url>
+
+  <!-- 약관 및 기본 페이지 -->
   <url>
     <loc>https://www.valken.net/privacy.html</loc>
     <lastmod>2026-09-09</lastmod>
     <priority>0.5</priority>
   </url>
+
 </urlset>

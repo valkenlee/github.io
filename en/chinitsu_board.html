@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALKEN.NET - Community Discussion Board</title>
+  <meta name="description" content="A community message board to discuss daily Chinitsu quiz solutions, multi-wait tips, and Riichi Mahjong strategy.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/chinitsu_board.css">
+
+  <!-- Core Scripts -->
+  <script src="/js/include-html.js" defer></script>  
+  <script src="/js/theme.js" defer></script>
+  
+  <!-- Firebase & Board Logic -->
+  <script type="module" src="/js/chinitsu_board.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXBMWZV3Q0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PXBMWZV3Q0', {
+      'screen_class': 'Pure_Flush_Board',
+      'page_title': 'Chinitsu Community Board'
+    });
+  </script>
+
+  <!-- ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9689426453798023" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <header id="header-container" data-include="/components/comp_header.html"></header> 
+  
+  <main>
+    <article class="content-section">
+      <header class="article-header hero-header">
+        <div class="section-title">COMMUNITY BOARD</div>
+        <h1 class="article-title">Chinitsu Community Board</h1>
+        <p class="article-meta">
+          A space for sharing daily quiz impressions, multi-wait tips, and Riichi Mahjong strategy discussions.
+        </p>
+      </header>
+
+      <!-- Write Form -->
+      <section class="board-write-card">
+        <h3>✏️ Write a Comment</h3>
+        <form class="comment-form" id="board-write-form">
+          <div class="form-row">
+            <input type="text" id="nickname" class="form-input nickname" placeholder="Nickname" maxlength="12" required>
+            <input type="text" id="captcha-answer" class="form-input captcha" placeholder="" required>
+          </div>
+          <textarea id="comment-body" class="form-input" placeholder="Share your solution path, questions, or comments." maxlength="200" required></textarea>
+          <div class="form-submit-row">
+            <button type="submit" class="btn-submit" id="btn-submit">Submit Post</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Board Table -->
+      <section class="board-list-card">
+        <div class="board-table-wrapper">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th style="width: 20%;">User</th>
+                <th style="width: 60%;">Message</th>
+                <th style="width: 20%;">Date</th>
+              </tr>
+            </thead>
+            <tbody id="board-tbody">
+              <tr>
+                <td colspan="3" class="no-data">Loading posts...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-wrapper">
+          <button type="button" class="btn-page" id="btn-prev" disabled>◀ Prev</button>
+          <div class="page-numbers" id="page-numbers"></div>
+          <button type="button" class="btn-page" id="btn-next" disabled>Next ▶</button>
+        </div>
+
+        <div class="back-action">
+          <a href="/en/index.html" class="btn-go-quiz">🧩 Solve Today's Quiz</a>
+        </div>
+      </section>
+
+      <div id="cta-box-container" data-include="/components/comp_cta_box.html"></div>
+    </article>
+  </main>
+
+  <aside id="ads-container" class="ads-wrapper" data-include="/components/comp_ads.html"></aside>
+  <footer id="footer-container" data-include="/components/comp_footer.html"></footer>
+
+</body>
+</html>
