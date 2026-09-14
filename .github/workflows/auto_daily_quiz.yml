@@ -11,6 +11,7 @@ on:
         required: false
         default: ''
 
+# GITHUB_TOKEN에 쓰기 권한 부여
 permissions:
   contents: write
 
@@ -22,7 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # 히스토리를 전체 가져와 Rebase 오류를 예방합니다.
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,7 +45,9 @@ jobs:
             node js/auto_daily_quiz.cjs
           fi
 
-      # 기존 복잡한 git shell 커맨드 대신 공식 자동 커밋 액션 사용
+      # -------------------------------------------------------------------
+      # 복잡한 git 커맨드 대신 자동 커밋 액션을 사용합니다.
+      # -------------------------------------------------------------------
       - name: Commit & Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
