@@ -296,7 +296,7 @@ async function initDailyQuiz() {
             // 상단 손패 이미지 생성
             if (handContainer) {
               const img = document.createElement('img');
-              img.src = `tile/${fileName}.svg`;
+              img.src = `/tile/${fileName}.svg`;
               img.alt = tileStr;
               img.className = 'tile';
               handContainer.appendChild(img);
@@ -305,7 +305,7 @@ async function initDailyQuiz() {
             // [신규] 하단 재노출 손패 이미지 생성
             if (handRepeatContainer) {
               const imgRepeat = document.createElement('img');
-              imgRepeat.src = `tile/${fileName}.svg`;
+              imgRepeat.src = `/tile/${fileName}.svg`;
               imgRepeat.alt = tileStr;
               imgRepeat.className = 'tile';
               handRepeatContainer.appendChild(imgRepeat);

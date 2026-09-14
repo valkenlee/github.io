@@ -1,4 +1,4 @@
-// js/auto_daily_quiz.cjs
+// auto_daily_quiz.cjs
 const { execSync } = require('child_process');
 const path = require('path');
 
@@ -12,12 +12,16 @@ try {
   console.log('1. Generating Quiz JSON...');
   execSync(`node ${path.join(__dirname, 'generate_quiz.cjs')} ${targetDate}`, { stdio: 'inherit' });
 
-  // 2. Gemini 스토리 생성
+  // 2. Gemini 스토리 생성 (한국어)
   console.log('2. Generating Story via Gemini...');
   execSync(`node ${path.join(__dirname, 'generate_story.cjs')} ${targetDate}`, { stdio: 'inherit' });
 
-  // 3. Firestore 업로드
-  console.log('3. Uploading to Firestore...');
+  // 3. Gemini 다국어 번역 추가 (일/영/중간체/중번체)
+  console.log('3. Translating Story via Gemini...');
+  execSync(`node ${path.join(__dirname, 'translate_story.cjs')} ${targetDate}`, { stdio: 'inherit' });
+
+  // 4. Firestore 업로드
+  console.log('4. Uploading to Firestore...');
   execSync(`node ${path.join(__dirname, 'upload_quiz.cjs')} ${targetDate}`, { stdio: 'inherit' });
 
   console.log(`\n🎉 All tasks completed successfully for ${targetDate}!`);

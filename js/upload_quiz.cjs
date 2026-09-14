@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = require('path');
+const path = path = require('path');
 
 const admin = require('firebase-admin');
 const { initializeApp, cert } = require('firebase-admin/app');
@@ -47,6 +47,7 @@ async function uploadDailyQuiz() {
 
     let novelTitle = "📖 제미나이의 문학 작품";
     let novelContent = "오늘의 작품을 준비 중입니다.";
+    let translations = null; // 번역 정보 변수 추가
 
     // data/story_YYYYMMDD.json 경로에서 스토리 읽기 (없으면 기존 quiz_hint.json 체크)
     const storyPath = path.join(__dirname, 'data', `story_${dateKey}.json`);
@@ -56,6 +57,7 @@ async function uploadDailyQuiz() {
       const storyData = JSON.parse(fs.readFileSync(storyPath, 'utf-8'));
       novelTitle = storyData.title || novelTitle;
       novelContent = storyData.content || novelContent;
+      translations = storyData.translations || null; // 스토리 JSON의 translations 필드 읽기
     } else if (fs.existsSync(fallbackHintPath)) {
       const hintData = JSON.parse(fs.readFileSync(fallbackHintPath, 'utf-8'));
       novelTitle = hintData.title || novelTitle;
@@ -73,6 +75,7 @@ async function uploadDailyQuiz() {
       explanation: quizData.explanation,
       novel_title: novelTitle,
       novel_content: novelContent,
+      translations: translations, // Firestore에 번역 데이터 추가
       createdAt: FieldValue.serverTimestamp()
     };
 
@@ -85,4 +88,3 @@ async function uploadDailyQuiz() {
 }
 
 uploadDailyQuiz();
-

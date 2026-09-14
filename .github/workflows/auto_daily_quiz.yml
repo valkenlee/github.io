@@ -3,7 +3,7 @@ name: Auto Daily Quiz Pipeline
 on:
   schedule:
     # 매일 한국 시간 05:00 (UTC 20:00) 자동 실행
-    - cron: '0 20 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch:
     inputs:
       target_date:
@@ -49,5 +49,8 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add js/data/
           git status
-          git diff-index --quiet HEAD || git commit -m "auto: Generate daily quiz data [skip ci]"
-          git push
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "auto: Generate daily quiz data [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
