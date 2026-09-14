@@ -2,7 +2,7 @@ name: Auto Daily Quiz Pipeline
 
 on:
   schedule:
-    # 매일 한국 시간 05:00 (UTC 20:00) 자동 실행
+    # 매일 한국 시간 07:00 (UTC 22:00) 자동 실행
     - cron: '0 22 * * *'
   workflow_dispatch:
     inputs:
@@ -11,7 +11,6 @@ on:
         required: false
         default: ''
 
-# GITHUB_TOKEN에 쓰기 권한 부여
 permissions:
   contents: write
 
@@ -23,7 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Rebase 및 Push 충돌 방지를 위해 전체 Git 히스토리 가져오기
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -45,23 +44,9 @@ jobs:
             node js/auto_daily_quiz.cjs
           fi
 
-        - name: Commit and Push generated JSON data
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          git add js/data/
-          
-          # 변경 사항이 있는 경우에만 처리
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "auto: Generate daily quiz data [skip ci]"
-            
-            # 원격 변경사항 반영 및 Push (최대 5회 재시도)
-            for i in {1..5}; do
-              echo "Push attempt $i..."
-              git fetch origin main
-              git rebase origin/main && git push origin main && break
-              echo "Rebase/Push conflict detected. Retrying in 3 seconds..."
-              sleep 3
-            done
-          fi
+      # 기존 복잡한 git shell 커맨드 대신 공식 자동 커밋 액션 사용
+      - name: Commit & Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "auto: Generate daily quiz data [skip ci]"
+          file_pattern: "js/data/*.json"
