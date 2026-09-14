@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Rebase 및 Push 충돌 방지를 위해 전체 Git 히스토리 가져오기
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
