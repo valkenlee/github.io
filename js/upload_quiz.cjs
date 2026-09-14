@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = path = require('path');
+const path = require('path');
 
 const admin = require('firebase-admin');
 const { initializeApp, cert } = require('firebase-admin/app');
