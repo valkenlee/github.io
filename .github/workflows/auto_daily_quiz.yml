@@ -45,21 +45,23 @@ jobs:
             node js/auto_daily_quiz.cjs
           fi
 
-      - name: Commit and Push generated JSON data
+        - name: Commit and Push generated JSON data
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # 1. 원격 최신 변경사항 먼저 반영 (Rebase)
-          git fetch origin main
-          git rebase origin/main
-
-          # 2. 생성된 파일 스테이징
           git add js/data/
-          git status
-
-          # 3. 변경 사항이 있을 때만 Commit 및 Push
+          
+          # 변경 사항이 있는 경우에만 처리
           if ! git diff-index --quiet HEAD; then
             git commit -m "auto: Generate daily quiz data [skip ci]"
-            git push origin main
+            
+            # 원격 변경사항 반영 및 Push (최대 5회 재시도)
+            for i in {1..5}; do
+              echo "Push attempt $i..."
+              git fetch origin main
+              git rebase origin/main && git push origin main && break
+              echo "Rebase/Push conflict detected. Retrying in 3 seconds..."
+              sleep 3
+            done
           fi
