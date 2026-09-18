@@ -26,6 +26,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.valken.net/todaymenu/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.valken.net/main/</loc>
     <lastmod>2026-09-09</lastmod>
     <priority>0.8</priority>
