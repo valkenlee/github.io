@@ -1,0 +1,170 @@
+:root {
+    --primary: #FF6B6B;
+    --primary-hover: #FF5252;
+    --bg: #FFF9F5;
+    --card-bg: #FFFFFF;
+    --text-main: #2D3436;
+    --text-sub: #636E72;
+    --border: #FFE3D8;
+    --shadow: 0 10px 30px rgba(255, 107, 107, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    background: var(--card-bg);
+    border-radius: 28px;
+    padding: 36px 28px;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--border);
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: var(--text-sub);
+    font-size: 1rem;
+    margin-bottom: 28px;
+}
+
+/* Mode Selector */
+.mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.mode-btn {
+    background: #F8F9FA;
+    border: 2px solid #EDF2F7;
+    padding: 12px 8px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+    background: #FFF0F0;
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Pick Button */
+.pick-btn {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 20px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+    transition: all 0.2s ease;
+    margin-bottom: 28px;
+}
+
+.pick-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(255, 107, 107, 0.4);
+}
+
+.pick-btn:active {
+    transform: translateY(0);
+}
+
+/* Result Display Area */
+.result-container {
+    min-height: 200px;
+    background: #FAFAFA;
+    border-radius: 20px;
+    padding: 24px 20px;
+    border: 2px dashed #E2E8F0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+}
+
+.placeholder-text {
+    color: #A0AEC0;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.combination-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-item {
+    background: white;
+    padding: 14px 18px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #EDF2F7;
+}
+
+.menu-category {
+    font-size: 0.825rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.cat-main { background: #EBF8FF; color: #3182CE; }
+.cat-appetizer { background: #F0FFF4; color: #38A169; }
+.cat-side { background: #FEFCBF; color: #D69E2E; }
+.cat-snack { background: #EDF2F7; color: #4A5568; }
+.cat-dessert { background: #FED7E2; color: #B83280; }
+.cat-drink { background: #E9D8FD; color: #6B46C1; }
+
+@media (max-width: 480px) {
+    .container { padding: 24px 18px; }
+    .header h1 { font-size: 1.8rem; }
+    .mode-selector { grid-template-columns: 1fr; }
+}

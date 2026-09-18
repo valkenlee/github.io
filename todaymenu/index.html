@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 먹지? - 메뉴 추천기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🍱 오늘 뭐 먹지?</h1>
+        <p>고민되는 식사 메뉴, 완벽한 조합으로 뽑아드려요!</p>
+    </div>
+
+    <!-- Mode Options -->
+    <div class="mode-selector">
+        <button class="mode-btn active" onclick="setMode('full', this)">🍲 풀코스 정식<br><small style="font-weight:normal; font-size:0.75rem;">주식+반찬+디저트+음료</small></button>
+        <button class="mode-btn" onclick="setMode('simple', this)">🍚 단품 식사<br><small style="font-weight:normal; font-size:0.75rem;">주식(+음료)</small></button>
+        <button class="mode-btn" onclick="setMode('snack', this)">🥨 꿀조합 간식<br><small style="font-weight:normal; font-size:0.75rem;">간식+디저트/음료</small></button>
+    </div>
+
+    <!-- Action Button -->
+    <button class="pick-btn" onclick="pickMenu()">🎲 추천 메뉴 뽑기!</button>
+
+    <!-- Result Display -->
+    <div class="result-container" id="resultContainer">
+        <div class="placeholder-text">버튼을 눌러 오늘의 추천 메뉴를 확인해보세요!</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
